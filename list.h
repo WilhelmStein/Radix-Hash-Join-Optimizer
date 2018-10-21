@@ -50,8 +50,10 @@ namespace nstd {
 			Iterator operator+(int moves)
 			{
 				Node* temp = ptr;
+
 				for (int i = 0; i < moves; i++)
 					temp = temp->next;
+
 				return Iterator(temp);
 			}
 
@@ -77,7 +79,9 @@ namespace nstd {
 		void append(T* item);
 		void popTail();
 		void popHead();
-        
+
+        T* toArray();
+
 		bool isEmpty() { return ((this->count) ? (false) : (true)); }
 		unsigned int size() { return this->count; }
 	};
@@ -126,7 +130,7 @@ namespace nstd {
 	}
 
 	template<typename T>
-	void List<T>::popHead()
+	inline void List<T>::popHead()
 	{
 		if (isEmpty())
 			return;
@@ -136,4 +140,14 @@ namespace nstd {
 		head = temp;
 		count--;
 	}
+
+    template<typename T>
+    inline T* List<T>::toArray()
+    {
+        T* arr = new[size];
+        for(int i = 0, List<T>::Iterator it = begin(); i < size; i++, it++)
+            arr[i] = it->contents;
+        
+        return arr;
+    }
 }
