@@ -17,7 +17,7 @@ void Bucket::sort(const int n) {
 
     nstd::BinaryTree<Tuple *> btree
     (
-        [](const Tuple *&, const Tuple *&)
+        [](const Tuple * a, const Tuple * b)
         {
             if (a->key < b->key)
                 return -1;
