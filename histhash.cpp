@@ -11,17 +11,23 @@ void Bucket::insert(Tuple* tuple) {
     tuples.append(&tuple);
 }
 
-int histcmp(const Tuple * a, const Tuple * b) {
-    if (a->key < b->key) return -1;
-    else if (a->key == b->key) return 0;
-    else return 1;
-}
-
 void Bucket::sort(const int n) {
     Tuple** arr = tuples.toArray();
     Tuple** histogram = new Tuple*[pow(2, n)];
 
-    //nstd::BinaryTree<Tuple *> btree(&histcmp, true);
+    nstd::BinaryTree<Tuple *> btree
+    (
+        [](const Tuple *&, const Tuple *&)
+        {
+            if (a->key < b->key)
+                return -1;
+            else if (a->key == b->key)
+                return 0;
+            else
+                return 1;
+        },
+        true
+    );
     
     for(int i = 0; i < tuples.size(); i++) {
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <functional>
 
 namespace nstd {
     template <typename T>
@@ -20,12 +21,12 @@ namespace nstd {
         BT_Node* root;
         //unsigned int size;
         const bool disallow_duplicates;
-        int (*cmp_func)(const T& a, const T& b);
+        const std::function<int(const T&, const T&)> cmp_func;
         BT_Node* removeNode(BT_Node* root, const T& item);
         bool insertRec(BT_Node* root, const T& item);
 
     public:
-        BinaryTree(int (*_cmp_func)(const T& a, const T& b), const bool _disallow_duplicates): root(nullptr), cmp_func(_cmp_func), disallow_duplicates(_disallow_duplicates) {}
+        BinaryTree(std::function<int(const T&, const T&)>&& cmp_func, const bool _disallow_duplicates): root(nullptr), cmp_func(_cmp_func), disallow_duplicates(_disallow_duplicates) {}
         ~BinaryTree()
         {
             while(!isEmpty())
