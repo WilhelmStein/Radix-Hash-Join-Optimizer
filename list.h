@@ -144,10 +144,13 @@ namespace nstd {
     template<typename T>
     inline T* List<T>::toArray()
     {
-        T* arr = new[size];
-        for(int i = 0, List<T>::Iterator it = begin(); i < size; i++, it++)
-            arr[i] = it->contents;
-        
+        T* arr = new T[size()];
+		int i = 0;
+        for(List<T>::Iterator it = begin(); i < size(); it++) {
+            arr[i] = it.operator->().contents;
+			i++;
+		}
+		
         return arr;
     }
 }

@@ -17,14 +17,15 @@ class HistHashTable {
 private:
     const int n;
     Bucket *table;
-
-    ~HistHashTable();
+    int size;
 
     int32_t radixHash(int32_t payload);
 
 public:
     HistHashTable(const int _n);
-
+    ~HistHashTable();
+    int getSize();
     void insert(Tuple* tuple);
+    void sort();
 
 };

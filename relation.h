@@ -7,6 +7,7 @@ struct Tuple {
 
     Tuple(int32_t _key, int32_t _payload) : key(_key), payload(_payload) {}
     Tuple() : key(0), payload(0) {};
+    void print();
 };
 
 struct Relation {

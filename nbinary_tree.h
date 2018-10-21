@@ -26,7 +26,7 @@ namespace nstd {
         bool insertRec(BT_Node* root, const T& item);
 
     public:
-        BinaryTree(std::function<int(const T&, const T&)>&& cmp_func, const bool _disallow_duplicates): root(nullptr), 
+        BinaryTree(std::function<int(const T&, const T&)>&& _cmp_func, const bool _disallow_duplicates): root(nullptr), 
                                     cmp_func(_cmp_func), disallow_duplicates(_disallow_duplicates), size(0) {}
         ~BinaryTree()
         {
@@ -42,7 +42,7 @@ namespace nstd {
         {
             if(root) {
                 if (insertRec(root, item)) {
-                    size++
+                    size++;
                 }
                 else return false;
             }
@@ -81,7 +81,7 @@ namespace nstd {
                 return nullptr;
         }
 
-        T* findRec(T& item, BT_Node* root) {
+        T* findRec(const T& item, BT_Node* root) {
             const int cmp_result = cmp_func(item, root->contents);
 
             if(cmp_result == 0) // Check if duplicates are allowed and act accordingly
@@ -91,7 +91,7 @@ namespace nstd {
             else if(cmp_result > 0) // Go right
             {  
                 if(root->right_child)
-                    return findRec(item, root->right_child)
+                    return findRec(item, root->right_child);
                 else
                     return nullptr;
             }
