@@ -1,128 +1,99 @@
 #include "histhash.h"
-#include "nbinary_tree.h"
+#include <iostream>
 
-int pow(int a, int e)
-{
+int pow(int a, int e) {
+    int ret = a;
     for (int i = 0; i < e - 1; i++)
-        a *= a;
-    return a;
+        ret *= a;
+    return ret;
 }
 
-void Bucket::insert(Tuple *tuple)
-{
-    tuples.append(&tuple);
+int32_t PsumTable::radixHash(uint32_t n, int32_t value) {
+    return (value & ((1 << n) - 1));
 }
 
-void Bucket::sort(const int n)
-{
+void PsumTable::printTable() {
+    for (int i = 0; i < this->table_size; i++) {
+        this->table[i].print();
+    }
+}
 
-    auto cmp_func = [](const Tuple &a, const Tuple &b) {
-        if (a.key < b.key)
-            return -1;
-        else if (a.key == b.key)
-            return 0;
-        else
-            return 1;
-    };
+void PsumTable::printPsum() {
+    for (int i = 0; i < this->psum_size; i++) {
+        std::cout << i << ":  " << this->psum[i] << std::endl;
+    }
+}
 
-    Tuple **arr = tuples.toArray();
 
-    nstd::BinaryTree<Tuple> btree(cmp_func, true);
 
-    for (int i = 0; i < tuples.size(); i++)
-    {
+PsumTable::PsumTable(Relation *rel) {
+    this->psum_size = pow(2, N);
 
-        // histogram[i] = new Tuple(0, 0);
+    int histogram[psum_size] = { 0 };
 
-        Tuple tuple(arr[i]->payload, 1);
-        Tuple *ptr = nullptr;
+    // Creating a table which contains hashes of each tuple
+    uint32_t hashes[rel->size];
 
-        if (ptr = btree.find(tuple))
-        {
-            ptr->payload++;
-        }
-        // If it does not exist
-        else
-        {
-            btree.insert(tuple);
-        }
+    for (int i = 0; i < rel->size; i++) {
+        int32_t hash = radixHash(N, rel->tuples[i].payload);
+
+        hashes[i] = hash;
+
+        histogram[hash]++;
     }
 
-    // Copy tree to histogram
-    int index = 0;
-    int size = btree.getSize();
-    Tuple *histogram = new Tuple[size];
-
-    while (btree.getRoot())
-    {
-        histogram[index].key = btree.getRoot()->contents.key;
-        histogram[index].payload = btree.getRoot()->contents.payload;
-        index++;
-        btree.removeValue(btree.getRoot()->contents);
-    }
-
-    // Create Psum
-    Tuple *psum = new Tuple[size];
-    // Reusing same btree (it's now devoid of elements)
-
+    this->psum = new int[psum_size];
+    int psum_2[psum_size];
     int sum = 0;
-    for (int i = 0; i < size; i++)
-    {
-        psum[i].key = histogram[i].key;
-        psum[i].payload = sum;
-        Tuple item(psum[i].key, sum);
-        btree.insert(item);
-        sum += histogram[i].payload;
+
+    for (int i = 0; i < psum_size; i++) {
+        this->psum[i] = sum;
+        psum_2[i] = sum;
+        sum += histogram[i];
     }
 
-    // Create R'
-    Tuple **arr2 = new Tuple *[tuples.size()];
+    this->table = (Tuple *)malloc(rel->size * sizeof(Tuple));
 
-    for (int i = 0; i < tuples.size(); i++)
-    {
-        Tuple temp(arr[i]->payload, arr[i]->key);
-        Tuple *ptr = btree.find(temp); // Check for error when btree empty;
-        arr2[ptr->payload++] = arr[i];
-        arr[i]->print();  
+    for (int i = 0; i < rel->size; i++) {
+        this->table[ psum_2[hashes[i]] ] = rel->tuples[i];
+        psum_2[hashes[i]]++;
+
     }
+    
+    
+    // this->psum = psum;
+    this->table_size = rel->size;
 }
 
-HistHashTable::HistHashTable(const int _n) : n(_n)
-{
-    size = pow(2, n);
-    table = new Bucket[size];
+PsumTable::~PsumTable() {
+    delete[] psum;
 }
 
-HistHashTable::~HistHashTable()
-{
-    delete[] table;
-}
+// Returns Bucket with hash same as hashed(value)
+// So if we give value = 10 and n = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
+PsumTableResult PsumTable::getBucket(int32_t value) {
+    int returnSize;
 
-int32_t HistHashTable::radixHash(int32_t payload)
-{
-    return (payload & ((1 << n) - 1));
-    // auto shamt = (sizeof(payload) * 8) - n;
-    // payload <<= shamt;
-    // payload >>= shamt;
+    int32_t hash = radixHash(N, value);
 
-    // return payload;
-}
-
-void HistHashTable::insert(Tuple *tuple)
-{
-    int32_t hash = this->radixHash(tuple->payload);
-    table[hash].insert(tuple);
-}
-
-void HistHashTable::sort()
-{
-    for (int i = 0; i < this->size; i++)
-    {
-        this->table[i].sort(this->n);
+    if (hash < this->psum_size) {
+        returnSize = this->psum[hash + 1] - this->psum[hash];
     }
+    else {
+        returnSize = this->table_size - this->psum[hash];
+    }
+
+    Tuple * returnTable = (Tuple *)malloc(returnSize * sizeof(Tuple));
+
+    for (int i = 0; i < returnSize; i++) {
+        returnTable[i] = this->table[ this->psum[hash] + i ];
+    }
+
+    return PsumTableResult(returnTable, returnSize);
 }
 
-int HistHashTable::getSize()
-{
-    return size;
+void PsumTableResult::print() {
+    for (int i = 0; i < this->size; i++) {
+        this->tuples[i].print();
+    }
 }

@@ -1,31 +1,40 @@
 #pragma once
 #include "relation.h"
-#include "list.h"
 
-class Bucket {
-private:
-    nstd::List<Tuple *> tuples;
-public:
-    Bucket() {}
-    ~Bucket() {}
+#define N (3)
 
-    void insert(Tuple* tuple);
-    void sort(const int n);
-};
+int pow(int a, int e);
 
-class HistHashTable {
-private:
-    const int n;
-    Bucket *table;
+int32_t radixHash(uint32_t n, int32_t value);
+
+struct PsumTableResult {
     int size;
+    Tuple * tuples;
 
-    int32_t radixHash(int32_t payload);
-
-public:
-    HistHashTable(const int _n);
-    ~HistHashTable();
-    int getSize();
-    void insert(Tuple* tuple);
-    void sort();
-
+    PsumTableResult(Tuple * _tuples, int _size) : size(_size), tuples(_tuples) {};
+    void print();
 };
+
+
+class PsumTable {
+
+    private:
+        Tuple * table;
+        int * psum;
+
+        int n;
+        int psum_size;
+        int table_size;
+
+        int32_t radixHash(uint32_t n, int32_t value);
+
+    public:
+        PsumTable(Relation *rel);
+        ~PsumTable();
+
+        PsumTableResult getBucket(int32_t value);
+
+        void printTable();
+        void printPsum();
+};
+

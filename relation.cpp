@@ -1,19 +1,19 @@
 #include "relation.h"
-#include "histhash.h"
 #include "iostream"
+#include "histhash.h"
+#include <stdint.h>
 
 void Tuple::print() {
     std::cout << "key: " << this->key << ", value: " << this->payload << std::endl;
 }
 
+
 Result *RadixHashJoin(Relation *relR, Relation *relS) {
-    // Hash R
-    HistHashTable R_HashTable(2);
+    PsumTable hashTableR(relR);
 
-    for (int i = 0; i < relR->size; i++) {
-        R_HashTable.insert( &(relR->tuples[i]) );
-    }
+    PsumTable hashTableS(relS);
 
-    R_HashTable.sort();
-
+    PsumTableResult result = hashTableR.getBucket(134);
+    result.print();
 }
+

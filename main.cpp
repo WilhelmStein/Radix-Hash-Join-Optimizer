@@ -4,33 +4,44 @@
 
 #include<iostream>
 
+#define R_SIZE 100
+#define S_SIZE 110
+
+
 int main(void) {
+
     srand(0);
+
     Relation * R; 
     Relation * S;
-    std::cout << "Started1" << std::endl;
 
-    Tuple * tArray = new Tuple[10];
+    Tuple * tArray_R = new Tuple[R_SIZE];
 
-    std::cout << "Started2" << std::endl;
-    for (int i = 0; i < 10; i++) {
-        tArray[i].key = i;
 
-        tArray[i].payload = rand() % 10 + 1;
+    for (int i = 0; i < R_SIZE; i++) {
+        tArray_R[i].key = i;
+
+        tArray_R[i].payload = rand() % 20 + 1;
     }
-    std::cout << "Started3" << std::endl;
 
-    R = new Relation(10, tArray);
-    std::cout << "Started4" << std::endl;
+    R = new Relation(R_SIZE, tArray_R);
 
-    for (int i = 0; i < 10; i++) {
-        tArray[i].key = i;
 
-        tArray[i].payload = rand() % 10 + 1;
+    Tuple * tArray_S = new Tuple[S_SIZE];
+
+    for (int i = 0; i < S_SIZE; i++) {
+        tArray_S[i].key = i;
+
+        tArray_S[i].payload = rand() % 20 + 1;
     }
-    std::cout << "Started5" << std::endl;
 
-    S = new Relation(10, tArray);
+    S = new Relation(S_SIZE, tArray_S);
     
     RadixHashJoin(R, S);
+
+    delete[] tArray_R;
+    delete[] tArray_S;
+
+    delete S;
+    delete R;
 }
