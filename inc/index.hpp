@@ -4,11 +4,12 @@
 #include "histhash.h"
 #include "types.hpp"
 #include "pair.hpp"
+#include "list.h"
 #include <functional>
 
 class Index
 {
-    const Bucket& _data;
+    const PsumTable::Result& _data;
     
     chain_key_t * _chain;
 
@@ -19,12 +20,10 @@ class Index
 
 public:
 
-    using Result = nstd::pair<relation_size_t, relation_size_t>;
-
-    Index(const Bucket&);
+    Index(const PsumTable::Result&);
     ~Index();
 
-    const Bucket& data() const { return _data; }
+    const PsumTable::Result& data() const { return _data; }
 
     const chain_key_t * chain() const  { return _chain; }
 
@@ -33,5 +32,5 @@ public:
 
     const std::function<bucket_key_t(const Tuple&)>& hash() const { return _hash; }
 
-    nstd::List<Index::Result> join(const Bucket&) const;
+    nstd::List<Result> join(const PsumTable::Result&) const;
 };

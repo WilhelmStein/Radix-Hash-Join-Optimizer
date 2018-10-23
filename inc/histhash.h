@@ -1,5 +1,6 @@
 #pragma once
 #include "relation.h"
+#include "pair.hpp"
 
 #define N (3)
 

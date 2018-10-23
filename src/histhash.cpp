@@ -36,7 +36,7 @@ PsumTable::PsumTable(Relation *rel, uint32_t n) {
     // Creating a table which contains hashes of each tuple
     uint32_t hashes[rel->size];
 
-    for (int i = 0; i < rel->size; i++) {
+    for (uint32_t i = 0; i < rel->size; i++) {
         int32_t hash = radixHash(rel->tuples[i].payload);
 
         hashes[i] = hash;
@@ -56,7 +56,7 @@ PsumTable::PsumTable(Relation *rel, uint32_t n) {
 
     this->table = (Tuple *)malloc(rel->size * sizeof(Tuple));
 
-    for (int i = 0; i < rel->size; i++) {
+    for (uint32_t i = 0; i < rel->size; i++) {
         int32_t hash = hashes[i];
 
         uint32_t index = (hash < this->psum_size - 1 ? this->psum[hash + 1] : rel->size) - histogram[hash];

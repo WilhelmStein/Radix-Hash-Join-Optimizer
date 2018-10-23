@@ -5,16 +5,16 @@
 
 bool isPrime(relation_size_t);
 
-Index::Index(const Bucket& _data)
+Index::Index(const PsumTable::Result& _data)
 :
 _data(_data),
+_chain(nullptr),
 _bucket(nullptr),
 _bucketSize(0U),
-_chain(nullptr),
 _hash([](const Tuple& tuple) { return 0U; })
 {
     // Initialize _bucket:
-    _bucketSize = _data.tuples.size();
+    _bucketSize = _data.second;
     while (!isPrime(++_bucketSize));
 
     _bucket = new bucket_key_t[_bucketSize];
@@ -27,8 +27,8 @@ _hash([](const Tuple& tuple) { return 0U; })
     };
 
     // Initialize _chain:
-    _chain = new chain_key_t[_data.tuples.size()];
-    for (chain_size_t c = 0U; c < _data.tuples.size(); c++)
+    _chain = new chain_key_t[_data.second];
+    for (chain_size_t c = 0U; c < _data.second; c++)
         _chain[c] = -1;
 
     // A lambda that is used to make a note of the specified tuple
@@ -53,8 +53,8 @@ _hash([](const Tuple& tuple) { return 0U; })
         _chain[index] = tuple.key; _chain[_chain[index]] = -1;
     };
 
-    for (nstd::List<Tuple *>::Iterator it = _data.tuples.end(); it != _data.tuples.begin(); --it)
-        insert(*(it->contents));
+    for (relation_size_t t = 0U; t < _data.second; t++)
+        insert(_data.first[t]);
 }
 
 Index::~Index()
@@ -81,18 +81,19 @@ bool isPrime(relation_size_t n)
     return true;
 }
 
-nstd::List<Index::Result> Index::join(const Bucket& other) const
+nstd::List<Result> Index::join(const PsumTable::Result& other) const
 {
     nstd::List<Result> results;
-    for (nstd::List<Tuple *>::Iterator it = other.tuples.begin(); it != other.tuples.end(); ++it)
+    for (relation_size_t t = 0U; t < other.second; t++)
     {
-        chain_key_t index = _bucket[hash(*(it->contents))];
+        const Tuple& tuple = other.first[t];
 
+        chain_key_t index = _bucket[_hash(tuple)];
         do
         {
-            if (*(it->contents).payload == _data.tuples[index].payload)
+            if (tuple.payload == other.first[index].payload)
             {
-                Result result(*(it->contents).key, index);
+                Result result(tuple.key, index);
                 results.append(&result);
             }
 
