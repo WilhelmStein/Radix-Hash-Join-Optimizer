@@ -5,15 +5,7 @@
 
 int pow(int a, int e);
 
-int32_t radixHash(uint32_t n, int32_t value);
-
-struct PsumTableResult {
-    int size;
-    Tuple * tuples;
-
-    PsumTableResult(Tuple * _tuples, int _size) : size(_size), tuples(_tuples) {};
-    void print();
-};
+// int32_t radixHash(uint32_t n, int32_t value);
 
 
 class PsumTable {
@@ -22,17 +14,19 @@ class PsumTable {
         Tuple * table;
         int * psum;
 
-        int n;
+        uint32_t n;
         int psum_size;
         int table_size;
 
-        int32_t radixHash(uint32_t n, int32_t value);
+        int32_t radixHash(int32_t value);
 
     public:
-        PsumTable(Relation *rel);
+        using Result = nstd::pair<Tuple *, uint32_t>;
+
+        PsumTable(Relation *rel, uint32_t n);
         ~PsumTable();
 
-        PsumTableResult getBucket(int32_t value);
+        Result getBucket(int32_t value);
 
         void printTable();
         void printPsum();

@@ -8,8 +8,8 @@ int pow(int a, int e) {
     return ret;
 }
 
-int32_t PsumTable::radixHash(uint32_t n, int32_t value) {
-    return (value & ((1 << n) - 1));
+int32_t PsumTable::radixHash(int32_t value) {
+    return (value & ((1 << this->n) - 1));
 }
 
 void PsumTable::printTable() {
@@ -26,8 +26,10 @@ void PsumTable::printPsum() {
 
 
 
-PsumTable::PsumTable(Relation *rel) {
-    this->psum_size = pow(2, N);
+PsumTable::PsumTable(Relation *rel, uint32_t n) {
+
+    this->n = n;
+    this->psum_size = pow(2, this->n);
 
     int histogram[psum_size] = { 0 };
 
@@ -35,7 +37,7 @@ PsumTable::PsumTable(Relation *rel) {
     uint32_t hashes[rel->size];
 
     for (int i = 0; i < rel->size; i++) {
-        int32_t hash = radixHash(N, rel->tuples[i].payload);
+        int32_t hash = radixHash(rel->tuples[i].payload);
 
         hashes[i] = hash;
 
@@ -43,20 +45,25 @@ PsumTable::PsumTable(Relation *rel) {
     }
 
     this->psum = new int[psum_size];
-    int psum_2[psum_size];
+    // int psum_2[psum_size];
     int sum = 0;
 
     for (int i = 0; i < psum_size; i++) {
         this->psum[i] = sum;
-        psum_2[i] = sum;
+        // psum_2[i] = sum;
         sum += histogram[i];
     }
 
     this->table = (Tuple *)malloc(rel->size * sizeof(Tuple));
 
     for (int i = 0; i < rel->size; i++) {
-        this->table[ psum_2[hashes[i]] ] = rel->tuples[i];
-        psum_2[hashes[i]]++;
+        int32_t hash = hashes[i];
+
+        uint32_t index = (hash < this->psum_size - 1 ? this->psum[hash + 1] : rel->size) - histogram[hash];
+
+        this->table[ index ] = rel->tuples[i];
+
+        histogram[hash]--;
 
     }
     
@@ -71,10 +78,10 @@ PsumTable::~PsumTable() {
 
 // Returns Bucket with hash same as hashed(value)
 // So if we give value = 10 and n = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
-PsumTableResult PsumTable::getBucket(int32_t value) {
+PsumTable::Result PsumTable::getBucket(int32_t value) {
     int returnSize;
 
-    int32_t hash = radixHash(N, value);
+    int32_t hash = radixHash(value);
 
     if (hash < this->psum_size) {
         returnSize = this->psum[hash + 1] - this->psum[hash];
@@ -83,17 +90,13 @@ PsumTableResult PsumTable::getBucket(int32_t value) {
         returnSize = this->table_size - this->psum[hash];
     }
 
-    Tuple * returnTable = (Tuple *)malloc(returnSize * sizeof(Tuple));
+    return Result(&this->table[this->psum[hash]], returnSize);
 
-    for (int i = 0; i < returnSize; i++) {
-        returnTable[i] = this->table[ this->psum[hash] + i ];
-    }
+    // Tuple * returnTable = (Tuple *)malloc(returnSize * sizeof(Tuple));
 
-    return PsumTableResult(returnTable, returnSize);
-}
+    // for (int i = 0; i < returnSize; i++) {
+    //     returnTable[i] = this->table[ this->psum[hash] + i ];
+    // }
 
-void PsumTableResult::print() {
-    for (int i = 0; i < this->size; i++) {
-        this->tuples[i].print();
-    }
+    // return PsumTableResult(returnTable, returnSize);
 }
