@@ -24,8 +24,6 @@ void PsumTable::printPsum() {
     }
 }
 
-
-
 PsumTable::PsumTable(Relation *rel, uint32_t n) {
 
     this->n = n;
@@ -36,7 +34,9 @@ PsumTable::PsumTable(Relation *rel, uint32_t n) {
     // Creating a table which contains hashes of each tuple
     uint32_t hashes[rel->size];
 
+
     for (uint32_t i = 0; i < rel->size; i++) {
+
         int32_t hash = radixHash(rel->tuples[i].payload);
 
         hashes[i] = hash;
@@ -57,6 +57,7 @@ PsumTable::PsumTable(Relation *rel, uint32_t n) {
     this->table = (Tuple *)malloc(rel->size * sizeof(Tuple));
 
     for (uint32_t i = 0; i < rel->size; i++) {
+
         int32_t hash = hashes[i];
 
         uint32_t index = (hash < this->psum_size - 1 ? this->psum[hash + 1] : rel->size) - histogram[hash];
@@ -78,7 +79,8 @@ PsumTable::~PsumTable() {
 
 // Returns Bucket with hash same as hashed(value)
 // So if we give value = 10 and n = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
-PsumTable::Result PsumTable::getBucket(int32_t value) {
+PsumTable::Result PsumTable::operator[](int32_t value) {
+
     int returnSize;
 
     int32_t hash = radixHash(value);

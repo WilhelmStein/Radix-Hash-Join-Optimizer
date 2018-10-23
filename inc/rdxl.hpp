@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "relation.h"
+#include "../relation.h"
 
 struct RDXList
 {
@@ -9,6 +9,7 @@ struct RDXList
     {
         class Buffer
         {
+        public:
             uint32_t index;
         
         public:

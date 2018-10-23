@@ -20,6 +20,6 @@ struct Relation {
     Relation(uint32_t _size, Tuple * _tuples) : tuples(_tuples), size(_size) {}
 };
 
-using Result = nstd::pair<relation_size_t, relation_size_t>;
+using Result = pair<relation_size_t, relation_size_t>;
 
 Result *RadixHashJoin(Relation *relR, Relation *relS);

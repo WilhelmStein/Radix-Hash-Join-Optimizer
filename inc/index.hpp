@@ -21,6 +21,7 @@ class Index
 public:
 
     Index(const PsumTable::Result&);
+
     ~Index();
 
     const PsumTable::Result& data() const { return _data; }

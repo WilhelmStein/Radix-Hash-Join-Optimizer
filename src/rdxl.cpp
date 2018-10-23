@@ -1,49 +1,51 @@
 
-#include "rdxl.hpp"
+#include "../inc/rdxl.hpp"
+#include <iostream>
 
-inline RDXList::RDXNode::Buffer::Buffer()
+RDXList::RDXNode::Buffer::Buffer()
 :
 index(0U)
 {
 }
 
-inline bool RDXList::RDXNode::Buffer::full() const
+bool RDXList::RDXNode::Buffer::full() const
 {
     return index == CAPACITY;
 }
 
-inline void RDXList::RDXNode::Buffer::append(const Result& result)
+void RDXList::RDXNode::Buffer::append(const Result& result)
 {
     data[index++] = result;
 }
 
-inline RDXList::RDXNode::RDXNode()
+RDXList::RDXNode::RDXNode()
 :
 next(nullptr)
 {
 }
 
-inline RDXList::RDXNode::~RDXNode()
+RDXList::RDXNode::~RDXNode()
 {
     if (next)
         delete next;
 }
 
-inline RDXList::RDXList()
+RDXList::RDXList()
 :
 head(new RDXList::RDXNode()), tail(head)
 {
 }
 
-inline RDXList::~RDXList()
+RDXList::~RDXList()
 {
     delete head;
 }
 
-inline void RDXList::RDXList::append(const Result& result)
+void RDXList::RDXList::append(const Result& result)
 {
     if (tail->buffer.full())
-        tail = tail->next = new RDXNode;
-
+    {
+        tail = tail->next = new RDXNode;   
+    }
     tail->buffer.append(result);
 }

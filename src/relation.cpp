@@ -15,7 +15,7 @@ Result *RadixHashJoin(Relation *relR, Relation *relS) {
 
     PsumTable hashTableS(relS, N);
 
-    PsumTable::Result result = hashTableR.getBucket(3);
+    PsumTable::Result result = hashTableR[3];
 
     for (uint32_t i = 0U; i < result.second; i++) {
         result.first[i].print();

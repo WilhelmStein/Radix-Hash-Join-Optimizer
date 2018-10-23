@@ -6,9 +6,6 @@
 
 int pow(int a, int e);
 
-// int32_t radixHash(uint32_t n, int32_t value);
-
-
 class PsumTable {
 
     private:
@@ -22,12 +19,14 @@ class PsumTable {
         int32_t radixHash(int32_t value);
 
     public:
-        using Result = nstd::pair<Tuple *, uint32_t>;
+        using Result = pair<Tuple *, uint32_t>;
+
 
         PsumTable(Relation *rel, uint32_t n);
         ~PsumTable();
 
-        Result getBucket(int32_t value);
+        Result operator[](int32_t value);
+
 
         void printTable();
         void printPsum();
