@@ -1,4 +1,4 @@
-#include "./inc/rdxl.hpp"
+#include "rdxl.hpp"
 #include "relation.h"
 
 #define N (2000000)

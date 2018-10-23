@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "../relation.h"
+#include "relation.h"
 
 struct RDXList
 {
