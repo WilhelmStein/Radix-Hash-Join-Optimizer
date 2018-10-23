@@ -19,7 +19,7 @@ class Index
 
 public:
 
-    using Result = nstd::pair<relation_size_t, relation_size_t>;
+    using Result = ::pair<relation_size_t, relation_size_t>;
 
     Index(const Bucket&);
     ~Index();

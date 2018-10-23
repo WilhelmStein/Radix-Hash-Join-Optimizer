@@ -25,7 +25,6 @@ void PsumTable::printPsum() {
 }
 
 
-
 PsumTable::PsumTable(Relation *rel, uint32_t n) {
 
     this->n = n;
@@ -78,7 +77,7 @@ PsumTable::~PsumTable() {
 
 // Returns Bucket with hash same as hashed(value)
 // So if we give value = 10 and n = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
-PsumTable::Result PsumTable::getBucket(int32_t value) {
+PsumTable::Result PsumTable::operator[](int32_t value) {
     int returnSize;
 
     int32_t hash = radixHash(value);

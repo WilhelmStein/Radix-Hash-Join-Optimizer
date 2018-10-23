@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "./inc/pair.hpp"
 
 struct Tuple {
     int32_t key;
@@ -17,8 +18,6 @@ struct Relation {
     Relation(uint32_t _size, Tuple * _tuples) : size(_size), tuples(_tuples) {}
 };
 
-struct Result {
-
-};
+using Result = ::pair<uint32_t, uint32_t>;
 
 Result *RadixHashJoin(Relation *relR, Relation *relS);
