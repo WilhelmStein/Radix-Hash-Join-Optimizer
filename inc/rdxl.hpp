@@ -1,37 +1,40 @@
 
 #pragma once
 
-#include "relation.h"
+#include "relation.hpp"
 
-struct RDXList
+namespace RHJ
 {
-    struct RDXNode
+    struct List
     {
-        class Buffer
+        struct Node
         {
-        public:
-            uint32_t index;
-        
-        public:
+            class Buffer
+            {
+            public:
+                std::size_t index;
+            
+            public:
 
-            static const uint32_t CAPACITY = 1024UL * 1024UL / sizeof(Result);
+                static const std::size_t CAPACITY = 1024UL * 1024UL / sizeof(RHJ::Result);
 
-            Result data[CAPACITY];
+                RHJ::Result data[CAPACITY];
 
-            Buffer();
+                Buffer();
 
-            bool full() const;
-            void append(const Result&);
-        } buffer;
+                bool full() const;
+                void append(const RHJ::Result&);
+            } buffer;
 
-        RDXNode * next;
+            Node * next;
 
-        RDXNode();
-        ~RDXNode();
-    } * head, * tail;
+            Node();
+            ~Node();
+        } * head, * tail;
 
-    RDXList();
-    ~RDXList();
+        List();
+        ~List();
 
-    void append(const Result&);
-};
+        void append(const RHJ::Result&);
+    };
+}

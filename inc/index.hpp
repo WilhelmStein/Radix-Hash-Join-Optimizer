@@ -1,37 +1,40 @@
 
 #pragma once
 
-#include "histhash.h"
+#include "histhash.hpp"
 #include "types.hpp"
 #include "pair.hpp"
-#include "list.h"
+#include "rdxl.hpp"
 #include <functional>
 
-class Index
+namespace RHJ 
 {
-    const PsumTable::Result& _data;
-    
-    chain_key_t * _chain;
+    class Index
+    {
+        const PsumTable::Bucket& _data;
+        
+        chain_key_t * _chain;
 
-    bucket_key_t * _bucket;
-    bucket_size_t _bucketSize;
+        bucket_key_t * _bucket;
+        std::size_t _bucketSize;
 
-    std::function<bucket_key_t(const Tuple&)> _hash;
+        std::function<bucket_key_t(const Tuple&)> _hash;
 
-public:
+    public:
 
-    Index(const PsumTable::Result&);
+        Index(const PsumTable::Bucket&);
 
-    ~Index();
+        ~Index();
 
-    const PsumTable::Result& data() const { return _data; }
+        const PsumTable::Bucket& data() const { return _data; }
 
-    const chain_key_t * chain() const  { return _chain; }
+        const chain_key_t * chain() const  { return _chain; }
 
-    const bucket_key_t * bucket() const { return _bucket; }
-    bucket_size_t bucketSize() const { return _bucketSize; }
+        const bucket_key_t * bucket() const { return _bucket; }
+        std::size_t bucketSize() const { return _bucketSize; }
 
-    const std::function<bucket_key_t(const Tuple&)>& hash() const { return _hash; }
+        const std::function<bucket_key_t(const Tuple&)>& hash() const { return _hash; }
 
-    nstd::List<Result> join(const PsumTable::Result&) const;
-};
+        void join(const PsumTable::Bucket&, RHJ::List&) const;
+    };
+}

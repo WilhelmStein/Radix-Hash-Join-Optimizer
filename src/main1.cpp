@@ -1,6 +1,6 @@
-#include "histhash.h"
-#include "relation.h"
-#include <stdlib.h>
+#include "histhash.hpp"
+#include "relation.hpp"
+#include <cstdlib>
 
 #include<iostream>
 
@@ -12,10 +12,7 @@ int main(void) {
 
     srand(0);
 
-    Relation * R; 
-    Relation * S;
-
-    Tuple * tArray_R = new Tuple[R_SIZE];
+    RHJ::Tuple * tArray_R = new RHJ::Tuple[R_SIZE];
 
 
     for (int i = 0; i < R_SIZE; i++) {
@@ -24,10 +21,10 @@ int main(void) {
         tArray_R[i].payload = rand() % 20 + 1;
     }
 
-    R = new Relation(R_SIZE, tArray_R);
+    RHJ::Relation R = { .tuples = tArray_R, .size = R_SIZE };
 
 
-    Tuple * tArray_S = new Tuple[S_SIZE];
+    RHJ::Tuple * tArray_S = new RHJ::Tuple[S_SIZE];
 
     for (int i = 0; i < S_SIZE; i++) {
         tArray_S[i].key = i;
@@ -35,13 +32,10 @@ int main(void) {
         tArray_S[i].payload = rand() % 20 + 1;
     }
 
-    S = new Relation(S_SIZE, tArray_S);
+    RHJ::Relation S = { .tuples = tArray_S, .size = S_SIZE };
     
-    RadixHashJoin(R, S);
+    RHJ::Relation::RadixHashJoin(&R, &S);
 
     delete[] tArray_R;
     delete[] tArray_S;
-
-    delete S;
-    delete R;
 }

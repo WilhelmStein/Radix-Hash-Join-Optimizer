@@ -20,10 +20,10 @@ clean:
 	rm -rv $(PATH_BIN)
 	@echo "***"
 
-HIST_DEP = $(addprefix $(PATH_INC)/, histhash.h) $(PATH_SRC)/histhash.cpp
-INDX_DEP = $(addprefix $(PATH_INC)/, index.hpp list.h) $(PATH_SRC)/index.cpp
+HIST_DEP = $(addprefix $(PATH_INC)/, histhash.hpp) $(PATH_SRC)/histhash.cpp
+INDX_DEP = $(addprefix $(PATH_INC)/, index.hpp list.hpp) $(PATH_SRC)/index.cpp
 RDXL_DEP = $(addprefix $(PATH_INC)/, rdxl.hpp) $(PATH_SRC)/rdxl.cpp
-RLTN_DEP = $(addprefix $(PATH_INC)/, relation.h histhash.h) $(PATH_SRC)/relation.cpp
+RLTN_DEP = $(addprefix $(PATH_INC)/, relation.hpp histhash.hpp) $(PATH_SRC)/relation.cpp
 
 $(PATH_BIN)/histhash.o: $(HIST_DEP)
 	$(CC) -I $(PATH_INC) $(CFLAGS) $(PATH_SRC)/histhash.cpp -c -o $(PATH_BIN)/histhash.o
@@ -49,7 +49,7 @@ T1ST_DEP = $(OBJS) $(PATH_BIN)/main1.o
 $(PATH_BIN)/test1: $(T1ST_DEP)
 	$(CC) -I $(PATH_INC) $(CFLAGS) $(T1ST_DEP) -o $(PATH_BIN)/test1
 
-$(PATH_BIN)/main1.o: $(PATH_INC)/relation.h
+$(PATH_BIN)/main1.o: $(PATH_INC)/relation.hpp
 	$(CC) -I $(PATH_INC) $(CFLAGS) $(PATH_SRC)/main1.cpp -c -o $(PATH_BIN)/main1.o
 
 # (3)
@@ -58,7 +58,7 @@ T3ST_DEP = $(OBJS) $(PATH_BIN)/main3.o
 $(PATH_BIN)/test3: $(T3ST_DEP)
 	$(CC) -I $(PATH_INC) $(CFLAGS) $(T3ST_DEP) -o $(PATH_BIN)/test3
 
-$(PATH_BIN)/main3.o: $(addprefix $(PATH_INC)/, rdxl.hpp relation.h)
+$(PATH_BIN)/main3.o: $(addprefix $(PATH_INC)/, rdxl.hpp relation.hpp)
 	$(CC) -I $(PATH_INC) $(CFLAGS) $(PATH_SRC)/main3.cpp -c -o $(PATH_BIN)/main3.o
 
 ###############################################################################################

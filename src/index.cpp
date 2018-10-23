@@ -1,24 +1,24 @@
 
 #include "index.hpp"
-#include "list.h"
+#include "list.hpp"
 #include <cmath>
 
-bool isPrime(relation_size_t);
+bool isPrime(std::size_t);
 
-Index::Index(const PsumTable::Result& _data)
+RHJ::Index::Index(const RHJ::PsumTable::Bucket& _data)
 :
 _data(_data),
 _chain(nullptr),
 _bucket(nullptr),
 _bucketSize(0U),
-_hash([](const Tuple& tuple) { return 0U; })
+_hash([](const Tuple& tuple) { return 0UL; })
 {
     // Initialize _bucket:
-    _bucketSize = _data.second;
+    _bucketSize = _data.size;
     while (!isPrime(++_bucketSize));
 
     _bucket = new bucket_key_t[_bucketSize];
-    for (bucket_size_t b = 0U; b < _bucketSize; b++)
+    for (std::size_t b = 0UL; b < _bucketSize; b++)
         _bucket[b] = -1;
 
     _hash = [this](const Tuple& tuple)
@@ -27,8 +27,8 @@ _hash([](const Tuple& tuple) { return 0U; })
     };
 
     // Initialize _chain:
-    _chain = new chain_key_t[_data.second];
-    for (chain_size_t c = 0U; c < _data.second; c++)
+    _chain = new chain_key_t[_data.size];
+    for (std::size_t c = 0UL; c < _data.size; c++)
         _chain[c] = -1;
 
     // A lambda that is used to make a note of the specified tuple
@@ -53,52 +53,49 @@ _hash([](const Tuple& tuple) { return 0U; })
         _chain[index] = tuple.key; _chain[_chain[index]] = -1;
     };
 
-    for (relation_size_t t = 0U; t < _data.second; t++)
-        insert(_data.first[t]);
+    for (std::size_t t = 0UL; t < _data.size; t++)
+        insert(_data.tuples[t]);
 }
 
-Index::~Index()
+RHJ::Index::~Index()
 {
     delete[] _bucket;
     delete[] _chain;
 }
 
-bool isPrime(relation_size_t n)
+bool isPrime(std::size_t n)
 {
-    if (n % 2 == 0 || n % 3 == 0)
+    if (n % 2UL == 0UL || n % 3UL == 0UL)
         return false;
 
-    const relation_size_t root = static_cast<relation_size_t>(std::sqrt(n));
+    const std::size_t root = static_cast<std::size_t>(std::sqrt(n));
 
-    for (relation_size_t i = 5U; i <= root; i += 6)
-        if (n % i == 0)
+    for (std::size_t i = 5UL; i <= root; i += 6UL)
+        if (n % i == 0UL)
            return false;
 
-    for (relation_size_t i = 7U; i <= root; i += 6)
-        if (n % i == 0)
+    for (std::size_t i = 7UL; i <= root; i += 6UL)
+        if (n % i == 0UL)
            return false;
 
     return true;
 }
 
-nstd::List<Result> Index::join(const PsumTable::Result& other) const
+void RHJ::Index::join(const RHJ::PsumTable::Bucket& other, RHJ::List& results) const
 {
-    nstd::List<Result> results;
-    for (relation_size_t t = 0U; t < other.second; t++)
+    for (std::size_t t = 0UL; t < other.size; t++)
     {
-        const Tuple& tuple = other.first[t];
+        const Tuple& tuple = other.tuples[t];
 
         chain_key_t index = _bucket[_hash(tuple)];
         do
         {
-            if (tuple.payload == other.first[index].payload)
+            if (tuple.payload == other.tuples[index].payload)
             {
-                Result result(tuple.key, index);
-                results.append(&result);
+                Result result = { tuple.key, index };
+                results.append(result);
             }
 
         } while ((index = _chain[index]) >= 0);
     }
-
-    return results;
 }

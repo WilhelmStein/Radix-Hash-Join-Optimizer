@@ -1,104 +1,84 @@
-#include "histhash.h"
+#include "histhash.hpp"
 #include <iostream>
 
-int pow(int a, int e) {
-    int ret = a;
-    for (int i = 0; i < e - 1; i++)
-        ret *= a;
-    return ret;
+
+std::size_t RHJ::PsumTable::radixHash(tuple_payload_t value) const {
+    return (value & ((1UL << this->n) - 1UL));
 }
 
-int32_t PsumTable::radixHash(int32_t value) {
-    return (value & ((1 << this->n) - 1));
-}
-
-void PsumTable::printTable() {
-    for (int i = 0; i < this->table_size; i++) {
-        this->table[i].print();
+void RHJ::PsumTable::printTable() const {
+    for (std::size_t i = 0UL; i < this->table.size; i++) {
+        this->table.tuples[i].print();
     }
 }
 
-void PsumTable::printPsum() {
-    for (int i = 0; i < this->psum_size; i++) {
+void RHJ::PsumTable::printPsum() const {
+    for (std::size_t i = 0UL; i < this->psum_size; i++) {
         std::cout << i << ":  " << this->psum[i] << std::endl;
     }
 }
 
-PsumTable::PsumTable(Relation *rel, uint32_t n) {
+RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _n) 
+: 
+table({ new Tuple[rel.size], rel.size }), n(_n)
+{ 
+    // 2 ^ n
+    this->psum_size = [this]()
+    {
+        std::size_t ret = 2UL;
+        for (radix_t i = 0U; i < n - 1U; i++)
+            ret *= 2UL;
+        
+        return ret;
+    }();
 
-    this->n = n;
-    this->psum_size = pow(2, this->n);
-
-    int histogram[psum_size] = { 0 };
+    std::size_t *histogram = new std::size_t[psum_size];
 
     // Creating a table which contains hashes of each tuple
-    uint32_t hashes[rel->size];
+    std::size_t *hashes = new std::size_t[rel.size];
 
 
-    for (uint32_t i = 0; i < rel->size; i++) {
+    for (std::size_t i = 0UL; i < rel.size; i++)
+        histogram[ hashes[i] = radixHash(rel.tuples[i].payload) ]++;
 
-        int32_t hash = radixHash(rel->tuples[i].payload);
 
-        hashes[i] = hash;
+    this->psum = new std::size_t[psum_size];
 
-        histogram[hash]++;
-    }
+    std::size_t sum = 0UL;
 
-    this->psum = new int[psum_size];
-    // int psum_2[psum_size];
-    int sum = 0;
-
-    for (int i = 0; i < psum_size; i++) {
+    for (std::size_t i = 0UL; i < psum_size; i++) {
         this->psum[i] = sum;
-        // psum_2[i] = sum;
         sum += histogram[i];
     }
 
-    this->table = (Tuple *)malloc(rel->size * sizeof(Tuple));
+    for (std::size_t i = 0UL; i < rel.size; i++) {
 
-    for (uint32_t i = 0; i < rel->size; i++) {
+        std::size_t hash = hashes[i];
 
-        int32_t hash = hashes[i];
+        std::size_t index = (hash < this->psum_size - 1UL ? this->psum[hash + 1UL] : rel.size) - histogram[hash];
 
-        uint32_t index = (hash < this->psum_size - 1 ? this->psum[hash + 1] : rel->size) - histogram[hash];
-
-        this->table[ index ] = rel->tuples[i];
+        this->table.tuples[index] = rel.tuples[i];
 
         histogram[hash]--;
 
     }
-    
-    
-    // this->psum = psum;
-    this->table_size = rel->size;
+
+    delete[] histogram;
+    delete[] hashes;
 }
 
-PsumTable::~PsumTable() {
+RHJ::PsumTable::~PsumTable() {
     delete[] psum;
 }
 
 // Returns Bucket with hash same as hashed(value)
 // So if we give value = 10 and n = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
-PsumTable::Result PsumTable::operator[](int32_t value) {
+RHJ::PsumTable::Bucket RHJ::PsumTable::operator[](std::size_t value) const {
 
-    int returnSize;
+    std::size_t hash = radixHash(value);
 
-    int32_t hash = radixHash(value);
-
-    if (hash < this->psum_size) {
-        returnSize = this->psum[hash + 1] - this->psum[hash];
-    }
-    else {
-        returnSize = this->table_size - this->psum[hash];
-    }
-
-    return Result(&this->table[this->psum[hash]], returnSize);
-
-    // Tuple * returnTable = (Tuple *)malloc(returnSize * sizeof(Tuple));
-
-    // for (int i = 0; i < returnSize; i++) {
-    //     returnTable[i] = this->table[ this->psum[hash] + i ];
-    // }
-
-    // return PsumTableResult(returnTable, returnSize);
+    return { 
+        &this->table.tuples[this->psum[hash]], 
+        ( hash < this->psum_size ? this->psum[hash + 1] : this->table.size ) - this->psum[hash] 
+    };
 }

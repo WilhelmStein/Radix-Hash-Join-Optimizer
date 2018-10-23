@@ -2,50 +2,49 @@
 #include "../inc/rdxl.hpp"
 #include <iostream>
 
-RDXList::RDXNode::Buffer::Buffer()
+RHJ::List::Node::Buffer::Buffer()
 :
-index(0U)
+index(0UL)
 {
 }
 
-bool RDXList::RDXNode::Buffer::full() const
+bool RHJ::List::Node::Buffer::full() const
 {
     return index == CAPACITY;
 }
 
-void RDXList::RDXNode::Buffer::append(const Result& result)
+void RHJ::List::Node::Buffer::append(const RHJ::Result& result)
 {
     data[index++] = result;
 }
 
-RDXList::RDXNode::RDXNode()
+RHJ::List::Node::Node()
 :
 next(nullptr)
 {
 }
 
-RDXList::RDXNode::~RDXNode()
+RHJ::List::Node::~Node()
 {
     if (next)
         delete next;
 }
 
-RDXList::RDXList()
+RHJ::List::List()
 :
-head(new RDXList::RDXNode()), tail(head)
+head(new RHJ::List::Node()), tail(head)
 {
 }
 
-RDXList::~RDXList()
+RHJ::List::~List()
 {
     delete head;
 }
 
-void RDXList::RDXList::append(const Result& result)
+void RHJ::List::append(const RHJ::Result& result)
 {
     if (tail->buffer.full())
-    {
-        tail = tail->next = new RDXNode;   
-    }
+        tail = tail->next = new Node;
+
     tail->buffer.append(result);
 }

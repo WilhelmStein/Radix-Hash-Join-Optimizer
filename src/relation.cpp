@@ -1,25 +1,25 @@
-#include "relation.h"
+#include "relation.hpp"
 #include "iostream"
-#include "histhash.h"
-#include <stdint.h>
+#include "histhash.hpp"
+#include <cstdint>
 
 #define N (3)
 
-void Tuple::print() {
+void RHJ::Tuple::print() const {
     std::cout << "key: " << this->key << ", value: " << this->payload << std::endl;
 }
 
 
-Result *RadixHashJoin(Relation *relR, Relation *relS) {
-    PsumTable hashTableR(relR, N);
+RHJ::Result *RHJ::Relation::RadixHashJoin(RHJ::Relation *relR, RHJ::Relation *relS) {
 
-    PsumTable hashTableS(relS, N);
+    PsumTable hashTableR(*relR, N);
 
-    PsumTable::Result result = hashTableR[3];
+    PsumTable hashTableS(*relS, N);
 
-    for (uint32_t i = 0U; i < result.second; i++) {
-        result.first[i].print();
+    PsumTable::Bucket bucket = hashTableR[3];
+
+    for (uint32_t i = 0U; i < bucket.size; i++) {
+        bucket.tuples[i].print();
     }
-
 }
 
