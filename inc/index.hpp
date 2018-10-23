@@ -29,9 +29,9 @@ public:
     const chain_key_t * chain() const  { return _chain; }
 
     const bucket_key_t * bucket() const { return _bucket; }
-    bucket_size_t bucketSize() const { return _bsize; }
+    bucket_size_t bucketSize() const { return _bucketSize; }
 
     const std::function<bucket_key_t(const Tuple&)>& hash() const { return _hash; }
 
-    Result join(const Block&) const;
+    nstd::List<Index::Result> join(const Bucket&) const;
 };
