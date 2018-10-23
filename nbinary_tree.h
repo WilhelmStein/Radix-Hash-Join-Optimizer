@@ -19,14 +19,15 @@ namespace nstd {
         BT_Node* minValueNode(BT_Node* node);
 
         BT_Node* root;
-        //unsigned int size;
+        unsigned int size;
         const bool disallow_duplicates;
         const std::function<int(const T&, const T&)> cmp_func;
         BT_Node* removeNode(BT_Node* root, const T& item);
         bool insertRec(BT_Node* root, const T& item);
 
     public:
-        BinaryTree(std::function<int(const T&, const T&)>&& cmp_func, const bool _disallow_duplicates): root(nullptr), cmp_func(_cmp_func), disallow_duplicates(_disallow_duplicates) {}
+        BinaryTree(std::function<int(const T&, const T&)>&& _cmp_func, const bool _disallow_duplicates): root(nullptr), 
+                                    cmp_func(_cmp_func), disallow_duplicates(_disallow_duplicates), size(0) {}
         ~BinaryTree()
         {
             while(!isEmpty())
@@ -39,18 +40,28 @@ namespace nstd {
 
         bool insert(const T& item)
         {
-            if(root)
-                return insertRec(root, item);
+            if(root) {
+                if (insertRec(root, item)) {
+                    size++;
+                }
+                else return false;
+            }
             else
             {
                 root = new BT_Node(item, nullptr, nullptr);
+                size++;
                 return true;
             }
+        }
+
+        unsigned int getSize() {
+            return this->size;
         }
         
         void removeValue(const T& item)
         {
-            root = removeNode(root, item); 
+            root = removeNode(root, item);
+            size--; 
         }
         
         void inorder(BT_Node* root)
@@ -62,6 +73,37 @@ namespace nstd {
                 inorder(root->right_child);
             }
         }
+
+        T* find(const T& item) {
+            if (root)
+                return findRec(item, root);
+            else
+                return nullptr;
+        }
+
+        T* findRec(const T& item, BT_Node* root) {
+            const int cmp_result = cmp_func(item, root->contents);
+
+            if(cmp_result == 0) // Check if duplicates are allowed and act accordingly
+            {
+                return &(root->contents);
+            }
+            else if(cmp_result > 0) // Go right
+            {  
+                if(root->right_child)
+                    return findRec(item, root->right_child);
+                else
+                    return nullptr;
+            }
+            else // Go left
+            {
+            if(root->left_child)
+                    return findRec(item, root->left_child);
+                else
+                    return nullptr;
+            }
+        }
+        
     };
 
     template <typename T>
