@@ -35,7 +35,7 @@ RHJ::List *RHJ::Relation::RadixHashJoin(RHJ::Relation *relR, RHJ::Relation *relS
         }
         else
         {
-            Index index(s); index.join(s, *results);
+            Index index(s); index.join(r, *results);
         }
     }
 

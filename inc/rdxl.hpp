@@ -16,7 +16,6 @@ namespace RHJ
         {
             class Buffer
             {
-            public:
                 std::size_t index;
             
             public:
