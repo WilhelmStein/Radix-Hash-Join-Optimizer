@@ -1,9 +1,10 @@
-#include "histhash.hpp"
+#include <histhash.hpp>
+#include <cmath>            // std::pow
 #include <iostream>
 
 
 std::size_t RHJ::PsumTable::radixHash(tuple_payload_t value) const {
-    return (value & ((1UL << this->n) - 1UL));
+    return (value & ((1UL << this->radix) - 1UL));
 }
 
 void RHJ::PsumTable::printTable() const {
@@ -20,17 +21,9 @@ void RHJ::PsumTable::printPsum() const {
 
 RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _n) 
 : 
-table({ new Tuple[rel.size], rel.size }), n(_n)
-{ 
-    // 2 ^ n
-    this->psum_size = [this]()
-    {
-        std::size_t ret = 2UL;
-        for (radix_t i = 0U; i < n - 1U; i++)
-            ret *= 2UL;
-        
-        return ret;
-    }();
+table({ new Relation::Tuple[rel.size], rel.size }), radix(_n)
+{
+    this->psum_size = std::pow(2UL, static_cast<uint64_t>(radix));
 
     std::size_t *histogram = new std::size_t[psum_size];
 
@@ -72,7 +65,7 @@ RHJ::PsumTable::~PsumTable() {
 }
 
 // Returns Bucket with hash same as hashed(value)
-// So if we give value = 10 and n = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
+// So if we give value = 10 and radix = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
 RHJ::PsumTable::Bucket RHJ::PsumTable::operator[](std::size_t value) const {
 
     std::size_t hash = radixHash(value);

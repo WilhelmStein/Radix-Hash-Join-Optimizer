@@ -1,6 +1,5 @@
 
-#include "index.hpp"
-#include "list.hpp"
+#include <index.hpp>
 #include <cmath>
 
 bool isPrime(std::size_t);
@@ -8,10 +7,10 @@ bool isPrime(std::size_t);
 RHJ::Index::Index(const RHJ::PsumTable::Bucket& _data)
 :
 _data(_data),
-_chain(nullptr),
 _bucket(nullptr),
 _bucketSize(0U),
-_hash([](const Tuple& tuple) { return 0UL; })
+_chain(nullptr),
+_hash()
 {
     // Initialize _bucket:
     _bucketSize = _data.size;
@@ -21,9 +20,9 @@ _hash([](const Tuple& tuple) { return 0UL; })
     for (std::size_t b = 0UL; b < _bucketSize; b++)
         _bucket[b] = -1;
 
-    _hash = [this](const Tuple& tuple)
+    _hash = [this](const Relation::Tuple& tuple)
     {
-        return (tuple.payload > 0 ? tuple.payload : tuple.payload * -1) % _bucketSize;
+        return std::abs(tuple.payload) % _bucketSize;
     };
 
     // Initialize _chain:
@@ -32,10 +31,10 @@ _hash([](const Tuple& tuple) { return 0UL; })
         _chain[c] = -1;
 
     // A lambda that is used to make a note of the specified tuple
-    // It firstly attempts to insert it directly into the buck
+    // It firstly attempts to insert it directly into the bucket
     // In case of a collision, the tuple is appended to
     // the chain corresponding to the hash value of the tuple
-    auto insert = [this](const Tuple& tuple)
+    auto insert = [this](const Relation::Tuple& tuple)
     {
         bucket_key_t index = _hash(tuple);
 
@@ -63,37 +62,37 @@ RHJ::Index::~Index()
     delete[] _chain;
 }
 
-bool isPrime(std::size_t n)
+bool isPrime(std::size_t candidate)
 {
-    if (n % 2UL == 0UL || n % 3UL == 0UL)
+    if (candidate % 2UL == 0UL || candidate % 3UL == 0UL)
         return false;
 
-    const std::size_t root = static_cast<std::size_t>(std::sqrt(n));
+    const std::size_t root = static_cast<std::size_t>(std::sqrt(candidate));
 
     for (std::size_t i = 5UL; i <= root; i += 6UL)
-        if (n % i == 0UL)
+        if (candidate % i == 0UL)
            return false;
 
     for (std::size_t i = 7UL; i <= root; i += 6UL)
-        if (n % i == 0UL)
+        if (candidate % i == 0UL)
            return false;
 
     return true;
 }
 
-void RHJ::Index::join(const RHJ::PsumTable::Bucket& other, RHJ::List& results) const
+void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results) const
 {
-    for (std::size_t t = 0UL; t < other.size; t++)
+    for (std::size_t t = 0UL; t < bucket.size; t++)
     {
-        const Tuple& tuple = other.tuples[t];
+        const Relation::Tuple& tuple = bucket.tuples[t];
 
         chain_key_t index = _bucket[_hash(tuple)];
         do
         {
-            if (tuple.payload == other.tuples[index].payload)
+            if (tuple.payload == _data.tuples[index].payload)
             {
-                Result result = { tuple.key, index };
-                results.append(result);
+                Pair pair = { tuple.key, index };
+                results.append(pair);
             }
 
         } while ((index = _chain[index]) >= 0);

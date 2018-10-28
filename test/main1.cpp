@@ -1,5 +1,5 @@
-#include "histhash.hpp"
-#include "relation.hpp"
+#include <histhash.hpp>
+#include <relation.hpp>
 #include <cstdlib>
 
 #include<iostream>
@@ -12,7 +12,7 @@ int main(void) {
 
     srand(0);
 
-    RHJ::Tuple * tArray_R = new RHJ::Tuple[R_SIZE];
+    RHJ::Relation::Tuple * tArray_R = new RHJ::Relation::Tuple[R_SIZE];
 
 
     for (int i = 0; i < R_SIZE; i++) {
@@ -24,7 +24,7 @@ int main(void) {
     RHJ::Relation R = { .tuples = tArray_R, .size = R_SIZE };
 
 
-    RHJ::Tuple * tArray_S = new RHJ::Tuple[S_SIZE];
+    RHJ::Relation::Tuple * tArray_S = new RHJ::Relation::Tuple[S_SIZE];
 
     for (int i = 0; i < S_SIZE; i++) {
         tArray_S[i].key = i;

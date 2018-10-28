@@ -1,10 +1,15 @@
 
 #pragma once
 
-#include "relation.hpp"
+#include <types.hpp>
 
 namespace RHJ
 {
+    struct Pair {
+        tuple_key_t key1;
+        tuple_key_t key2;
+    };
+
     struct List
     {
         struct Node
@@ -16,14 +21,14 @@ namespace RHJ
             
             public:
 
-                static const std::size_t CAPACITY = 1024UL * 1024UL / sizeof(RHJ::Result);
+                static const std::size_t CAPACITY = 1024UL * 1024UL / sizeof(RHJ::Pair);
 
-                RHJ::Result data[CAPACITY];
+                RHJ::Pair data[CAPACITY];
 
                 Buffer();
 
                 bool full() const;
-                void append(const RHJ::Result&);
+                void append(const RHJ::Pair&);
             } buffer;
 
             Node * next;
@@ -35,6 +40,6 @@ namespace RHJ
         List();
         ~List();
 
-        void append(const RHJ::Result&);
+        void append(const RHJ::Pair&);
     };
 }
