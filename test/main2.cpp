@@ -33,7 +33,7 @@ int main()
     )
     {
 
-        for (std::size_t i = 0UL; i < current->buffer.index; i++)
+        for (std::size_t i = 0UL; i < current->buffer.size(); i++)
             std::cout
             << std::setw(WIDTH) << std::setfill('0') << current->buffer.data[i].key1
             << ' '

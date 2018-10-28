@@ -26,6 +26,7 @@ namespace RHJ
 
                 Buffer();
 
+                std::size_t size() const { return index; }
                 bool full() const;
                 void append(const RHJ::Pair&);
             } buffer;
