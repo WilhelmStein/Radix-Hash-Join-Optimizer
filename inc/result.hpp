@@ -3,33 +3,30 @@
 
 #include <types.hpp>
 
-#define CAPACITY (1024UL * 1024UL / sizeof(RHJ::Pair))
+#define CAPACITY (1024UL * 1024UL / sizeof(Result))
 
 namespace RHJ
 {
-    struct Pair {
-        tuple_key_t key1;
-        tuple_key_t key2;
-    };
-
     struct List
     {
+        struct Result {
+            tuple_key_t key1;
+            tuple_key_t key2;
+        };
+
         struct Node
         {
             class Buffer
             {
+                friend List;
+
                 std::size_t _size;
-                RHJ::Pair _data[CAPACITY];
-                
+                Result _data[CAPACITY];
+
             public:
 
-                Buffer();
-
                 std::size_t size() const { return _size; }
-                const RHJ::Pair& operator[](std::size_t i) const { return _data[i]; }
-
-                bool full() const;
-                void append(const RHJ::Pair&);
+                const Result& operator[](std::size_t i) const { return _data[i]; }
             } buffer;
 
             Node * next;
@@ -39,8 +36,12 @@ namespace RHJ
         } * head, * tail;
 
         List();
+        List(List&&) noexcept;
+
         ~List();
 
-        void append(const RHJ::Pair&);
+        List& operator=(List&&) noexcept;
+
+        void append(const Result&);
     };
 }

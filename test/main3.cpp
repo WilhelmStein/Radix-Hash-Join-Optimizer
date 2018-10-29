@@ -7,7 +7,7 @@ int main()
 {
     RHJ::List list;
     for (int i = 0; i < N; i++) {
-        RHJ::Pair r = {i, i};
+        RHJ::List::Result r = {i, i};
         list.append(r);
     }
 

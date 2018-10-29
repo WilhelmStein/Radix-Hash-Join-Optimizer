@@ -1,24 +1,25 @@
 #include <histhash.hpp>
 #include <cmath>            // std::pow
-#include <iostream>         // debug
 
 #define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
-void RHJ::PsumTable::printTable() const {
-    for (std::size_t i = 0UL; i < this->table.size; i++) {
-        this->table.tuples[i].print();
-    }
-}
+#ifdef __DEBUG_PSUM__
+    #include <iostream>
 
-void RHJ::PsumTable::printPsum() const {
-    for (std::size_t i = 0UL; i < this->psum_size; i++) {
-        std::cout << i << ":  " << this->psum[i] << std::endl;
+    void RHJ::PsumTable::printTable() const {
+        for (std::size_t i = 0UL; i < table.size; i++)
+            std::cerr << table.tuples[i] << std::endl;
     }
-}
 
-RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _n) 
+    void RHJ::PsumTable::printPsum() const {
+        for (std::size_t i = 0UL; i < psum_size; i++)
+            std::cerr << i << ":  " << psum[i] << std::endl;
+    }
+#endif
+
+RHJ::PsumTable::PsumTable(const Relation& rel, radix_t radix) 
 : 
-table({ new Relation::Tuple[rel.size], rel.size }), radix(_n)
+table(new Relation::Tuple[rel.size], rel.size), radix(radix)
 {
     this->psum_size = std::pow(2UL, static_cast<uint64_t>(radix));
 

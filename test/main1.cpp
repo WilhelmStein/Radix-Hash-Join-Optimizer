@@ -21,7 +21,7 @@ int main(void) {
         tArray_R[i].payload = rand() % 20 + 1;
     }
 
-    RHJ::Relation R = { .tuples = tArray_R, .size = R_SIZE };
+    RHJ::Relation R(tArray_R, R_SIZE);
 
 
     RHJ::Relation::Tuple * tArray_S = new RHJ::Relation::Tuple[S_SIZE];
@@ -32,9 +32,9 @@ int main(void) {
         tArray_S[i].payload = rand() % 20 + 1;
     }
 
-    RHJ::Relation S = { .tuples = tArray_S, .size = S_SIZE };
+    RHJ::Relation S(tArray_S, S_SIZE);
     
-    RHJ::Relation::RadixHashJoin(&R, &S);
+    RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
     delete[] tArray_R;
     delete[] tArray_S;
