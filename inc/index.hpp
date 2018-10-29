@@ -4,7 +4,6 @@
 #include <types.hpp>
 #include <histhash.hpp>
 #include <result.hpp>
-#include <functional>
 
 namespace RHJ 
 {
@@ -16,8 +15,6 @@ namespace RHJ
         std::size_t _bucketSize;
 
         chain_key_t * _chain;
-
-        std::function<bucket_key_t(const Relation::Tuple&)> _hash;
 
     public:
 
