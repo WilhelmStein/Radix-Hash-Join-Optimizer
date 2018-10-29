@@ -64,6 +64,12 @@ RHJ::Index::~Index()
 
 bool isPrime(std::size_t candidate)
 {
+    if (candidate < 2UL)
+        return false;
+
+    if (candidate == 2UL || candidate == 3UL)
+        return true;
+
     if (candidate % 2UL == 0UL || candidate % 3UL == 0UL)
         return false;
 
