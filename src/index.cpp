@@ -89,7 +89,7 @@ void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results) 
         {
             if (tuple.payload == _data.tuples[index].payload)
             {
-                Pair pair = { tuple.key, _data.tuples[index].key };
+                List::Result pair = { tuple.key, _data.tuples[index].key };
                 results.append(pair);
             }
         }

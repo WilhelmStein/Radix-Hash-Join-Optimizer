@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-#define SIZE  (1024UL * 1024UL / sizeof(RHJ::Pair) * 16UL)
+#define SIZE  (1024UL * 1024UL / sizeof(RHJ::List::Result) * 16UL)
 
 #define MIN   (0UL)
 #define MAX   (100UL)
@@ -14,8 +14,8 @@
 
 int main()
 {
-    RHJ::Relation R = { tuples : new RHJ::Relation::Tuple[SIZE], size : SIZE };
-    RHJ::Relation S = { tuples : new RHJ::Relation::Tuple[SIZE], size : SIZE };
+    RHJ::Relation R(new RHJ::Relation::Tuple[SIZE], SIZE);
+    RHJ::Relation S(new RHJ::Relation::Tuple[SIZE], SIZE);
     
     for (std::size_t i = 0UL; i < SIZE; i++)
     {
@@ -23,11 +23,11 @@ int main()
         S.tuples[i].key = i; S.tuples[i].payload = RAND(MIN, MAX);
     }
 
-    RHJ::List * const results = RHJ::Relation::RadixHashJoin(&R, &S);
+    RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
     for
     (
-        const RHJ::List::Node * current = results->head;
+        const RHJ::List::Node * current = results.head;
         current != nullptr;
         current = current->next
     )

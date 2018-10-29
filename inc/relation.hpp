@@ -2,6 +2,7 @@
 
 #include <types.hpp>
 #include <result.hpp>
+#include <iosfwd>
 
 namespace RHJ
 {
@@ -10,14 +11,21 @@ namespace RHJ
             tuple_key_t key;
             tuple_payload_t payload;
 
-            Tuple(tuple_key_t _key, tuple_payload_t _payload) : key(_key), payload(_payload) {}
-            Tuple() : key(0), payload(0) {};
-
-            void print() const ;
+            friend std::ostream& operator<<(std::ostream&, const Tuple&);
         } * tuples;
         
         std::size_t size;
 
-        static List *RadixHashJoin(Relation *relR, Relation *relS);
+        Relation();
+        Relation(Tuple *, std::size_t);
+        Relation(Relation&&) noexcept;
+
+        ~Relation();
+
+        Relation& operator=(Relation&&) noexcept;
+
+        static List RadixHashJoin(const Relation& relR, const Relation& relS);
     };
+
+    std::ostream& operator<<(std::ostream&, const RHJ::Relation::Tuple&);
 }
