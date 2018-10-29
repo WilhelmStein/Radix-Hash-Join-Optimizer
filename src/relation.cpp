@@ -3,6 +3,7 @@
 #include <index.hpp>
 #include <utility>
 #include <fstream>
+#include <iomanip>
 
 #define RADIX (3)
 #define RANGE (2 * 2 * 2)
@@ -30,7 +31,8 @@ size(std::move(other.size))
 
 RHJ::Relation::~Relation()
 {
-    delete[] tuples;
+    if (tuples)
+        delete[] tuples;
 }
 
 RHJ::Relation& RHJ::Relation::operator=(Relation&& other) noexcept
@@ -43,7 +45,25 @@ RHJ::Relation& RHJ::Relation::operator=(Relation&& other) noexcept
 
 std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation::Tuple& tuple)
 {
-    return os << "[key: " << tuple.key << ", value: " << tuple.payload << "]";
+    os
+    << std::setw(10) << std::setfill(' ') << std::left << tuple.key
+    << "|"
+    << std::setw(10) << std::setfill(' ') << std::left << tuple.payload;
+
+    return os;
+}
+
+std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation& relation)
+{
+    os << "+----------+----------+" << std::endl;
+    os << "|Key       |Value     |" << std::endl;
+    os << "+----------+----------+" << std::endl;
+    for (std::size_t row = 0UL; row < relation.size; row++)
+        os << "|" << relation.tuples[row] << "|" << std::endl;
+
+    os << "+----------+----------+" << std::endl;
+    
+    return os;
 }
 
 RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Relation& relS) {
@@ -55,8 +75,8 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
     List results;
     for (std::size_t hash = 0UL; hash < RANGE; hash++)
     {
-        PsumTable::Bucket r = hashTableR[hash];
-        PsumTable::Bucket s = hashTableS[hash];
+        PsumTable::Bucket r(hashTableR[hash]);
+        PsumTable::Bucket s(hashTableS[hash]);
 
         if (!r.size || !s.size)
             continue;

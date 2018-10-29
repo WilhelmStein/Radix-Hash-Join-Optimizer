@@ -24,8 +24,11 @@ namespace RHJ
 
         Relation& operator=(Relation&&) noexcept;
 
+        friend std::ostream& operator<<(std::ostream&, const Relation&);
+
         static List RadixHashJoin(const Relation& relR, const Relation& relS);
     };
 
-    std::ostream& operator<<(std::ostream&, const RHJ::Relation::Tuple&);
+    std::ostream& operator<<(std::ostream&, const Relation::Tuple&);
+    std::ostream& operator<<(std::ostream&, const Relation&);
 }
