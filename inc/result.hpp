@@ -3,6 +3,8 @@
 
 #include <types.hpp>
 
+#define CAPACITY (1024UL * 1024UL / sizeof(RHJ::Pair))
+
 namespace RHJ
 {
     struct Pair {
@@ -16,17 +18,16 @@ namespace RHJ
         {
             class Buffer
             {
-                std::size_t index;
-            
+                std::size_t _size;
+                RHJ::Pair _data[CAPACITY];
+                
             public:
-
-                static const std::size_t CAPACITY = 1024UL * 1024UL / sizeof(RHJ::Pair);
-
-                RHJ::Pair data[CAPACITY];
 
                 Buffer();
 
-                std::size_t size() const { return index; }
+                std::size_t size() const { return _size; }
+                const RHJ::Pair& operator[](std::size_t i) const { return _data[i]; }
+
                 bool full() const;
                 void append(const RHJ::Pair&);
             } buffer;
