@@ -18,7 +18,7 @@ all:
 
 .PHONY: clean
 clean:
-	@echo "*** Purging binaries ***\n"
+	@echo "*** Purging binaries ***"
 	@echo "***"
 	rm -rv $(PATH_BIN)
 	@echo "***"

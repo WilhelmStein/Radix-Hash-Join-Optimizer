@@ -76,19 +76,22 @@ bool isPrime(std::size_t candidate)
 
 void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results) const
 {
-    for (std::size_t t = 0UL; t < bucket.size; t++)
+    for (std::size_t row = 0UL; row < bucket.size; row++)
     {
-        const Relation::Tuple& tuple = bucket.tuples[t];
+        const Relation::Tuple& tuple = bucket.tuples[row];
 
-        chain_key_t index = _bucket[HASH(tuple, _bucketSize)];
-        do
+        for
+        (
+            bucket_key_t index = _bucket[HASH(tuple, _bucketSize)];
+            index >= 0;
+            index = _chain[index]
+        )
         {
             if (tuple.payload == _data.tuples[index].payload)
             {
                 Pair pair = { tuple.key, _data.tuples[index].key };
                 results.append(pair);
             }
-
-        } while ((index = _chain[index]) >= 0);
+        }
     }
 }
