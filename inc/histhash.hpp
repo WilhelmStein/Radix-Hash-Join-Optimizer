@@ -17,8 +17,6 @@ namespace RHJ
 
             std::size_t psum_size;
 
-            std::size_t radixHash(tuple_payload_t value) const;
-
         public:
 
             using Bucket = Relation;

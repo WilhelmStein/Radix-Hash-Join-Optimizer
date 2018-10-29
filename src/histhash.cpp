@@ -2,10 +2,7 @@
 #include <cmath>            // std::pow
 #include <iostream>         // debug
 
-
-std::size_t RHJ::PsumTable::radixHash(tuple_payload_t value) const {
-    return (value & ((1UL << this->radix) - 1UL));
-}
+#define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
 void RHJ::PsumTable::printTable() const {
     for (std::size_t i = 0UL; i < this->table.size; i++) {
@@ -32,7 +29,7 @@ table({ new Relation::Tuple[rel.size], rel.size }), radix(_n)
 
 
     for (std::size_t i = 0UL; i < rel.size; i++)
-        histogram[ hashes[i] = radixHash(rel.tuples[i].payload) ]++;
+        histogram[ hashes[i] = HASH(rel.tuples[i].payload, radix) ]++;
 
 
     this->psum = new std::size_t[psum_size];
@@ -66,9 +63,7 @@ RHJ::PsumTable::~PsumTable() {
 
 // Returns Bucket with hash same as hashed(value)
 // So if we give value = 10 and radix = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
-RHJ::PsumTable::Bucket RHJ::PsumTable::operator[](std::size_t value) const {
-
-    std::size_t hash = radixHash(value);
+RHJ::PsumTable::Bucket RHJ::PsumTable::operator[](std::size_t hash) const {
 
     return { 
         &this->table.tuples[this->psum[hash]], 
