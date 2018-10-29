@@ -65,8 +65,8 @@ RHJ::PsumTable::~PsumTable() {
 // So if we give value = 10 and radix = 2 it will return the bucket with hash = hashed(10) = 0b10 = 2
 RHJ::PsumTable::Bucket RHJ::PsumTable::operator[](std::size_t hash) const {
 
-    return { 
-        &this->table.tuples[this->psum[hash]], 
-        ( hash < this->psum_size ? this->psum[hash + 1] : this->table.size ) - this->psum[hash] 
+    return {
+        &table.tuples[psum[hash]],
+        ( hash < psum_size - 1UL ? psum[hash + 1UL] : table.size ) - psum[hash] 
     };
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 
 #define RADIX (3)
+#define RANGE (2 * 2 * 2)
 
 void RHJ::Relation::Tuple::print() const {
     std::cout << "key: " << this->key << ", value: " << this->payload << std::endl;
@@ -16,17 +17,14 @@ RHJ::List *RHJ::Relation::RadixHashJoin(RHJ::Relation *relR, RHJ::Relation *relS
 
     PsumTable hashTableS(*relS, RADIX);
 
-    // PsumTable::Bucket bucket = hashTableR[3];
-
-    // for (uint32_t i = 0U; i < bucket.size; i++) {
-    //     bucket.tuples[i].print();
-    // }
-
     List * const results = new List;
-    for (std::size_t hash = 0UL; hash < RADIX; hash++)
+    for (std::size_t hash = 0UL; hash < RANGE; hash++)
     {
         PsumTable::Bucket r = hashTableR[hash];
         PsumTable::Bucket s = hashTableS[hash];
+
+        if (!r.size || !s.size)
+            continue;
 
         if (r.size < s.size)
         {
@@ -40,4 +38,3 @@ RHJ::List *RHJ::Relation::RadixHashJoin(RHJ::Relation *relR, RHJ::Relation *relS
 
     return results;
 }
-
