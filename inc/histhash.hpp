@@ -1,7 +1,7 @@
 #pragma once
 
-#include <relation.hpp>
 #include <types.hpp>
+#include <relation.hpp>
 
 // 0 <= N < 32
 #define N (3)

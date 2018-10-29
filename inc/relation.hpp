@@ -1,8 +1,7 @@
 #pragma once
 
 #include <types.hpp>
-#include <rdxl.hpp>
-#include <cstdint>
+#include <result.hpp>
 
 namespace RHJ
 {

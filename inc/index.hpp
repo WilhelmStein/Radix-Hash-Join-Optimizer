@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include <histhash.hpp>
 #include <types.hpp>
-#include <rdxl.hpp>
+#include <histhash.hpp>
+#include <result.hpp>
 #include <functional>
 
 namespace RHJ 

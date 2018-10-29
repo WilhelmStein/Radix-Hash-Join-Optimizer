@@ -1,7 +1,6 @@
 #include <relation.hpp>
 #include <histhash.hpp>
 #include <index.hpp>
-#include <cstdint>
 #include <iostream>
 
 #define RADIX (3)

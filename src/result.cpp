@@ -1,6 +1,5 @@
 
-#include <rdxl.hpp>
-#include <iostream>
+#include <result.hpp>
 
 RHJ::List::Node::Buffer::Buffer()
 :
