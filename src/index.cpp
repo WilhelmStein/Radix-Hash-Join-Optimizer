@@ -2,6 +2,8 @@
 #include <index.hpp>
 #include <cmath>
 
+#define HASH(tuple, _bucketSize) (std::abs(tuple.payload) % _bucketSize)
+
 bool isPrime(std::size_t);
 
 RHJ::Index::Index(const RHJ::PsumTable::Bucket& _data)
@@ -9,8 +11,7 @@ RHJ::Index::Index(const RHJ::PsumTable::Bucket& _data)
 _data(_data),
 _bucket(nullptr),
 _bucketSize(0U),
-_chain(nullptr),
-_hash()
+_chain(nullptr)
 {
     // Initialize _bucket:
     _bucketSize = _data.size;
@@ -20,40 +21,27 @@ _hash()
     for (std::size_t b = 0UL; b < _bucketSize; b++)
         _bucket[b] = -1;
 
-    _hash = [this](const Relation::Tuple& tuple)
-    {
-        return std::abs(tuple.payload) % _bucketSize;
-    };
-
     // Initialize _chain:
     _chain = new chain_key_t[_data.size];
     for (std::size_t c = 0UL; c < _data.size; c++)
         _chain[c] = -1;
 
-    // A lambda that is used to make a note of the specified tuple
-    // It firstly attempts to insert it directly into the bucket
-    // In case of a collision, the tuple is appended to
-    // the chain corresponding to the hash value of the tuple
-    auto insert = [this](const Relation::Tuple& tuple)
+    for (std::size_t row = 0UL; row < _data.size; row++)
     {
-        bucket_key_t index = _hash(tuple);
+        const Relation::Tuple& tuple = _data.tuples[row];
+
+        bucket_key_t index = HASH(tuple, _bucketSize);
 
         if (_bucket[index] < 0)
         {
-            _bucket[index] = tuple.key;
-            _chain[_bucket[index]] = -1;
-            
-            return;
+            _bucket[index] = row; return;
         }
 
         index = _bucket[index];
         while (_chain[index] >= 0) index = _chain[index];
 
-        _chain[index] = tuple.key; _chain[_chain[index]] = -1;
-    };
-
-    for (std::size_t t = 0UL; t < _data.size; t++)
-        insert(_data.tuples[t]);
+        _chain[index] = row;
+    }
 }
 
 RHJ::Index::~Index()
@@ -64,6 +52,12 @@ RHJ::Index::~Index()
 
 bool isPrime(std::size_t candidate)
 {
+    if (candidate < 2UL)
+        return false;
+
+    if (candidate == 2UL || candidate == 3UL)
+        return true;
+
     if (candidate % 2UL == 0UL || candidate % 3UL == 0UL)
         return false;
 
@@ -82,19 +76,22 @@ bool isPrime(std::size_t candidate)
 
 void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results) const
 {
-    for (std::size_t t = 0UL; t < bucket.size; t++)
+    for (std::size_t row = 0UL; row < bucket.size; row++)
     {
-        const Relation::Tuple& tuple = bucket.tuples[t];
+        const Relation::Tuple& tuple = bucket.tuples[row];
 
-        chain_key_t index = _bucket[_hash(tuple)];
-        do
+        for
+        (
+            bucket_key_t index = _bucket[HASH(tuple, _bucketSize)];
+            index >= 0;
+            index = _chain[index]
+        )
         {
             if (tuple.payload == _data.tuples[index].payload)
             {
-                Pair pair = { tuple.key, index };
+                Pair pair = { tuple.key, _data.tuples[index].key };
                 results.append(pair);
             }
-
-        } while ((index = _chain[index]) >= 0);
+        }
     }
 }

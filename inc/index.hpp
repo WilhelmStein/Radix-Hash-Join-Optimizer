@@ -1,10 +1,9 @@
 
 #pragma once
 
-#include <histhash.hpp>
 #include <types.hpp>
-#include <rdxl.hpp>
-#include <functional>
+#include <histhash.hpp>
+#include <result.hpp>
 
 namespace RHJ 
 {
@@ -16,8 +15,6 @@ namespace RHJ
         std::size_t _bucketSize;
 
         chain_key_t * _chain;
-
-        std::function<bucket_key_t(const Relation::Tuple&)> _hash;
 
     public:
 

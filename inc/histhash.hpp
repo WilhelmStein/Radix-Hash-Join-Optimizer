@@ -1,7 +1,7 @@
 #pragma once
 
-#include <relation.hpp>
 #include <types.hpp>
+#include <relation.hpp>
 
 // 0 <= N < 32
 #define N (3)
@@ -16,8 +16,6 @@ namespace RHJ
             const radix_t radix;
 
             std::size_t psum_size;
-
-            std::size_t radixHash(tuple_payload_t value) const;
 
         public:
 

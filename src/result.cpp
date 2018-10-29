@@ -1,21 +1,20 @@
 
-#include <rdxl.hpp>
-#include <iostream>
+#include <result.hpp>
 
 RHJ::List::Node::Buffer::Buffer()
 :
-index(0UL)
+_size(0UL)
 {
 }
 
 bool RHJ::List::Node::Buffer::full() const
 {
-    return index == CAPACITY;
+    return _size == CAPACITY;
 }
 
 void RHJ::List::Node::Buffer::append(const RHJ::Pair& pair)
 {
-    data[index++] = pair;
+    _data[_size++] = pair;
 }
 
 RHJ::List::Node::Node()
