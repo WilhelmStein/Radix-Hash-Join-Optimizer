@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-#define SIZE  (1024UL * 1024UL / sizeof(RHJ::Pair))
+#define SIZE  (1024UL * 1024UL / sizeof(RHJ::Pair) * 16UL)
 
 #define MIN   (0UL)
 #define MAX   (100UL)
@@ -37,7 +37,7 @@ int main()
             std::cout
             << std::setw(WIDTH) << std::setfill('0') << current->buffer[i].key1
             << ' '
-            << std::setw(WIDTH) << std::setfill('0') << current->buffer[i].key1
+            << std::setw(WIDTH) << std::setfill('0') << current->buffer[i].key2
             << std::endl;
     }
 
