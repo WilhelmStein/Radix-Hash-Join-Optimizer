@@ -2,6 +2,12 @@
 #include <result.hpp>
 #include <utility>
 
+RHJ::List::Node::Buffer::Buffer()
+:
+_size(0UL)
+{
+}
+
 RHJ::List::Node::Node()
 :
 next(nullptr)

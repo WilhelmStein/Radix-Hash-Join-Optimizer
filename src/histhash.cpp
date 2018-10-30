@@ -1,5 +1,6 @@
 #include <histhash.hpp>
 #include <cmath>            // std::pow
+#include <utility>          // std::move
 
 #define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
@@ -17,13 +18,35 @@
     }
 #endif
 
+RHJ::PsumTable::Bucket::Bucket(Relation::Tuple * tuples, std::size_t size)
+:
+tuples(tuples),
+size(size)
+{
+}
+
+RHJ::PsumTable::Bucket::Bucket(Bucket&& other) noexcept
+:
+tuples(std::move(other.tuples)),
+size(std::move(other.size))
+{
+}
+
+RHJ::PsumTable::Bucket& RHJ::PsumTable::Bucket::operator=(Bucket&& other) noexcept
+{
+    tuples = std::move(other.tuples);
+    size   = std::move(other.size);
+
+    return *this;
+}
+
 RHJ::PsumTable::PsumTable(const Relation& rel, radix_t radix) 
 : 
-table(new Relation::Tuple[rel.size], rel.size), radix(radix)
+table(rel.size), radix(radix), psum_size(0UL), psum(nullptr)
 {
     this->psum_size = std::pow(2UL, static_cast<uint64_t>(radix));
 
-    std::size_t *histogram = new std::size_t[psum_size];
+    std::size_t *histogram = new std::size_t[psum_size]{0UL};
 
     // Creating a table which contains hashes of each tuple
     std::size_t *hashes = new std::size_t[rel.size];
