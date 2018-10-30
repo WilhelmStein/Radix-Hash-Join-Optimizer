@@ -11,18 +11,16 @@ namespace RHJ
             tuple_key_t key;
             tuple_payload_t payload;
 
+            Tuple() : key(0), payload(0) {}
+
             friend std::ostream& operator<<(std::ostream&, const Tuple&);
         } * tuples;
         
         std::size_t size;
 
-        Relation();
-        Relation(Tuple *, std::size_t);
-        Relation(Relation&&) noexcept;
+        Relation(std::size_t size) : tuples(new Tuple[size]), size(size) {}
 
-        ~Relation();
-
-        Relation& operator=(Relation&&) noexcept;
+        ~Relation() { delete[] tuples; }
 
         friend std::ostream& operator<<(std::ostream&, const Relation&);
 

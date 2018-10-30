@@ -1,5 +1,6 @@
-
-// g++ -Wall -Wextra -g3 -I inc/ test/testindex.cpp src/index.cpp src/result.cpp -o bin/test4
+/*
+    Testing RHJ::Index::join
+*/
 
 #include <index.hpp>
 #include <iostream>
@@ -32,4 +33,6 @@ int main()
             << std::endl;
         }
     }
+
+    delete[] a.tuples; delete[] b.tuples;
 }

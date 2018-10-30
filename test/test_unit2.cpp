@@ -1,10 +1,14 @@
+/*
+    Testing RHJ::Relation::RadixHashJoin
+*/
 
 #include <relation.hpp>
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <iomanip>
 
-#define SIZE  (1024UL * 1024UL / sizeof(RHJ::List::Result) * 16UL)
+#define SIZE  (16UL)
 
 #define MIN   (0UL)
 #define MAX   (100UL)
@@ -14,9 +18,13 @@
 
 int main()
 {
-    RHJ::Relation R(new RHJ::Relation::Tuple[SIZE], SIZE);
-    RHJ::Relation S(new RHJ::Relation::Tuple[SIZE], SIZE);
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+    RHJ::Relation R(SIZE);
+    RHJ::Relation S(SIZE);
     
+    std::cout << R << std::endl << S << std::endl;
+
     for (std::size_t i = 0UL; i < SIZE; i++)
     {
         R.tuples[i].key = i; R.tuples[i].payload = RAND(MIN, MAX);

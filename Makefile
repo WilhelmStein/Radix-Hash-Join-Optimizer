@@ -11,7 +11,7 @@ PATH_TST = ./test
 all:
 	mkdir -p $(PATH_BIN)
 	
-	@echo "*** Compiling object files ***"
+	@echo "\n*** Compiling object files ***"
 	@echo "***"
 	make $(OBJS)
 	@echo "***"

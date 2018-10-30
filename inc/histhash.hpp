@@ -16,8 +16,16 @@ namespace RHJ
 
         public:
 
-            using Bucket = Relation;
+            struct Bucket
+            {
+                Relation::Tuple * tuples;
+                std::size_t size;
 
+                Bucket(Relation::Tuple *, std::size_t);
+                Bucket(Bucket&&) noexcept;
+
+                Bucket& operator=(Bucket&&) noexcept;
+            };
 
             PsumTable(const RHJ::Relation& rel, radix_t _n); 
             ~PsumTable();

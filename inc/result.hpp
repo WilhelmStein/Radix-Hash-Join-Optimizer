@@ -25,6 +25,8 @@ namespace RHJ
 
             public:
 
+                Buffer();
+
                 std::size_t size() const { return _size; }
                 const Result& operator[](std::size_t i) const { return _data[i]; }
             } buffer;

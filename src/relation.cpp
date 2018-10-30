@@ -1,47 +1,11 @@
 #include <relation.hpp>
 #include <histhash.hpp>
 #include <index.hpp>
-#include <utility>
-#include <fstream>
-#include <iomanip>
+#include <fstream>          // std::ostream
+#include <iomanip>          // std::setw, std::setfill, std::left
 
 #define RADIX (3)
 #define RANGE (2 * 2 * 2)
-
-RHJ::Relation::Relation()
-:
-tuples(nullptr),
-size(0UL)
-{
-}
-
-RHJ::Relation::Relation(Tuple * tuples, std::size_t size)
-:
-tuples(tuples),
-size(size)
-{
-}
-
-RHJ::Relation::Relation(Relation&& other) noexcept
-:
-tuples(std::move(other.tuples)),
-size(std::move(other.size))
-{
-}
-
-RHJ::Relation::~Relation()
-{
-    if (tuples)
-        delete[] tuples;
-}
-
-RHJ::Relation& RHJ::Relation::operator=(Relation&& other) noexcept
-{
-    tuples = std::move(other.tuples);
-    size   = std::move(other.size);
-
-    return *this;
-}
 
 std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation::Tuple& tuple)
 {
