@@ -1,8 +1,9 @@
 
 #include <index.hpp>
 #include <cmath>
+#include <functional>
 
-#define HASH(tuple, _bucketSize) (std::abs(tuple.payload) % _bucketSize)
+#define HASH(tuple, _bucketSize) (std::hash<tuple_payload_t>{}(tuple.payload) % _bucketSize)
 
 bool isPrime(std::size_t);
 
