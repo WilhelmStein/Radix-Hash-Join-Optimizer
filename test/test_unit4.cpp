@@ -18,7 +18,7 @@ int main()
     RHJ::List results;
     RHJ::Index index(a);
 
-    index.join(b, results);
+    index.join(b, results, RHJ::Index::Order::first);
 
     for (RHJ::List::Node * current = results.head; current; current = current->next)
     {

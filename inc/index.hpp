@@ -18,9 +18,11 @@ namespace RHJ
 
     public:
 
+        enum Order { first, second };
+
         Index(const PsumTable::Bucket&);
         ~Index();
 
-        void join(const PsumTable::Bucket&, RHJ::List&) const;
+        void join(const PsumTable::Bucket&, RHJ::List&, Order) const;
     };
 }

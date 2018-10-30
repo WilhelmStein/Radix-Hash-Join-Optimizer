@@ -1,8 +1,9 @@
 
 #include <index.hpp>
 #include <cmath>
+#include <functional>
 
-#define HASH(tuple, _bucketSize) (std::abs(tuple.payload) % _bucketSize)
+#define HASH(tuple, _bucketSize) (std::hash<tuple_payload_t>{}(tuple.payload) % _bucketSize)
 
 bool isPrime(std::size_t);
 
@@ -74,7 +75,7 @@ bool isPrime(std::size_t candidate)
     return true;
 }
 
-void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results) const
+void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results, Order order) const
 {
     for (std::size_t row = 0UL; row < bucket.size; row++)
     {
@@ -89,8 +90,13 @@ void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results) 
         {
             if (tuple.payload == _data.tuples[index].payload)
             {
-                List::Result pair = { tuple.key, _data.tuples[index].key };
-                results.append(pair);
+                List::Result result;
+                if (order == first)
+                    result = { _data.tuples[index].key, tuple.key };
+                else
+                    result = { tuple.key, _data.tuples[index].key };
+
+                results.append(result);
             }
         }
     }
