@@ -45,10 +45,10 @@ RHJ::List& RHJ::List::operator=(List&& other) noexcept
     return *this;
 }
 
-void RHJ::List::append(const RHJ::List::Result& pair)
+void RHJ::List::append(const RHJ::List::Result& result)
 {
     if (tail->buffer._size == CAPACITY)
         tail = tail->next = new Node;
 
-    tail->buffer._data[tail->buffer._size++] = pair;
+    tail->buffer._data[tail->buffer._size++] = result;
 }

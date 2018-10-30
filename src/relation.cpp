@@ -47,11 +47,11 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
 
         if (r.size < s.size)
         {
-            Index index(r); index.join(s, results);
+            Index index(r); index.join(s, results, Index::Order::first);
         }
         else
         {
-            Index index(s); index.join(r, results);
+            Index index(s); index.join(r, results, Index::Order::second);
         }
     }
 
