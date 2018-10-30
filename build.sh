@@ -1,6 +1,17 @@
 #!/bin/bash
 
-make
+DEFINED=""
+for arg in "$@"
+do
+    DEFINED="$DEFINED $arg"
+done
+
+if [ ! -z "$DEFINED" ]
+then
+    DEFINED="-D $DEFINED"
+fi
+
+make "DEFINED=$DEFINED"
 
 PATH_SRC="./src"
 PATH_INC="./inc"
@@ -18,7 +29,7 @@ do
     name="${file%.cpp}"
 
     echo "*** Compiling $name"
-	eval "$CC -I $PATH_INC $CFLAGS $PATH_TST/$file $PATH_BIN/*.o -o $PATH_BIN/$name"
+	eval "$CC -I $PATH_INC $DEFINED $CFLAGS $PATH_TST/$file $PATH_BIN/*.o -o $PATH_BIN/$name"
 done
 
 echo "***"
