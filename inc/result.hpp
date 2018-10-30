@@ -7,6 +7,8 @@
 
 namespace RHJ
 {
+    class Relation;
+    
     struct List
     {
         struct Result {
@@ -43,6 +45,10 @@ namespace RHJ
         ~List();
 
         List& operator=(List&&) noexcept;
+
+        #ifdef __DEBUG_RESULT__
+            void print(const Relation&, const Relation&);
+        #endif
 
         void append(const Result&);
     };
