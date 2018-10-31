@@ -3,15 +3,15 @@
 DEFINED=""
 for arg in "$@"
 do
-    DEFINED="$DEFINED $arg"
+    DEFINED="$DEFINED -D$arg"
 done
 
 if [ ! -z "$DEFINED" ]
 then
-    DEFINED="-D $DEFINED"
+    make "DEFINED=$DEFINED"
+else
+    make
 fi
-
-make "DEFINED=$DEFINED"
 
 PATH_SRC="./src"
 PATH_INC="./inc"
