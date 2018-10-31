@@ -46,7 +46,7 @@ namespace RHJ
 
         List& operator=(List&&) noexcept;
 
-        #if defined(__DEBUG_RESULT__)
+        #if defined(__ENABLE_PRINTING_LIST__)
             void print(const Relation&, const Relation&);
         #endif
 

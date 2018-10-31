@@ -32,7 +32,7 @@ namespace RHJ
 
             Bucket operator[](std::size_t value) const ;
 
-            #if defined(__DEBUG_PSUM__)
+            #if defined(__ENABLE_PRINTING_PSUMTABLE__)
                 void printTable() const ;
                 void printPsum() const ;
             #endif

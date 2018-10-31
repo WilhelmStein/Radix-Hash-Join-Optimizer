@@ -30,7 +30,7 @@ int main()
 
     RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
-    #if defined(__DEBUG_RESULT__)
+    #if defined(__ENABLE_PRINTING_LIST__)
         results.print(R, S);
     #endif
 
