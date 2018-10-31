@@ -6,6 +6,10 @@
 #include <cstdlib>
 #include <ctime>
 
+#if defined(__ENABLE_PRINTING_LIST__)
+    #include <iostream>
+#endif
+
 #define SIZE_R  (16UL)// * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
 #define SIZE_S  (8UL )// * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
 
@@ -50,7 +54,7 @@ int main()
     RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
     
     #if defined(__ENABLE_PRINTING_LIST__)
-        results.print(R, S);
+        std::cout << results << std::endl;
     #endif
 
     return 0;

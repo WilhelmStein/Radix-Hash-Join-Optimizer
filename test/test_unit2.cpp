@@ -5,8 +5,10 @@
 #include <relation.hpp>
 #include <cstdlib>
 #include <ctime>
-#include <iostream>
-#include <iomanip>
+
+#if defined(__ENABLE_PRINTING_LIST__)
+    #include <iostream>
+#endif
 
 #define SIZE  (16UL)
 
@@ -31,7 +33,7 @@ int main()
     RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
     #if defined(__ENABLE_PRINTING_LIST__)
-        results.print(R, S);
+        std::cout << results << std::endl;
     #endif
 
     return 0;
