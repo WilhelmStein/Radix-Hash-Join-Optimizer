@@ -3,6 +3,10 @@
 
 #include <types.hpp>
 
+#if defined(__ENABLE_PRINTING_LIST__)
+    #include <iosfwd>
+#endif
+
 #define CAPACITY (1024UL * 1024UL / sizeof(Result))
 
 namespace RHJ
@@ -11,6 +15,8 @@ namespace RHJ
     
     struct List
     {
+        const Relation& left, & right;
+
         struct Result {
             tuple_key_t key1;
             tuple_key_t key2;
@@ -39,17 +45,19 @@ namespace RHJ
             ~Node();
         } * head, * tail;
 
-        List();
+        List(const Relation&, const Relation&);
         List(List&&) noexcept;
 
         ~List();
 
-        List& operator=(List&&) noexcept;
-
         #if defined(__ENABLE_PRINTING_LIST__)
-            void print(const Relation&, const Relation&);
+            friend std::ostream& operator<<(std::ostream&, const List&);
         #endif
 
         void append(const Result&);
     };
+
+    #if defined(__ENABLE_PRINTING_LIST__)
+        std::ostream& operator<<(std::ostream&, const List&);
+    #endif
 }
