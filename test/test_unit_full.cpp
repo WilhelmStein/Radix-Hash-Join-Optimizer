@@ -2,65 +2,56 @@
     Full Test
 */
 
-//              Debugging Options
-
-#define RANDOM_VALUES   ////////////////////////
-                            // Choose Either //
-#define SAME_VALUES    ///////////////////////
-
-#define ODD_NUMBERS     ////////////////////////
-                            // Choose Either //
-//#define EVEN_NUMBERS   ///////////////////////
-
-#define SIZE_R  (16UL)
-#define SIZE_S  (8UL)
-
-//
-
 #include <histhash.hpp>
 #include <cstdlib>
 #include <ctime>
-#include <iostream>
 
+#define SIZE_R  (16UL)// * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
+#define SIZE_S  (8UL )// * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
 
-using std::cout;
-using std::endl;
-
-#define MIN   (0UL)
-#define MAX   (100UL)
-
-#ifdef ODD_NUMBERS
-    #define RAND ( 2 * (MIN + std::rand() % (MAX - MIN + 1)) + 1 )
-#elif defined EVEN_NUMBERS
-    #define RAND ( 2 * (MIN + std::rand() % (MAX - MIN + 1)) )
+#if defined(__RANDOM_VALUES__)
+    #define MIN   (0)
+    #define MAX   (100)
+    #define VALUE (MIN + std::rand() % (MAX - MIN + 1))
 #else
-    #define RAND (MIN + std::rand() % (MAX - MIN + 1))
+    #define VALUE (1)
 #endif
 
+#if defined(__ODD_NUMBERS__)
+    #define PAYLOAD (2 * VALUE + 1)
+#elif defined(__EVEN_NNUMBERS__)
+    #define PAYLOAD (2 * VALUE)
+#else
+    #define PAYLOAD VALUE
+#endif
 
-int main(void)
+int main()
 {
-    #ifdef RANDOM_VALUES
+    #if defined(__RANDOM_VALUES__)
         std::srand(static_cast<unsigned>(std::time(nullptr)));
-    #elif defined SAME_VALUES
-        std::srand(NULL);
     #endif
 
-    // Create Relation Tables
     RHJ::Relation R(SIZE_R);
+
+    for(std::size_t i = 0; i < SIZE_R; i++)
+    {
+        R.tuples[i].key = i;
+        R.tuples[i].payload = PAYLOAD;
+    }
+
     RHJ::Relation S(SIZE_S);
 
-    for(unsigned long i = 0; i < SIZE_R; i++) {
-        R.tuples[i].key = i;
-        R.tuples[i].payload = RAND;
-    }
-
-    for(unsigned long i = 0; i < SIZE_S; i++) {
+    for(std::size_t i = 0; i < SIZE_S; i++)
+    {
         S.tuples[i].key = i;
-        S.tuples[i].payload = RAND;
+        S.tuples[i].payload = PAYLOAD;
     }
     
-    RHJ::List results( RHJ::Relation::RadixHashJoin(R, S) );
+    RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
     
+    #if defined(__DEBUG_RESULT__)
+        results.print(R, S);
+    #endif
+
     return 0;
 }
