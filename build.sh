@@ -28,8 +28,8 @@ for file in `ls test`
 do
     name="${file%.cpp}"
 
-    echo "*** Compiling $name"
-	eval "$CC -I $PATH_INC $DEFINED $CFLAGS $PATH_TST/$file $PATH_BIN/*.o -o $PATH_BIN/$name"
+    echo "*** Compiling test_$name"
+	eval "$CC -I $PATH_INC $DEFINED $CFLAGS $PATH_TST/$file $PATH_BIN/*.o -o $PATH_BIN/test_$name"
 done
 
 echo "***"
