@@ -36,7 +36,7 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
 
     PsumTable hashTableS(relS, RADIX);
 
-    List results;
+    List results(relR, relS);
     for (std::size_t hash = 0UL; hash < RANGE; hash++)
     {
         PsumTable::Bucket r(hashTableR[hash]);

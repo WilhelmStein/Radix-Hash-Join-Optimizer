@@ -3,16 +3,18 @@
 */
 
 #include <relation.hpp>
+#include <histhash.hpp>
 #include <cstdlib>
 #include <ctime>
-#include <iostream>
-#include <iomanip>
 
-#define SIZE  (16UL)
+#if defined(__ENABLE_PRINTING_LIST__)
+    #include <iostream>
+#endif
 
-#define MIN   (0UL)
-#define MAX   (100UL)
-#define WIDTH (3)
+#define SIZE  (16UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
+
+#define MIN   (0)
+#define MAX   (100)
 
 #define RAND(MIN, MAX) (MIN + std::rand() % (MAX - MIN + 1))
 
@@ -31,8 +33,13 @@ int main()
 
     RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
-    #ifdef __DEBUG_RESULT__
-        results.print(R, S);
+    #if defined(__ENABLE_PRINTING_LIST__)
+        std::cout << "Left Relation\n" << std::endl;
+        std::cout << R << std::endl;
+        
+        std::cout << "Right Relation\n" << std::endl;
+        std::cout << S << std::endl;
+        std::cout << results << std::endl;
     #endif
 
     return 0;
