@@ -3,6 +3,7 @@
 */
 
 #include <relation.hpp>
+#include <histhash.hpp>
 #include <cstdlib>
 #include <ctime>
 
@@ -10,7 +11,7 @@
     #include <iostream>
 #endif
 
-#define SIZE  (16UL)
+#define SIZE  (16UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
 
 #define MIN   (0)
 #define MAX   (100)
@@ -33,6 +34,11 @@ int main()
     RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
     #if defined(__ENABLE_PRINTING_LIST__)
+        std::cout << "Left Relation\n" << std::endl;
+        std::cout << R << std::endl;
+        
+        std::cout << "Right Relation\n" << std::endl;
+        std::cout << S << std::endl;
         std::cout << results << std::endl;
     #endif
 
