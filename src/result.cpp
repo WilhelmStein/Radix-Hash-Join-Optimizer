@@ -2,7 +2,7 @@
 #include <result.hpp>
 #include <utility>
 
-#ifdef __DEBUG_RESULT__
+#if defined(__DEBUG_RESULT__)
     #include <relation.hpp>
 #endif
 
@@ -57,7 +57,7 @@ void RHJ::List::append(const RHJ::List::Result& result)
     tail->buffer._data[tail->buffer._size++] = result;
 }
 
-#ifdef __DEBUG_RESULT__
+#if defined(__DEBUG_RESULT__)
     #include <iostream>
 
     void RHJ::List::print(const RHJ::Relation& R, const RHJ::Relation& S)

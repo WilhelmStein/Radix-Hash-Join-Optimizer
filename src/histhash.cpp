@@ -4,7 +4,7 @@
 
 #define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
-#ifdef __DEBUG_PSUM__
+#if defined(__DEBUG_PSUM__)
     #include <iostream>
 
     void RHJ::PsumTable::printTable() const {

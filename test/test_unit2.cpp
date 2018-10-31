@@ -10,9 +10,8 @@
 
 #define SIZE  (16UL)
 
-#define MIN   (0UL)
-#define MAX   (100UL)
-#define WIDTH (3)
+#define MIN   (0)
+#define MAX   (100)
 
 #define RAND(MIN, MAX) (MIN + std::rand() % (MAX - MIN + 1))
 
@@ -31,7 +30,7 @@ int main()
 
     RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
-    #ifdef __DEBUG_RESULT__
+    #if defined(__DEBUG_RESULT__)
         results.print(R, S);
     #endif
 

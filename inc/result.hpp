@@ -46,7 +46,7 @@ namespace RHJ
 
         List& operator=(List&&) noexcept;
 
-        #ifdef __DEBUG_RESULT__
+        #if defined(__DEBUG_RESULT__)
             void print(const Relation&, const Relation&);
         #endif
 
