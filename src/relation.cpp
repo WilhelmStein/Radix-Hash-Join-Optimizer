@@ -7,28 +7,31 @@
 #define RADIX (3)
 #define RANGE (2 * 2 * 2)
 
-std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation::Tuple& tuple)
-{
-    os
-    << std::setw(10) << std::setfill(' ') << std::left << tuple.key
-    << "|"
-    << std::setw(10) << std::setfill(' ') << std::left << tuple.payload;
+#if defined(__ENABLE_PRINTING_RELATION__)
+    std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation::Tuple& tuple)
+    {
+        os
+        << std::setw(10) << std::setfill(' ') << std::left << tuple.key
+        << "|"
+        << std::setw(10) << std::setfill(' ') << std::left << tuple.payload;
 
-    return os;
-}
+        return os;
+    }
 
-std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation& relation)
-{
-    os << "+----------+----------+" << std::endl;
-    os << "|Key       |Value     |" << std::endl;
-    os << "+----------+----------+" << std::endl;
-    for (std::size_t row = 0UL; row < relation.size; row++)
-        os << "|" << relation.tuples[row] << "|" << std::endl;
+    std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation& relation)
+    {
+        os << "+----------+----------+" << std::endl;
+        os << "|Key       |Value     |" << std::endl;
+        os << "+----------+----------+" << std::endl;
+        for (std::size_t row = 0UL; row < relation.size; row++)
+            os << "|" << relation.tuples[row] << "|" << std::endl;
 
-    os << "+----------+----------+" << std::endl;
-    
-    return os;
-}
+        os << "+----------+----------+" << std::endl;
+        os << "\n[\"" << relation.name << "\"]: " << relation.size  << " entries...";
+
+        return os;
+    }
+#endif
 
 RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Relation& relS) {
 

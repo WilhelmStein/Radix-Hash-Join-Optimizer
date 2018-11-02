@@ -4,6 +4,10 @@
 #include <types.hpp>
 
 #if defined(__ENABLE_PRINTING_LIST__)
+    #if !defined(__ENABLE_PRINTING_RELATION__)
+        #define __ENABLE_PRINTING_RELATION__
+    #endif
+    
     #include <iosfwd>
 #endif
 

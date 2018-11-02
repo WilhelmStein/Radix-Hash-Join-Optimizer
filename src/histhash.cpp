@@ -9,12 +9,12 @@
 
     void RHJ::PsumTable::printTable() const {
         for (std::size_t i = 0UL; i < table.size; i++)
-            std::cerr << table.tuples[i] << std::endl;
+            std::cout << table.tuples[i] << std::endl;
     }
 
     void RHJ::PsumTable::printPsum() const {
         for (std::size_t i = 0UL; i < psum_size; i++)
-            std::cerr << i << ":  " << psum[i] << std::endl;
+            std::cout << i << ":  " << psum[i] << std::endl;
     }
 #endif
 
@@ -41,7 +41,7 @@ RHJ::PsumTable::Bucket& RHJ::PsumTable::Bucket::operator=(Bucket&& other) noexce
 }
 
 RHJ::PsumTable::PsumTable(const Relation& rel, radix_t radix) 
-: 
+:
 table(rel.size), radix(radix), psum_size(0UL), psum(nullptr)
 {
     this->psum_size = std::pow(2UL, static_cast<uint64_t>(radix));

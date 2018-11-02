@@ -53,6 +53,7 @@ void RHJ::List::append(const RHJ::List::Result& result)
 #if defined(__ENABLE_PRINTING_LIST__)
     std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::List& results)
     {
+        std::size_t count = 0UL;
         for
         (
             const RHJ::List::Node * current = results.head;
@@ -63,7 +64,7 @@ void RHJ::List::append(const RHJ::List::Result& result)
             os << "+----------+----------+----------+----------+" << std::endl;
             os << "|Key L     |Value L   |Key R     |Value R   |" << std::endl;
             os << "+----------+----------+----------+----------+" << std::endl;
-            for (std::size_t i = 0UL; i < current->buffer.size(); i++)
+            for (std::size_t i = 0UL; i < current->buffer.size(); i++, count++)
             {
                 const std::size_t rowR = current->buffer[i].key1;
                 const std::size_t rowS = current->buffer[i].key2;
@@ -71,6 +72,11 @@ void RHJ::List::append(const RHJ::List::Result& result)
                 os << "|" << results.left.tuples[rowR]  << "|" << results.right.tuples[rowS] << "|" << std::endl;
             }
             os << "+----------+----------+----------+----------+" << std::endl;
+
+            os
+            << "\n[L=\""    << results.left.name
+            << "\", R=\"" << results.right.name
+            << "\"]: " << count << " results...";
         }
 
         return os;
