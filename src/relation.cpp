@@ -40,6 +40,7 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
     PsumTable hashTableS(relS, RADIX);
 
     List results(relR, relS);
+    
     for (std::size_t hash = 0UL; hash < RANGE; hash++)
     {
         PsumTable::Bucket r(hashTableR[hash]);
@@ -50,11 +51,11 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
 
         if (r.size < s.size)
         {
-            Index index(r); index.join(s, results, Index::Order::first);
+            Index index(r); index.join(s, results, hashTableR);
         }
         else
         {
-            Index index(s); index.join(r, results, Index::Order::second);
+            Index index(s); index.join(r, results, hashTableR);
         }
     }
 

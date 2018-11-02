@@ -3,7 +3,21 @@
 #include <cmath>
 #include <functional>
 
-#define HASH(tuple, _bucketSize) (std::hash<tuple_payload_t>{}(tuple.payload) % _bucketSize)
+#define HASH(key)                                                       \
+    do {                                                                \
+        key = ~key + (key << 15);                                       \
+        key = key ^ (key >> 12);                                        \
+        key = key + (key << 2);                                         \
+        key = key ^ (key >> 4);                                         \
+        key = key * 2057;                                               \
+        key = key ^ (key >> 16);                                        \
+    } while(false)
+
+#define BOUNDED_HASH(key, denominator)  \
+    do {                                \
+        HASH(key);                      \
+        key = key % denominator;        \
+    } while(false)
 
 bool isPrime(std::size_t);
 
@@ -31,7 +45,8 @@ _chain(nullptr)
     {
         const Relation::Tuple& tuple = _data.tuples[row];
 
-        bucket_key_t index = HASH(tuple, _bucketSize);
+        bucket_key_t index = tuple.payload;
+        BOUNDED_HASH(index, _bucketSize);
 
         if (_bucket[index] < 0)
         {
@@ -75,26 +90,30 @@ bool isPrime(std::size_t candidate)
     return true;
 }
 
-void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results, Order order) const
+void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results, const RHJ::PsumTable& lpsum) const
 {
     for (std::size_t row = 0UL; row < bucket.size; row++)
     {
         const Relation::Tuple& tuple = bucket.tuples[row];
 
-        for
-        (
-            bucket_key_t index = _bucket[HASH(tuple, _bucketSize)];
-            index >= 0;
-            index = _chain[index]
-        )
+        bucket_key_t index = tuple.payload;
+        BOUNDED_HASH(index, _bucketSize);
+
+        for (index = _bucket[index]; index >= 0; index = _chain[index])
         {
             if (tuple.payload == _data.tuples[index].payload)
             {
                 List::Result result;
-                if (order == first)
-                    result = { _data.tuples[index].key, tuple.key };
-                else
+                
+                std::uintptr_t min = reinterpret_cast<std::uintptr_t>(lpsum.table.tuples);
+                std::uintptr_t max = reinterpret_cast<std::uintptr_t>(&lpsum.table.tuples[lpsum.table.size - 1UL]);
+
+                std::uintptr_t offset = reinterpret_cast<std::uintptr_t>(&tuple);
+
+                if (min <= offset && offset <= max)
                     result = { tuple.key, _data.tuples[index].key };
+                else
+                    result = { _data.tuples[index].key, tuple.key };
 
                 results.append(result);
             }
