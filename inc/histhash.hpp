@@ -6,6 +6,8 @@
 namespace RHJ
 {
     class PsumTable {
+            
+            friend class Index;
 
             Relation table;
 
