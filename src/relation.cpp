@@ -5,21 +5,22 @@
 #include <iomanip>          // std::setw, std::setfill, std::left
 #include <cmath>
 
-#define CACHE_SIZE 32
-// #define RANGE(R_SIZE, S_SIZE, RADIX)                                                                    \
-// (do{                                                                                                    \
-//     size_t maxRelSize = ( ( (R_SIZE) > (S_SIZE) ) ? (R_SIZE) : (S_SIZE) );                              \
-//     size_t range = ( maxRelsize / ( ( (maxRelsize) > (CACHE_SIZE) ) ? (CACHE_SIZE) : (maxRelSize) ) );  \
-//     RADIX = ( (radix_t) log2(range) );                                                                  \
-//     range;                                                                                              \                                \
-// }while(false);)
+#if !defined(CACHE_SIZE)
+    #define CACHE_SIZE (32UL * 1024UL)
+#endif
 
-static inline size_t calc_range(size_t rSize, size_t sSize, radix_t& radix)
+static inline void calc_range(std::size_t rSize, size_t sSize, std::size_t& range, radix_t& radix)
 {
-    size_t maxRelSize = ( ( (rSize) > (sSize) ) ? (rSize) : (sSize) );                              
-    size_t range = ( maxRelSize / ( ( (maxRelSize) > (CACHE_SIZE) ) ? (CACHE_SIZE) : (maxRelSize) ) );  
-    radix = ( (radix_t) log2(range) );                                                                  
-    return range; 
+    rSize *= sizeof(RHJ::Relation::Tuple);
+    sSize *= sizeof(RHJ::Relation::Tuple);
+
+    std::size_t maxSize = (rSize > sSize ? rSize : sSize);
+
+    range = static_cast<std::size_t>(std::ceil(static_cast<double>(maxSize) / static_cast<double>(CACHE_SIZE)));
+
+    radix = static_cast<radix_t>(std::ceil(std::log2(range)));
+
+    range = static_cast<std::size_t>(std::pow(2UL, radix));
 }
 
 #if defined(__ENABLE_PRINTING_RELATION__)
@@ -50,11 +51,13 @@ static inline size_t calc_range(size_t rSize, size_t sSize, radix_t& radix)
 
 RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Relation& relS) {
 
-    radix_t radix;
-    size_t range = calc_range(relR.size, relS.size, radix);
-    PsumTable hashTableR(relR, radix);
+    radix_t radix; std::size_t range;
 
-    PsumTable hashTableS(relS, radix);
+    calc_range(relR.size, relS.size, range, radix);
+
+    PsumTable hashTableR(relR, radix, range);
+
+    PsumTable hashTableS(relS, radix, range);
 
     List results(relR, relS);
 

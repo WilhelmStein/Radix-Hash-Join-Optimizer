@@ -10,8 +10,8 @@
     #include <iostream>
 #endif
 
-#define SIZE_R  (64UL)// * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
-#define SIZE_S  (32UL)// * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
+#define SIZE_R  (64UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
+#define SIZE_S  (32UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
 
 #if defined(__RANDOM_VALUES__)
     #define MIN   (0)

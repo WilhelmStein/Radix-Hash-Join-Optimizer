@@ -40,12 +40,10 @@ RHJ::PsumTable::Bucket& RHJ::PsumTable::Bucket::operator=(Bucket&& other) noexce
     return *this;
 }
 
-RHJ::PsumTable::PsumTable(const Relation& rel, radix_t radix) 
+RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum_size) 
 :
-table(rel.size), radix(radix), psum_size(0UL), psum(nullptr)
+table(rel.size), radix(_radix), psum_size(_psum_size), psum(nullptr)
 {
-    this->psum_size = std::pow(2UL, static_cast<uint64_t>(radix));
-
     std::size_t *histogram = new std::size_t[psum_size]{0UL};
 
     // Creating a table which contains hashes of each tuple

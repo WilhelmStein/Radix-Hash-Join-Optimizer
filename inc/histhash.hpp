@@ -29,7 +29,7 @@ namespace RHJ
                 Bucket& operator=(Bucket&&) noexcept;
             };
 
-            PsumTable(const RHJ::Relation& rel, radix_t _n); 
+            PsumTable(const RHJ::Relation& rel, radix_t _radix, std::size_t _range); 
             ~PsumTable();
 
             Bucket operator[](std::size_t value) const ;
