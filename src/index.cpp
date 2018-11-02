@@ -35,7 +35,7 @@ _chain(nullptr)
 
         if (_bucket[index] < 0)
         {
-            _bucket[index] = row; return;
+            _bucket[index] = row; continue;
         }
 
         index = _bucket[index];

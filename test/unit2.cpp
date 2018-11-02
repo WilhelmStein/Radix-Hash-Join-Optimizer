@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#if defined(__ENABLE_PRINTING_LIST__)
+#if defined(__ENABLE_PRINTING_LIST__) || defined(__ENABLE_PRINTING_RELATION__)
     #include <iostream>
 #endif
 
@@ -22,8 +22,13 @@ int main()
 {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    RHJ::Relation R(SIZE);
-    RHJ::Relation S(SIZE);
+    #if defined(__ENABLE_PRINTING_RELATION__)
+        RHJ::Relation R(SIZE, "Slim");
+        RHJ::Relation S(SIZE, "Shady");
+    #else
+        RHJ::Relation R(SIZE);
+        RHJ::Relation S(SIZE);
+    #endif
 
     for (std::size_t i = 0UL; i < SIZE; i++)
     {
@@ -33,12 +38,12 @@ int main()
 
     RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
 
-    #if defined(__ENABLE_PRINTING_LIST__)
-        std::cout << "Left Relation\n" << std::endl;
+    #if defined(__ENABLE_PRINTING_RELATION__)
         std::cout << R << std::endl;
-        
-        std::cout << "Right Relation\n" << std::endl;
         std::cout << S << std::endl;
+    #endif
+
+    #if defined(__ENABLE_PRINTING_LIST__)
         std::cout << results << std::endl;
     #endif
 

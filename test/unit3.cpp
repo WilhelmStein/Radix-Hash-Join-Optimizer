@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#if defined(__ENABLE_PRINTING_LIST__)
+#if defined(__ENABLE_PRINTING_LIST__) || defined(__ENABLE_PRINTING_RELATION__)
     #include <iostream>
 #endif
 
@@ -35,15 +35,19 @@ int main()
         std::srand(static_cast<unsigned>(std::time(nullptr)));
     #endif
 
-    RHJ::Relation R(SIZE_R);
+    #if defined(__ENABLE_PRINTING_RELATION__)
+        RHJ::Relation R(SIZE_R, "Slim");
+        RHJ::Relation S(SIZE_S, "Shady");
+    #else
+        RHJ::Relation R(SIZE_R);
+        RHJ::Relation S(SIZE_S);
+    #endif
 
     for(std::size_t i = 0; i < SIZE_R; i++)
     {
         R.tuples[i].key = i;
         R.tuples[i].payload = PAYLOAD;
     }
-
-    RHJ::Relation S(SIZE_S);
 
     for(std::size_t i = 0; i < SIZE_S; i++)
     {
@@ -53,12 +57,12 @@ int main()
     
     RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
     
-    #if defined(__ENABLE_PRINTING_LIST__)
-        std::cout << "Left Relation\n" << std::endl;
+    #if defined(__ENABLE_PRINTING_RELATION__)
         std::cout << R << std::endl;
-        
-        std::cout << "Right Relation\n" << std::endl;
         std::cout << S << std::endl;
+    #endif
+
+    #if defined(__ENABLE_PRINTING_LIST__)
         std::cout << results << std::endl;
     #endif
 
