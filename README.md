@@ -5,3 +5,6 @@
 2. Hashing / Hashes
 3. Index remove Order array boundaries
 4. Read the damn pdf already
+
+## NOTICE:
+1. TLB misses on build and probe phase
