@@ -1,6 +1,12 @@
 #!/bin/bash
 
-declare -A def
+PATH_SRC="./src"
+PATH_INC="./inc"
+PATH_BIN="./bin"
+PATH_TST="./test"
+
+CC="g++"
+CFLAGS="-Wall -Wextra -std=c++14 -g3"
 
 dtst=""
 dlib=""
@@ -37,8 +43,9 @@ do
         shift
         ;;
         *)
-        echo "<ERR>: No such option!"
-        return
+        echo "<ERR>: No such option! \"$*\""
+        echo "                        ^"
+        exit 1
         ;;
     esac
 done
@@ -50,22 +57,14 @@ fi
 
 make "DEFINED=$dlib"
 
-PATH_SRC="./src"
-PATH_INC="./inc"
-PATH_BIN="./bin"
-PATH_TST="./test"
-
-CC="g++"
-CFLAGS="-Wall -Wextra -std=c++14 -g3"
-
 echo "-e" "\n*** Compiling executable files ***"
 echo "***"
 
 for file in `ls test`
 do
-    if [ -z "$fexe" ] || ([ ! -z "$fexe" ] && `echo "$fexe" | grep -q "$file"`)
+    name="${file%.cpp}"
+    if [ -z "$fexe" ] || ([ ! -z "$fexe" ] && `echo "$fexe" | grep -q "$name"`)
     then
-        name="${file%.cpp}"
         cmd="$CC -I $PATH_INC $dtst $CFLAGS $PATH_TST/$file $PATH_BIN/*.o -o $PATH_BIN/$name.exe"
 
         echo "$cmd"
