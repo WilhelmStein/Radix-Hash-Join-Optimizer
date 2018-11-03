@@ -11,11 +11,6 @@ do
         dtst="$dtst -D$1"
         shift
         ;;
-        "-l" | "--define-lib")
-        shift
-        dlib="$dlib -D$1"
-        shift
-        ;;
         "-g" | "--define-global")
         shift
         dtst="$dtst -D$1"
@@ -55,6 +50,12 @@ then
 fi
 
 make "DEFINED=$dlib"
+
+if [ ! -d "$PATH_TEST" ] || [ ! -d "$PATH_BIN" ]
+then
+    echo -e "\n<ERR>: No such directory!"
+    exit 2
+fi
 
 if [ -z "$fexe" ]
 then

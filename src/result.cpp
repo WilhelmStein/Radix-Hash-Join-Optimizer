@@ -2,10 +2,7 @@
 #include <result.hpp>
 #include <relation.hpp>
 #include <utility>
-
-#if defined(__ENABLE_PRINTING_LIST__)
-    #include <fstream>
-#endif
+#include <fstream>
 
 RHJ::List::Node::Buffer::Buffer()
 :
@@ -50,17 +47,17 @@ void RHJ::List::append(const RHJ::List::Result& result)
     tail->buffer._data[tail->buffer._size++] = result;
 }
 
-#if defined(__ENABLE_PRINTING_LIST__)
-    std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::List& results)
+std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::List& results)
+{
+    std::size_t count = 0UL;
+    for
+    (
+        const RHJ::List::Node * current = results.head;
+        current != nullptr;
+        current = current->next
+    )
     {
-        std::size_t count = 0UL;
-        for
-        (
-            const RHJ::List::Node * current = results.head;
-            current != nullptr;
-            current = current->next
-        )
-        {
+        #if defined(__VERBOSE__)
             os << "+----------+----------+----------+----------+" << std::endl;
             os << "|Key L     |Value L   |Key R     |Value R   |" << std::endl;
             os << "+----------+----------+----------+----------+" << std::endl;
@@ -76,9 +73,13 @@ void RHJ::List::append(const RHJ::List::Result& result)
             os
             << "\n[L=\""    << results.left.name
             << "\", R=\"" << results.right.name
-            << "\"]: " << count << " results...";
-        }
-
-        return os;
+            << "\"]: ";
+        #else
+            count += current->buffer.size();
+        #endif
     }
-#endif
+
+    os << count << " results...";
+
+    return os;
+}

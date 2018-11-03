@@ -1,51 +1,55 @@
-/*
-    Testing RHJ::Relation::RadixHashJoin
-*/
 
-#include <relation.hpp>
 #include <histhash.hpp>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
-#if defined(__ENABLE_PRINTING_LIST__) || defined(__ENABLE_PRINTING_RELATION__)
-    #include <iostream>
+#define SIZE_R  (1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
+#define SIZE_S  (1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
+
+#if defined(__RANDOM_VALUES__)
+    #define MIN   (0)
+    #define MAX   (1000)
+    #define VALUE (MIN + std::rand() % (MAX - MIN + 1))
+#else
+    #define VALUE (1)
 #endif
 
-#define SIZE  (16UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
-
-#define MIN   (0)
-#define MAX   (100)
-
-#define RAND(MIN, MAX) (MIN + std::rand() % (MAX - MIN + 1))
+#if defined(__ODD_NUMBERS__)
+    #define PAYLOAD (2 * VALUE + 1)
+#elif defined(__EVEN_NNUMBERS__)
+    #define PAYLOAD (2 * VALUE)
+#else
+    #define PAYLOAD VALUE
+#endif
 
 int main()
 {
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
-
-    #if defined(__ENABLE_PRINTING_RELATION__)
-        RHJ::Relation R(SIZE, "Slim");
-        RHJ::Relation S(SIZE, "Shady");
-    #else
-        RHJ::Relation R(SIZE);
-        RHJ::Relation S(SIZE);
+    #if defined(__RANDOM_VALUES__)
+        std::srand(static_cast<unsigned>(std::time(nullptr)));
     #endif
 
-    for (std::size_t i = 0UL; i < SIZE; i++)
+    #if defined(__VERBOSE__)
+        RHJ::Relation R(SIZE_R, "Slim");
+        RHJ::Relation S(SIZE_S, "Shady");
+    #else
+        RHJ::Relation R(SIZE_R);
+        RHJ::Relation S(SIZE_S);
+    #endif
+
+    for(std::size_t i = 0; i < SIZE_R; i++)
     {
-        R.tuples[i].key = i; R.tuples[i].payload = RAND(MIN, MAX);
-        S.tuples[i].key = i; S.tuples[i].payload = RAND(MIN, MAX);
+        R.tuples[i].key = i;
+        R.tuples[i].payload = PAYLOAD;
     }
 
-    RHJ::List results = RHJ::Relation::RadixHashJoin(R, S);
-
-    #if defined(__ENABLE_PRINTING_RELATION__)
-        std::cout << R << std::endl;
-        std::cout << S << std::endl;
-    #endif
-
-    #if defined(__ENABLE_PRINTING_LIST__)
-        std::cout << results << std::endl;
-    #endif
+    for(std::size_t i = 0; i < SIZE_S; i++)
+    {
+        S.tuples[i].key = i;
+        S.tuples[i].payload = PAYLOAD;
+    }
+    
+    RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
 
     return 0;
 }

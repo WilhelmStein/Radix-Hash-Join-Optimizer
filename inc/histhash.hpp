@@ -35,12 +35,12 @@ namespace RHJ
 
             Bucket operator[](std::size_t value) const ;
 
-            #if defined(__ENABLE_PRINTING_PSUMTABLE__)
+            #if defined(__DEBUG_PSUM__)
                 friend std::ostream& operator<<(std::ostream&, const PsumTable&);
             #endif
     };
 
-    #if defined(__ENABLE_PRINTING_PSUMTABLE__)
+    #if defined(__DEBUG_PSUM__)
         std::ostream& operator<<(std::ostream&, const PsumTable&);
     #endif
 }

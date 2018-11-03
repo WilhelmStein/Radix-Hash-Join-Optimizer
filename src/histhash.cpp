@@ -2,13 +2,13 @@
 #include <cmath>            // std::pow
 #include <utility>          // std::move
 
-#if defined(__ENABLE_PRINTING_PSUMTABLE__)    
+#if defined(__DEBUG_PSUM__)    
     #include <fstream>
 #endif
 
 #define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
-#if defined(__ENABLE_PRINTING_PSUMTABLE__)
+#if defined(__DEBUG_PSUM__)
     std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::PsumTable& psumtable)
     {
         os << "\n<DBG>: psumtable.table.tuples" << std::endl;
@@ -47,7 +47,11 @@ RHJ::PsumTable::Bucket& RHJ::PsumTable::Bucket::operator=(Bucket&& other) noexce
 
 RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum_size) 
 :
-table(rel.size), radix(_radix), psum_size(_psum_size), psum(nullptr)
+#if defined(__VERBOSE__)
+    table(rel.size, "hashed"), radix(_radix), psum_size(_psum_size), psum(nullptr)
+#else
+    table(rel.size), radix(_radix), psum_size(_psum_size), psum(nullptr)
+#endif
 {
     std::size_t *histogram = new std::size_t[psum_size]{0UL};
 

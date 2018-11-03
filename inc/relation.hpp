@@ -4,16 +4,16 @@
 #include <result.hpp>
 #include <iosfwd>
 
-#if defined(__ENABLE_PRINTING_PSUMTABLE__) || defined(__ENABLE_PRINTING_LIST__)
-    #if !defined(__ENABLE_PRINTING_RELATION__)
-        #define __ENABLE_PRINTING_RELATION__
+#if defined(__DEBUG_PSUM__)
+    #if !defined(__VERBOSE__)
+        #define __VERBOSE__
     #endif
 #endif
 
 namespace RHJ
 {
     struct Relation {
-        #if defined (__ENABLE_PRINTING_RELATION__)
+        #if defined (__VERBOSE__)
             const char * name;
         #endif
 
@@ -23,30 +23,29 @@ namespace RHJ
 
             Tuple() : key(0), payload(0) {}
 
-            #if defined(__ENABLE_PRINTING_RELATION__)
+            #if defined(__VERBOSE__)
                 friend std::ostream& operator<<(std::ostream&, const Tuple&);
             #endif
         } * tuples;
         
         std::size_t size;
 
-        #if defined (__ENABLE_PRINTING_RELATION__)
-            Relation(std::size_t size, const char * name = "Placeholder") : name(name), tuples(new Tuple[size]), size(size) {}
+        #if defined (__VERBOSE__)
+            Relation(std::size_t size, const char * name) : name(name), tuples(new Tuple[size]), size(size) {}
         #else
             Relation(std::size_t size) : tuples(new Tuple[size]), size(size) {}
         #endif
 
         ~Relation() { delete[] tuples; }
 
-        #if defined(__ENABLE_PRINTING_RELATION__)
-            friend std::ostream& operator<<(std::ostream&, const Relation&);
-        #endif
+        friend std::ostream& operator<<(std::ostream&, const Relation&);
 
         static List RadixHashJoin(const Relation& relR, const Relation& relS);
     };
 
-    #if defined(__ENABLE_PRINTING_RELATION__)
+    #if defined(__VERBOSE__)
         std::ostream& operator<<(std::ostream&, const Relation::Tuple&);
-        std::ostream& operator<<(std::ostream&, const Relation&);
     #endif
+    
+    std::ostream& operator<<(std::ostream&, const Relation&);
 }

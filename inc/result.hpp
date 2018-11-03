@@ -2,10 +2,7 @@
 #pragma once
 
 #include <types.hpp>
-
-#if defined(__ENABLE_PRINTING_LIST__)    
-    #include <iosfwd>
-#endif
+#include <iosfwd>
 
 #define CAPACITY (1024UL * 1024UL / sizeof(Result))
 
@@ -50,14 +47,10 @@ namespace RHJ
 
         ~List();
 
-        #if defined(__ENABLE_PRINTING_LIST__)
-            friend std::ostream& operator<<(std::ostream&, const List&);
-        #endif
+        friend std::ostream& operator<<(std::ostream&, const List&);
 
         void append(const Result&);
     };
 
-    #if defined(__ENABLE_PRINTING_LIST__)
-        std::ostream& operator<<(std::ostream&, const List&);
-    #endif
+    std::ostream& operator<<(std::ostream&, const List&);
 }

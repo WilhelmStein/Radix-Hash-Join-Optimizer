@@ -2,9 +2,9 @@
 #include <histhash.hpp>
 #include <index.hpp>
 #include <cmath>
+#include <fstream>          // std::ostream
 
-#if defined(__ENABLE_PRINTING_RELATION__)
-    #include <fstream>          // std::ostream
+#if defined(__VERBOSE__)
     #include <iomanip>          // std::setw, std::setfill, std::left
 #endif
 
@@ -26,7 +26,7 @@ static inline void calc_range(std::size_t rSize, size_t sSize, std::size_t& rang
     range = static_cast<std::size_t>(std::pow(2UL, radix));
 }
 
-#if defined(__ENABLE_PRINTING_RELATION__)
+#if defined(__VERBOSE__)
     std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation::Tuple& tuple)
     {
         os
@@ -36,9 +36,11 @@ static inline void calc_range(std::size_t rSize, size_t sSize, std::size_t& rang
 
         return os;
     }
+#endif
 
-    std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation& relation)
-    {
+std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation& relation)
+{
+    #if defined(__VERBOSE__)
         os << "+----------+----------+" << std::endl;
         os << "|Key       |Value     |" << std::endl;
         os << "+----------+----------+" << std::endl;
@@ -47,10 +49,12 @@ static inline void calc_range(std::size_t rSize, size_t sSize, std::size_t& rang
 
         os << "+----------+----------+" << std::endl;
         os << "\n[\"" << relation.name << "\"]: " << relation.size  << " entries...";
+    #else
+        os << relation.size << " entries...";
+    #endif
 
-        return os;
-    }
-#endif
+    return os;
+}
 
 RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Relation& relS) {
 
