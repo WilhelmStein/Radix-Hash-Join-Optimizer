@@ -23,6 +23,9 @@ clean:
 	rm -rv $(PATH_BIN)
 	@echo "***"
 
+$(PATH_BIN)/%.exe: $(PATH_TST)/%.cpp $(OBJS)
+	$(CC) -I $(PATH_INC) $(DEFINED) $(CFLAGS) $< $(OBJS) -o $@
+
 HIST_DEP = $(addprefix $(PATH_INC)/, histhash.hpp) $(PATH_SRC)/histhash.cpp
 INDX_DEP = $(PATH_INC)/index.hpp $(PATH_SRC)/index.cpp
 RDXL_DEP = $(addprefix $(PATH_INC)/, result.hpp) $(PATH_SRC)/result.cpp

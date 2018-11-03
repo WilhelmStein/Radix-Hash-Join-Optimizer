@@ -1,45 +1,44 @@
 #!/bin/bash
 
-PATH_SRC="./src"
-PATH_INC="./inc"
+PATH_TEST="./test"
 PATH_BIN="./bin"
-PATH_TST="./test"
-
-CC="g++"
-CFLAGS="-Wall -Wextra -std=c++14 -g3"
-
-dtst=""
-dlib=""
-fexe=""
-
-rebuild=false
 
 while [ ! "$#" -eq 0 ]
 do
     case "$1" in
-        "-t" | "--test")
+        "-x" | "--define-exe")
         shift
         dtst="$dtst -D$1"
         shift
         ;;
-        "-l" | "--library")
+        "-l" | "--define-lib")
         shift
         dlib="$dlib -D$1"
         shift
         ;;
-        "-g" | "--global")
+        "-g" | "--define-global")
         shift
         dtst="$dtst -D$1"
         dlib="$dlib -D$1"
         shift
         ;;
-        "-e" | "--executable")
+        "-c" | "--compile-exe")
         shift
-        fexe="$fexe $1"
+        fexe=`echo -e "$1\n$fexe"`
         shift
         ;;
-        "-r" | "--rebuild")
+        "-r" | "--rebuild-lib")
         rebuild=true
+        shift
+        ;;
+        "-t" | "--test-dir")
+        shift
+        PATH_TEST="$1"
+        shift
+        ;;
+        "-b" | "--bin-dir")
+        shift
+        PATH_BIN="$1"
         shift
         ;;
         *)
@@ -57,19 +56,18 @@ fi
 
 make "DEFINED=$dlib"
 
-echo "-e" "\n*** Compiling executable files ***"
+if [ -z "$fexe" ]
+then
+    fexe=`ls $PATH_TEST`
+    fexe="${fexe//.cpp/}"
+fi
+
+echo "-e" "\n*** Compiling exe files ***"
 echo "***"
 
-for file in `ls test`
+while IFS= read -r name
 do
-    name="${file%.cpp}"
-    if [ -z "$fexe" ] || ([ ! -z "$fexe" ] && `echo "$fexe" | grep -q "$name"`)
-    then
-        cmd="$CC -I $PATH_INC $dtst $CFLAGS $PATH_TST/$file $PATH_BIN/*.o -o $PATH_BIN/$name.exe"
-
-        echo "$cmd"
-        eval $cmd
-    fi
-done
+    make "$PATH_BIN"/"$name".exe "DEFINED=$dtst"
+done <<< "$fexe"
 
 echo "***"
