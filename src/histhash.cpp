@@ -2,19 +2,24 @@
 #include <cmath>            // std::pow
 #include <utility>          // std::move
 
+#if defined(__ENABLE_PRINTING_PSUMTABLE__)    
+    #include <fstream>
+#endif
+
 #define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
 #if defined(__ENABLE_PRINTING_PSUMTABLE__)
-    #include <iostream>
+    std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::PsumTable& psumtable)
+    {
+        os << "\n<DBG>: psumtable.table.tuples" << std::endl;
+        for (std::size_t i = 0UL; i < psumtable.table.size; i++)
+            os << psumtable.table.tuples[i] << std::endl;
 
-    void RHJ::PsumTable::printTable() const {
-        for (std::size_t i = 0UL; i < table.size; i++)
-            std::cout << table.tuples[i] << std::endl;
-    }
+        os << "\n<DBG>: psumtable.psum" << std::endl;
+        for (std::size_t i = 0UL; i < psumtable.psum_size; i++)
+            os << i << ":  " << psumtable.psum[i] << std::endl;
 
-    void RHJ::PsumTable::printPsum() const {
-        for (std::size_t i = 0UL; i < psum_size; i++)
-            std::cout << i << ":  " << psum[i] << std::endl;
+        return os;
     }
 #endif
 

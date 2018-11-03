@@ -4,6 +4,12 @@
 #include <result.hpp>
 #include <iosfwd>
 
+#if defined(__ENABLE_PRINTING_PSUMTABLE__) || defined(__ENABLE_PRINTING_LIST__)
+    #if !defined(__ENABLE_PRINTING_RELATION__)
+        #define __ENABLE_PRINTING_RELATION__
+    #endif
+#endif
+
 namespace RHJ
 {
     struct Relation {

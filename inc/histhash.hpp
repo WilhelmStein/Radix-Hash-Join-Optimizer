@@ -2,6 +2,7 @@
 
 #include <types.hpp>
 #include <relation.hpp>
+#include <iosfwd>
 
 namespace RHJ
 {
@@ -35,8 +36,11 @@ namespace RHJ
             Bucket operator[](std::size_t value) const ;
 
             #if defined(__ENABLE_PRINTING_PSUMTABLE__)
-                void printTable() const ;
-                void printPsum() const ;
+                friend std::ostream& operator<<(std::ostream&, const PsumTable&);
             #endif
     };
+
+    #if defined(__ENABLE_PRINTING_PSUMTABLE__)
+        std::ostream& operator<<(std::ostream&, const PsumTable&);
+    #endif
 }

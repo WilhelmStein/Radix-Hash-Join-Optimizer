@@ -1,9 +1,12 @@
 #include <relation.hpp>
 #include <histhash.hpp>
 #include <index.hpp>
-#include <fstream>          // std::ostream
-#include <iomanip>          // std::setw, std::setfill, std::left
 #include <cmath>
+
+#if defined(__ENABLE_PRINTING_RELATION__)
+    #include <fstream>          // std::ostream
+    #include <iomanip>          // std::setw, std::setfill, std::left
+#endif
 
 #if !defined(CACHE_SIZE)
     #define CACHE_SIZE (32UL * 1024UL)

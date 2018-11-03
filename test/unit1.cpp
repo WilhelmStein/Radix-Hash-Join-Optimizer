@@ -22,7 +22,7 @@ int main()
         R.tuples[row].payload = RAND;
     }
 
-    RHJ::PsumTable table(R, 3UL);
+    RHJ::PsumTable table(R, 3UL, 8UL);
 
     return 0;
 }
