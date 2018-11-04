@@ -1,0 +1,51 @@
+
+
+case: __MEDIUM__
+cache: 4096
+milliseconds: 5489.31
+clock ticks: 5.48855e+06
+
+case: __MEDIUM__
+cache: 8192
+milliseconds: 5462.12
+clock ticks: 5.46112e+06
+
+case: __MEDIUM__
+cache: 16384
+milliseconds: 5451.39
+clock ticks: 5.45054e+06
+
+case: __MEDIUM__
+cache: 32768
+milliseconds: 5426.95
+clock ticks: 5.42613e+06
+
+case: __MEDIUM__
+cache: 65536
+milliseconds: 5462.9
+clock ticks: 5.46214e+06
+
+case: __LARGE__
+cache: 4096
+milliseconds: 2398.59
+clock ticks: 2.39831e+06
+
+case: __LARGE__
+cache: 8192
+milliseconds: 2396.11
+clock ticks: 2.39589e+06
+
+case: __LARGE__
+cache: 16384
+milliseconds: 2392.24
+clock ticks: 2.39195e+06
+
+case: __LARGE__
+cache: 32768
+milliseconds: 2394.26
+clock ticks: 2.39404e+06
+
+case: __LARGE__
+cache: 65536
+milliseconds: 2391.78
+clock ticks: 2.39157e+06
