@@ -1,51 +1,51 @@
 
 
 case: __MEDIUM__
-cache: 4096
-milliseconds: 5489.31
-clock ticks: 5.48855e+06
+cache-kb: 4
+milliseconds: 5471.89
+clock ticks: 5.47148e+06
 
 case: __MEDIUM__
-cache: 8192
-milliseconds: 5462.12
-clock ticks: 5.46112e+06
+cache-kb: 8
+milliseconds: 5434.83
+clock ticks: 5.43436e+06
 
 case: __MEDIUM__
-cache: 16384
-milliseconds: 5451.39
-clock ticks: 5.45054e+06
+cache-kb: 16
+milliseconds: 5439.77
+clock ticks: 5.4394e+06
 
 case: __MEDIUM__
-cache: 32768
-milliseconds: 5426.95
-clock ticks: 5.42613e+06
+cache-kb: 32
+milliseconds: 5412.33
+clock ticks: 5.41207e+06
 
 case: __MEDIUM__
-cache: 65536
-milliseconds: 5462.9
-clock ticks: 5.46214e+06
+cache-kb: 64
+milliseconds: 5460.36
+clock ticks: 5.45998e+06
 
 case: __LARGE__
-cache: 4096
-milliseconds: 2398.59
-clock ticks: 2.39831e+06
+cache-kb: 4
+milliseconds: 2362.87
+clock ticks: 2.36278e+06
 
 case: __LARGE__
-cache: 8192
-milliseconds: 2396.11
-clock ticks: 2.39589e+06
+cache-kb: 8
+milliseconds: 2356.33
+clock ticks: 2.35614e+06
 
 case: __LARGE__
-cache: 16384
-milliseconds: 2392.24
-clock ticks: 2.39195e+06
+cache-kb: 16
+milliseconds: 2359.39
+clock ticks: 2.35923e+06
 
 case: __LARGE__
-cache: 32768
-milliseconds: 2394.26
-clock ticks: 2.39404e+06
+cache-kb: 32
+milliseconds: 2360.77
+clock ticks: 2.36059e+06
 
 case: __LARGE__
-cache: 65536
-milliseconds: 2391.78
-clock ticks: 2.39157e+06
+cache-kb: 64
+milliseconds: 2359.89
+clock ticks: 2.35974e+06

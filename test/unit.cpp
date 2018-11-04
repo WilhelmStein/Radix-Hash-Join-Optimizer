@@ -86,7 +86,7 @@ int main()
             std::cout << "\ncase: __SMALL__" << std::endl;
         #endif
         
-        std::cout << "cache: " << __CACHE_SIZE__ << std::endl;
+        std::cout << "cache-kb: " << __CACHE_SIZE__ / 1024UL << std::endl;
 
         RHJ::List results(utility::benchmark(RHJ::Relation::RadixHashJoin, R, S));
     #else
