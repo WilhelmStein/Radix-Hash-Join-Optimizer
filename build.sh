@@ -3,6 +3,27 @@
 PATH_TEST="./test"
 PATH_BIN="./bin"
 
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]
+then
+    echo "# Options:"
+    echo "# -x, --define-exe      Define a macro in a test unit"
+    echo "# -g, --define-global   Define a macro globally"
+    echo "# -c, --compile-exe     Compile the specified test unit     [default: everything in the test unit directory]"
+    echo "# -r, --rebuild-lib     Recompile any object file           [default: do not recompile up-to-date object files]"
+
+    name=$(basename "$0")
+
+    echo -e "\n# Usage:"
+    echo "# $name -x [MACRO]"
+    echo "# $name -g [MACRO]"
+    echo "# $name -c [EXE]"
+    echo "# $name -r"
+
+    echo -e "\n# Example: $name -c unit -x __RANDOM__ -g __VERBOSE__ -r"
+
+    exit 0
+fi
+
 while [ ! "$#" -eq 0 ]
 do
     case "$1" in
@@ -24,16 +45,6 @@ do
         ;;
         "-r" | "--rebuild-lib")
         rebuild=true
-        shift
-        ;;
-        "-t" | "--test-dir")
-        shift
-        PATH_TEST="$1"
-        shift
-        ;;
-        "-b" | "--bin-dir")
-        shift
-        PATH_BIN="$1"
         shift
         ;;
         *)

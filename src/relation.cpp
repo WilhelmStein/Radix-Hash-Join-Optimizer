@@ -8,8 +8,8 @@
     #include <iomanip>          // std::setw, std::setfill, std::left
 #endif
 
-#if !defined(CACHE_SIZE)
-    #define CACHE_SIZE (32UL * 1024UL)
+#if !defined(__CACHE_SIZE__)
+    #define __CACHE_SIZE__ (32UL * 1024UL)
 #endif
 
 static inline void calc_range(std::size_t rSize, size_t sSize, std::size_t& range, radix_t& radix)
@@ -19,7 +19,7 @@ static inline void calc_range(std::size_t rSize, size_t sSize, std::size_t& rang
 
     std::size_t maxSize = (rSize > sSize ? rSize : sSize);
 
-    range = static_cast<std::size_t>(std::ceil(static_cast<double>(maxSize) / static_cast<double>(CACHE_SIZE)));
+    range = static_cast<std::size_t>(std::ceil(static_cast<double>(maxSize) / static_cast<double>(__CACHE_SIZE__)));
 
     radix = static_cast<radix_t>(std::ceil(std::log2(range)));
 
