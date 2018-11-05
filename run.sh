@@ -18,7 +18,7 @@ then
     fi
 fi
 
-echo > "$out"
+truncate --size=0 "$out"
 
 defs=("__MEDIUM__" "__LARGE__")
 for def in "${defs[@]}"
