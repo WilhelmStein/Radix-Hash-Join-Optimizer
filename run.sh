@@ -1,3 +1,5 @@
+#!/bin/bash
+
 __CACHE_SIZE__=(4 8 16 32 64)
 
 if [ "$#" -lt 2 ]
@@ -18,7 +20,7 @@ then
     fi
 fi
 
-echo > "$out"
+truncate --size=0 "$out"
 
 defs=("__MEDIUM__" "__LARGE__")
 for def in "${defs[@]}"

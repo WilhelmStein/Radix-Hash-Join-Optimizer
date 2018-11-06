@@ -3,21 +3,21 @@
 #include <cmath>
 #include <functional>
 
-#define HASH(key)                                                       \
-    do {                                                                \
-        key = ~key + (key << 15);                                       \
-        key = key ^ (key >> 12);                                        \
-        key = key + (key << 2);                                         \
-        key = key ^ (key >> 4);                                         \
-        key = key * 2057;                                               \
-        key = key ^ (key >> 16);                                        \
-    } while(false)
+#define HASH(key)                       \
+do {                                    \
+    key = ~key + (key << 15);           \
+    key = key ^ (key >> 12);            \
+    key = key + (key << 2);             \
+    key = key ^ (key >> 4);             \
+    key = key * 2057;                   \
+    key = key ^ (key >> 16);            \
+} while(false)                          \
 
 #define BOUNDED_HASH(key, denominator)  \
-    do {                                \
-        HASH(key);                      \
-        key = key % denominator;        \
-    } while(false)
+do {                                    \
+    HASH(key);                          \
+    key = key % denominator;            \
+} while(false)                          \
 
 bool isPrime(std::size_t);
 
