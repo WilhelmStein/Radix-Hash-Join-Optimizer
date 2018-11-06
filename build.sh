@@ -1,8 +1,5 @@
 #!/bin/bash
 
-PATH_TEST="./test"
-PATH_BIN="./bin"
-
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]
 then
     echo "# Options:"
@@ -19,7 +16,7 @@ then
     echo "# $name -c [EXE]"
     echo "# $name -r"
 
-    echo -e "\n# Example: $name -c unit -x __RANDOM__ -g __VERBOSE__ -r"
+    echo -e "\n# Example: $name -r -x __BENCHMARK__ -x __SILENCE__ -g __CACHE_SIZE__=32768"
 
     exit 0
 fi
@@ -61,6 +58,9 @@ then
 fi
 
 make "DEFINED=$dlib"
+
+PATH_TEST="./test"
+PATH_BIN="./bin"
 
 if [ ! -d "$PATH_TEST" ] || [ ! -d "$PATH_BIN" ]
 then

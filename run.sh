@@ -1,3 +1,5 @@
+#!/bin/bash
+
 __CACHE_SIZE__=(4 8 16 32 64)
 
 if [ "$#" -lt 2 ]
