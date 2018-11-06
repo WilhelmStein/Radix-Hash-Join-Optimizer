@@ -62,17 +62,12 @@ make "DEFINED=$dlib"
 PATH_TEST="./test"
 PATH_BIN="./bin"
 
-if [ ! -d "$PATH_TEST" ] || [ ! -d "$PATH_BIN" ]
-then
-    echo -e "\n<ERR>: No such directory!"
-    exit 2
-fi
-
 if [ -z "$fexe" ]
 then
     fexe=`ls $PATH_TEST`
-    fexe="${fexe//.cpp/}"
 fi
+
+fexe="${fexe//.cpp/}"
 
 echo "-e" "\n*** Compiling exe files ***"
 echo "***"
