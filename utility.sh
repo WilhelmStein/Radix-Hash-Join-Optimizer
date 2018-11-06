@@ -1,5 +1,17 @@
 #!/bin/bash
 
+function confirm
+{
+    if [ -e "$1" ]
+    then
+        read -p "Are you sure you want to overwrite \"$1\": " answer
+        if [[ "$answer" != [yY] ]] && [[ "$answer" != [yY][eE][sS] ]]
+        then
+            exit 2
+        fi
+    fi
+}
+
 if ([ "$1" == "-t" ] || [ "$1" == "--transfer" ]) && [ "$#" -ge 5 ]
 then
     shift; src=$(realpath "$1")
@@ -29,6 +41,8 @@ then
             exit 1
         fi
 
+        confirm "${target//.tar.gz/}/"
+
         tar -zxvf $target
         exit 0
     else
@@ -37,6 +51,8 @@ then
             echo "<ERR>: No such directory!"
             exit 1
         fi
+
+        confirm "${target////}.tar.gz"
 
         tar -zcvf "${target////}".tar.gz "$target"
     fi
