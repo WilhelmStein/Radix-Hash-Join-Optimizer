@@ -1,22 +1,22 @@
 #!/bin/bash
 
+prog=$(basename "$0")
+
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]
 then
     echo "# Options:"
-    echo "# -x, --define-exe      Define a macro in a test unit"
-    echo "# -g, --define-global   Define a macro globally"
-    echo "# -c, --compile-exe     Compile the specified test unit     [default: everything in the test unit directory]"
-    echo "# -r, --rebuild-lib     Recompile any object file           [default: do not recompile up-to-date object files]"
-
-    name=$(basename "$0")
+    echo "# -u, --unit-define      Define a macro in a test unit"
+    echo "# -g, --global-define    Define a macro globally"
+    echo "# -c, --compile          Compile the specified test unit    [default: everything in the test unit directory]"
+    echo "# -r, --rebuild          Recompile lib or test unit         [default: do not recompile up-to-date files]"
 
     echo -e "\n# Usage:"
-    echo "# $name -x [MACRO]"
-    echo "# $name -g [MACRO]"
-    echo "# $name -c [EXE]"
-    echo "# $name -r"
+    echo "# $prog -u [MACRO]"
+    echo "# $prog -g [MACRO]"
+    echo "# $prog -c [name]"
+    echo "# $prog -r"
 
-    echo -e "\n# Example: $name -r -x __BENCHMARK__ -x __SILENCE__ -g __CACHE_SIZE__=32768"
+    echo -e "\n# Example: $prog -r -u __BENCHMARK__ -u __SILENCE__ -g __CACHE_SIZE__=32768"
 
     exit 0
 fi
@@ -24,35 +24,35 @@ fi
 while [ ! "$#" -eq 0 ]
 do
     case "$1" in
-        "-x" | "--define-exe")
+        "-u" | "--unit-define")
         shift
-        dtst="$dtst -D$1"
+        dexe="$dexe -D$1"
         shift
         ;;
-        "-g" | "--define-global")
+        "-g" | "--global-define")
         shift
-        dtst="$dtst -D$1"
+        dexe="$dexe -D$1"
         dlib="$dlib -D$1"
         shift
         ;;
-        "-c" | "--compile-exe")
+        "-c" | "--compile")
         shift
-        fexe=`echo -e "$1\n$fexe"`
+        fexe=$(echo -e "$1\n$fexe")
         shift
         ;;
-        "-r" | "--rebuild-lib")
+        "-r" | "--rebuild")
         rebuild=true
         shift
         ;;
         *)
-        echo "<ERR>: No such option! \"$*\""
+        echo "$prog: invalid syntax! \"$*\""
         echo "                        ^"
         exit 1
         ;;
     esac
 done
 
-if [ "$rebuild" == true ] || [ ! -z "$dlib" ]
+if ([ "$rebuild" ] && [ -z "$fexe" ]) || [ ! -z "$dlib" ]
 then
     make clean
 fi
@@ -64,22 +64,38 @@ PATH_BIN="./bin"
 
 if [ -z "$fexe" ]
 then
-    fexe=`ls $PATH_TEST`
+    fexe=$(ls $PATH_TEST | tr '\n' ' ')
 fi
 
 echo "-e" "\n*** Compiling exe files ***"
 echo "***"
 
-while IFS= read -r name
+for name in ""$fexe""
 do
-    exe="$PATH_BIN/$name.exe"
-
-    if [ -x "$exe" ] && [ ! -z "$dtst" ]
+    if [[ "$name" =~ (\.?/?.+)/(.+)\.exe ]]
     then
-        rm -f "$exe"
+        dir=${BASH_REMATCH[1]}
+        file=${BASH_REMATCH[2]}
+
+        if [ "$dir" == "$PATH_BIN" ]
+        then
+            name="$file"
+        else
+            echo "$prog: directory mismatch! \"$dir\""
+            continue
+        fi
+    else
+        name=${name//.*/}
     fi
 
-    make "$exe" "DEFINED=$dtst"
-done <<< "${fexe//.cpp/}"
+    name="$PATH_BIN/$name.exe"
+
+    if ([ "$rebuild" ] || [ ! -z "$dexe" ]) && [ -x "$name" ]
+    then
+        rm -f "$name"
+    fi
+
+    make "$name" "DEFINED=$dexe"
+done
 
 echo "***"
