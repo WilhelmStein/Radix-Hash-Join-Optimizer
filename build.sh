@@ -52,7 +52,7 @@ do
     esac
 done
 
-if [ "$rebuild" == true ]
+if [ "$rebuild" == true ] || [ ! -z "$dlib" ]
 then
     make clean
 fi
@@ -67,14 +67,19 @@ then
     fexe=`ls $PATH_TEST`
 fi
 
-fexe="${fexe//.cpp/}"
-
 echo "-e" "\n*** Compiling exe files ***"
 echo "***"
 
 while IFS= read -r name
 do
-    make "$PATH_BIN"/"$name".exe "DEFINED=$dtst"
-done <<< "$fexe"
+    exe="$PATH_BIN/$name.exe"
+
+    if [ -x "$exe" ] && [ ! -z "$dtst" ]
+    then
+        rm -f "$exe"
+    fi
+
+    make "$exe" "DEFINED=$dtst"
+done <<< "${fexe//.cpp/}"
 
 echo "***"
