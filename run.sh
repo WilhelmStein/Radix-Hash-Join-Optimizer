@@ -28,7 +28,7 @@ do
     for ((pow = 4; pow <= 64; pow *= 2))
     do
         size=$((pow * 1024))
-        eval "./build.sh -r -x __BENCHMARK__ -x __SILENCE__ -x $def -g __CACHE_SIZE__=$size"
+        eval "./build.sh -r -u __BENCHMARK__ -u __SILENCE__ -u $def -g __CACHE_SIZE__=$size"
 
         "$exe" >> "$out"
     done
