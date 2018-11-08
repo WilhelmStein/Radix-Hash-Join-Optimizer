@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include <utility>
-#include <type_traits>
-#include <chrono>
-#include <iostream>
+#include <utility>          // std::forward
+#include <type_traits>      // std::result_of, std::is_void, ...
+#include <chrono>           // std::chrono
+#include <iostream>         // std::cout
 
 namespace utility
 {

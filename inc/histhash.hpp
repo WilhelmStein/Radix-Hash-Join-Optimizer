@@ -2,7 +2,10 @@
 
 #include <types.hpp>
 #include <relation.hpp>
-#include <iosfwd>
+
+#if defined(__VERBOSE__)
+    #include <iosfwd>           // std::ostream
+#endif
 
 namespace RHJ
 {
