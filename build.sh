@@ -46,7 +46,7 @@ do
         ;;
         *)
         echo "$prog: invalid syntax! \"$*\""
-        echo "                        ^"
+        echo "                           ^"
         exit 1
         ;;
     esac
@@ -72,7 +72,12 @@ echo "***"
 
 for name in ""$fexe""
 do
-    if [[ "$name" =~ (\.?/?.+)/(.+)\.exe ]]
+    if [ -z "$name" ]
+    then
+        continue
+    fi
+
+    if [[ "$name" =~ (\.?/?.+)/(.+) ]]
     then
         dir=${BASH_REMATCH[1]}
         file=${BASH_REMATCH[2]}
@@ -84,11 +89,9 @@ do
             echo "$prog: directory mismatch! \"$dir\""
             continue
         fi
-    else
-        name=${name//.*/}
     fi
 
-    name="$PATH_BIN/$name.exe"
+    name="$PATH_BIN/${name//.*/}.exe"
 
     if ([ "$rebuild" ] || [ ! -z "$dexe" ]) && [ -x "$name" ]
     then
