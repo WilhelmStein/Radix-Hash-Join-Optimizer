@@ -2,7 +2,7 @@
 
 #include <types.hpp>
 #include <result.hpp>
-#include <iosfwd>
+#include <iosfwd>               // std::ostream
 
 #if defined(__DEBUG_PSUM__)
     #if !defined(__VERBOSE__)

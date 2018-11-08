@@ -1,3 +1,4 @@
+
 #include <histhash.hpp>
 #include <cmath>            // std::pow
 #include <utility>          // std::move

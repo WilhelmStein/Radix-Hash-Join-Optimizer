@@ -1,8 +1,8 @@
 #include <relation.hpp>
 #include <histhash.hpp>
 #include <index.hpp>
-#include <cmath>
-#include <fstream>          // std::ostream
+#include <cmath>                // std::ceil, std::log
+#include <fstream>              // std::ostream
 
 #if defined(__VERBOSE__)
     #include <iomanip>          // std::setw, std::setfill, std::left
@@ -12,7 +12,7 @@
     #define __CACHE_SIZE__ (32UL * 1024UL)
 #endif
 
-static inline void calc_range(std::size_t rSize, size_t sSize, std::size_t& range, radix_t& radix)
+static inline void calibrateRHJ(std::size_t rSize, size_t sSize, std::size_t& range, radix_t& radix)
 {
     rSize *= sizeof(RHJ::Relation::Tuple);
     sSize *= sizeof(RHJ::Relation::Tuple);
@@ -60,13 +60,17 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
 
     radix_t radix; std::size_t range;
 
-    calc_range(relR.size, relS.size, range, radix);
+    calibrateRHJ(relR.size, relS.size, range, radix);
 
     PsumTable hashTableR(relR, radix, range);
 
     PsumTable hashTableS(relS, radix, range);
 
-    List results(relR, relS);
+    #if defined(__VERBOSE__)
+        List results(relR, relS);
+    #else
+        List results;
+    #endif
 
     for (std::size_t hash = 0UL; hash < range; hash++)
     {

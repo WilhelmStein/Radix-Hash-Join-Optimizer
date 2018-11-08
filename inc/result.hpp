@@ -2,7 +2,7 @@
 #pragma once
 
 #include <types.hpp>
-#include <iosfwd>
+#include <iosfwd>           // std::ostream
 
 #define CAPACITY (1024UL * 1024UL / sizeof(Result))
 
@@ -12,8 +12,6 @@ namespace RHJ
     
     struct List
     {
-        const Relation& left, & right;
-
         struct Result {
             tuple_key_t key1;
             tuple_key_t key2;
@@ -42,7 +40,14 @@ namespace RHJ
             ~Node();
         } * head, * tail;
 
-        List(const Relation&, const Relation&);
+        #if defined(__VERBOSE__)
+            const Relation& left, & right;
+
+            List(const Relation&, const Relation&);
+        #else
+            List();
+        #endif
+        
         List(List&&) noexcept;
 
         ~List();

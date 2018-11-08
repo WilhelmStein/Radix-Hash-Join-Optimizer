@@ -1,9 +1,9 @@
 
 #include <histhash.hpp>
-#include <cstdlib>
-#include <ctime>
-#include <iostream>
 #include <benchmark.hpp>
+#include <cstdlib>              // std::srand
+#include <ctime>                // std::time
+#include <iostream>             // std::cout
 
 #if defined(__VERBOSE__)
     #if defined(__SILENCE__)

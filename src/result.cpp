@@ -1,8 +1,8 @@
 
 #include <result.hpp>
 #include <relation.hpp>
-#include <utility>
-#include <fstream>
+#include <utility>          // std::move
+#include <fstream>          // std::ostream
 
 RHJ::List::Node::Buffer::Buffer()
 :
@@ -22,17 +22,33 @@ RHJ::List::Node::~Node()
         delete next;
 }
 
-RHJ::List::List(const RHJ::Relation& left, const RHJ::Relation& right)
-:
-left(left), right(right), head(new RHJ::List::Node()), tail(head)
-{
-}
+#if defined(__VERBOSE__)
+    RHJ::List::List(const RHJ::Relation& left, const RHJ::Relation& right)
+    :
+    head(new RHJ::List::Node()), tail(head), left(left), right(right)
+    {
+    }
+#else
+    RHJ::List::List()
+    :
+    head(new RHJ::List::Node()), tail(head)
+    {
+    }
+#endif
 
-RHJ::List::List(List&& other) noexcept
-:
-left(std::move(other.left)), right(std::move(other.right)), head(std::move(other.head)), tail(std::move(other.tail))
-{
-}
+#if defined(__VERBOSE__)
+    RHJ::List::List(List&& other) noexcept
+    :
+    head(std::move(other.head)), tail(std::move(other.tail)), left(std::move(other.left)), right(std::move(other.right))
+    {
+    }
+#else
+    RHJ::List::List(List&& other) noexcept
+    :
+    head(std::move(other.head)), tail(std::move(other.tail))
+    {
+    }
+#endif
 
 RHJ::List::~List()
 {

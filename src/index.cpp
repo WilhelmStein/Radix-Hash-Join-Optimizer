@@ -1,7 +1,6 @@
 
 #include <index.hpp>
-#include <cmath>
-#include <functional>
+#include <cmath>                        // std::sqrt
 
 #define HASH(key)                       \
 do {                                    \
@@ -92,6 +91,9 @@ bool isPrime(std::size_t candidate)
 
 void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results, const RHJ::PsumTable& lpsum) const
 {
+    std::uintptr_t min = reinterpret_cast<std::uintptr_t>(lpsum.table.tuples);
+    std::uintptr_t max = reinterpret_cast<std::uintptr_t>(&lpsum.table.tuples[lpsum.table.size - 1UL]);
+
     for (std::size_t row = 0UL; row < bucket.size; row++)
     {
         const Relation::Tuple& tuple = bucket.tuples[row];
@@ -104,9 +106,6 @@ void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results, 
             if (tuple.payload == _data.tuples[index].payload)
             {
                 List::Result result;
-                
-                std::uintptr_t min = reinterpret_cast<std::uintptr_t>(lpsum.table.tuples);
-                std::uintptr_t max = reinterpret_cast<std::uintptr_t>(&lpsum.table.tuples[lpsum.table.size - 1UL]);
 
                 std::uintptr_t offset = reinterpret_cast<std::uintptr_t>(&tuple);
 
