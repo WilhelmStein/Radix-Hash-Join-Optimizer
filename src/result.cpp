@@ -22,7 +22,7 @@ RHJ::List::Node::~Node()
         delete next;
 }
 
-#if defined(__VERBOSE__)
+#if defined (__VERBOSE__)
     RHJ::List::List(const RHJ::Relation& left, const RHJ::Relation& right)
     :
     head(new RHJ::List::Node()), tail(head), left(left), right(right)
@@ -36,7 +36,7 @@ RHJ::List::Node::~Node()
     }
 #endif
 
-#if defined(__VERBOSE__)
+#if defined (__VERBOSE__)
     RHJ::List::List(List&& other) noexcept
     :
     head(std::move(other.head)), tail(std::move(other.tail)), left(std::move(other.left)), right(std::move(other.right))
@@ -73,7 +73,7 @@ std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::List& results)
         current = current->next
     )
     {
-        #if defined(__VERBOSE__)
+        #if defined (__VERBOSE__)
             os << "+----------+----------+----------+----------+" << std::endl;
             os << "|Key L     |Value L   |Key R     |Value R   |" << std::endl;
             os << "+----------+----------+----------+----------+" << std::endl;
