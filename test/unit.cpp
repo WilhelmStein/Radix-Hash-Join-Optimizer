@@ -6,8 +6,8 @@
 #include <iostream>             // std::cout
 
 #if defined (__VERBOSE__)
-    #if defined (__SILENCE__)
-        #undef __SILENCE__
+    #if defined (__QUIET__)
+        #undef __QUIET__
     #endif
 #endif
 
@@ -93,7 +93,7 @@ int main()
         RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
     #endif
 
-    #if !defined(__SILENCE__)
+    #if !defined(__QUIET__)
         std::cout << R << std::endl;
         std::cout << S << std::endl;
         

@@ -3,13 +3,13 @@
 #include <cmath>            // std::pow
 #include <utility>          // std::move
 
-#if defined (__DEBUG_PSUM__)    
+#if defined (__PSUM_DEBUG__)    
     #include <fstream>
 #endif
 
 #define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
-#if defined (__DEBUG_PSUM__)
+#if defined (__PSUM_DEBUG__)
     std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::PsumTable& psumtable)
     {
         os << "\n<DBG>: psumtable.table.tuples" << std::endl;

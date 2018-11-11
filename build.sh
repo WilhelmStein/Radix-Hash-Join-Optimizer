@@ -16,7 +16,7 @@ then
     echo "# $prog -c [name]"
     echo "# $prog -r"
 
-    echo -e "\n# Example: $prog -r -u __BENCHMARK__ -u __SILENCE__ -g __CACHE_SIZE__=32768"
+    echo -e "\n# Example: $prog -r -u __BENCHMARK__ -u __QUIET__ -g __CACHE_SIZE__=32768"
 
     exit 0
 fi
