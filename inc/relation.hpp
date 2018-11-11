@@ -4,7 +4,7 @@
 #include <result.hpp>
 #include <iosfwd>               // std::ostream
 
-#if defined(__DEBUG_PSUM__)
+#if defined (__PSUM_DEBUG__)
     #if !defined(__VERBOSE__)
         #define __VERBOSE__
     #endif
@@ -23,7 +23,7 @@ namespace RHJ
 
             Tuple() : key(0), payload(0) {}
 
-            #if defined(__VERBOSE__)
+            #if defined (__VERBOSE__)
                 friend std::ostream& operator<<(std::ostream&, const Tuple&);
             #endif
         } * tuples;
@@ -43,7 +43,7 @@ namespace RHJ
         static List RadixHashJoin(const Relation& relR, const Relation& relS);
     };
 
-    #if defined(__VERBOSE__)
+    #if defined (__VERBOSE__)
         std::ostream& operator<<(std::ostream&, const Relation::Tuple&);
     #endif
     

@@ -3,7 +3,7 @@
 #include <types.hpp>
 #include <relation.hpp>
 
-#if defined(__VERBOSE__)
+#if defined (__VERBOSE__)
     #include <iosfwd>           // std::ostream
 #endif
 
@@ -38,12 +38,12 @@ namespace RHJ
 
             Bucket operator[](std::size_t value) const ;
 
-            #if defined(__DEBUG_PSUM__)
+            #if defined (__PSUM_DEBUG__)
                 friend std::ostream& operator<<(std::ostream&, const PsumTable&);
             #endif
     };
 
-    #if defined(__DEBUG_PSUM__)
+    #if defined (__PSUM_DEBUG__)
         std::ostream& operator<<(std::ostream&, const PsumTable&);
     #endif
 }

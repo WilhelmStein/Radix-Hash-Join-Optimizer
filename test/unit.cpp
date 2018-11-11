@@ -5,19 +5,19 @@
 #include <ctime>                // std::time
 #include <iostream>             // std::cout
 
-#if defined(__VERBOSE__)
-    #if defined(__SILENCE__)
-        #undef __SILENCE__
+#if defined (__VERBOSE__)
+    #if defined (__QUIET__)
+        #undef __QUIET__
     #endif
 #endif
 
-#if defined(__LARGE__) || defined(__MEDIUM__)
-    #if defined(__SAME__)
+#if defined (__LARGE__) || defined(__MEDIUM__)
+    #if defined (__SAME__)
         #undef __SAME__
     #endif
 #endif
 
-#if defined(__LARGE__)
+#if defined (__LARGE__)
     #define SIZE_R (1024UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
     #define SIZE_S (1024UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
 
@@ -32,14 +32,14 @@
     #define SIZE_S (8UL)
 #endif
 
-#if defined(__DIFFERENT__)
+#if defined (__DIFFERENT__)
     #define PAYLOAD_R (1)
     #define PAYLOAD_S (PAYLOAD_R + 1)
 #elif defined(__SAME__)
     #define PAYLOAD_R (1)
     #define PAYLOAD_S PAYLOAD_R
 #else
-    #if defined(__MEDIUM__)
+    #if defined (__MEDIUM__)
         #define MIN (0)
         #define MAX (256 * 1024)
     #else
@@ -53,11 +53,11 @@
 
 int main()
 {
-    #if defined(__RANDOM__)
+    #if defined (__ARBITRARY__)
         std::srand(static_cast<unsigned>(std::time(nullptr)));
     #endif
 
-    #if defined(__VERBOSE__)
+    #if defined (__VERBOSE__)
         RHJ::Relation R(SIZE_R, "Slim");
         RHJ::Relation S(SIZE_S, "Shady");
     #else
@@ -77,8 +77,8 @@ int main()
         S.tuples[i].payload = PAYLOAD_S;
     }
     
-    #if defined(__BENCHMARK__)
-        #if defined(__LARGE__)
+    #if defined (__BENCHMARK__)
+        #if defined (__LARGE__)
             std::cout << "\ncase: __LARGE__"  << std::endl;
         #elif defined(__MEDIUM__)
             std::cout << "\ncase: __MEDIUM__" << std::endl;
@@ -93,7 +93,7 @@ int main()
         RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
     #endif
 
-    #if !defined(__SILENCE__)
+    #if !defined(__QUIET__)
         std::cout << R << std::endl;
         std::cout << S << std::endl;
         

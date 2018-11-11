@@ -4,7 +4,7 @@
 #include <cmath>                // std::ceil, std::log
 #include <fstream>              // std::ostream
 
-#if defined(__VERBOSE__)
+#if defined (__VERBOSE__)
     #include <iomanip>          // std::setw, std::setfill, std::left
 #endif
 
@@ -26,7 +26,7 @@ static inline void calibrateRHJ(std::size_t rSize, size_t sSize, std::size_t& ra
     range = static_cast<std::size_t>(std::pow(2UL, radix));
 }
 
-#if defined(__VERBOSE__)
+#if defined (__VERBOSE__)
     std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation::Tuple& tuple)
     {
         os
@@ -40,7 +40,7 @@ static inline void calibrateRHJ(std::size_t rSize, size_t sSize, std::size_t& ra
 
 std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation& relation)
 {
-    #if defined(__VERBOSE__)
+    #if defined (__VERBOSE__)
         os << "+----------+----------+" << std::endl;
         os << "|Key       |Value     |" << std::endl;
         os << "+----------+----------+" << std::endl;
@@ -66,7 +66,7 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
 
     PsumTable hashTableS(relS, radix, range);
 
-    #if defined(__VERBOSE__)
+    #if defined (__VERBOSE__)
         List results(relR, relS);
     #else
         List results;

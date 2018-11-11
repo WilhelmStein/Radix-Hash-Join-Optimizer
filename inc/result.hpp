@@ -40,7 +40,7 @@ namespace RHJ
             ~Node();
         } * head, * tail;
 
-        #if defined(__VERBOSE__)
+        #if defined (__VERBOSE__)
             const Relation& left, & right;
 
             List(const Relation&, const Relation&);
