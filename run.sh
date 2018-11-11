@@ -1,10 +1,8 @@
 #!/bin/bash
 
-__CACHE_SIZE__=(4 8 16 32 64)
-
 if [ "$#" -lt 2 ]
 then
-    echo "Usage: $(basename "$0") [EXE] [OUT]"
+    echo "Usage: $(basename "$0") [EXE] [OUT] [MACROS]"
     exit 1
 fi
 
@@ -22,14 +20,14 @@ fi
 
 truncate --size=0 "$out"
 
-defs=("__MEDIUM__" "__LARGE__")
-for def in "${defs[@]}"
-do
-    for ((pow = 4; pow <= 64; pow *= 2))
-    do
-        size=$((pow * 1024))
-        eval "./build.sh -r -u __BENCHMARK__ -u __QUIET__ -u $def -g __CACHE_SIZE__=$size"
+macros=(__SMALL__ ""$*""); shift;
 
+for ((pow = 4; pow <= 64; pow *= 2))
+do
+    eval "./build.sh -g __CACHE_SIZE__=$((pow * 1024))"
+    for macro in "${macros[@]}"
+    do
+        eval "./build.sh -b -q -u $macro -u __CACHE_SIZE__=$((pow * 1024)) -x $exe"
         "$exe" >> "$out"
     done
 done
