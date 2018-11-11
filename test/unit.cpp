@@ -3,6 +3,7 @@
 #include <cstdlib>              // std::srand
 #include <ctime>                // std::time
 #include <iostream>             // std::cout
+#include <iomanip>              // std::setprecision
 
 #if defined (__BENCHMARK__)
     #include <benchmark.hpp>
@@ -28,7 +29,7 @@
     #define SIZE_R (1024UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
     #define SIZE_S (1024UL * 1024UL * 1024UL / sizeof(RHJ::PsumTable::Bucket))
 
-    #if !defined(__DIFFERENT__)
+    #if !defined (__DIFFERENT__)
         #define __DIFFERENT__
     #endif
 #elif defined(__MEDIUM__)
@@ -85,22 +86,31 @@ int main()
     }
     
     #if defined (__BENCHMARK__)
+        double ms; std::clock_t ticks;
+
+        RHJ::List results
+        (
+            utility::benchmark(ms, ticks, RHJ::Relation::RadixHashJoin, R, S)
+        );
+
         #if defined (__LARGE__)
-            std::cout << "\ncase: __LARGE__"  << std::endl;
+            std::cout << "\nlarge : ";
         #elif defined(__MEDIUM__)
-            std::cout << "\ncase: __MEDIUM__" << std::endl;
+            std::cout << "\nmedium : ";
         #else
-            std::cout << "\ncase: __SMALL__" << std::endl;
+            std::cout << "\nsmall : ";
         #endif
         
-        std::cout << "cache-kb: " << __CACHE_SIZE__ / 1024UL << std::endl;
-
-        RHJ::List results(utility::benchmark(RHJ::Relation::RadixHashJoin, R, S));
+        std::cout
+        << __CACHE_SIZE__ / 1024UL << " kilobytes : "
+        << std::fixed << std::setprecision(6) << ms << " milliseconds : "
+        << ticks << " ticks"
+        << std::endl;
     #else
         RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
     #endif
 
-    #if !defined(__QUIET__)
+    #if !defined (__QUIET__)
         std::cout << R << std::endl;
         std::cout << S << std::endl;
         
