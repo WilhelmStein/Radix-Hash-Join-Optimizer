@@ -5,7 +5,7 @@
 #include <iosfwd>               // std::ostream
 
 #if defined (__PSUM_DEBUG__)
-    #if !defined(__VERBOSE__)
+    #if !defined (__VERBOSE__)
         #define __VERBOSE__
     #endif
 #endif

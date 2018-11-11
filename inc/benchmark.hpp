@@ -4,7 +4,6 @@
 #include <utility>          // std::forward
 #include <type_traits>      // std::result_of, std::is_void, ...
 #include <chrono>           // std::chrono
-#include <iostream>         // std::cout
 
 namespace utility
 {
@@ -26,7 +25,7 @@ namespace utility
         typename ...Args,
         typename = detail::enable_if_t<detail::is_void<Task, Args...>::value>
     >
-    void benchmark(Task&& task, Args&&... args)
+    void benchmark(double& ms, std::clock_t& ticks, Task&& task, Args&&... args)
     {
         auto tbeg = std::chrono::high_resolution_clock::now();
         auto cbeg = std::clock();
@@ -36,15 +35,12 @@ namespace utility
         auto tend = std::chrono::high_resolution_clock::now();
         auto cend = std::clock();
 
-        const double tdiff = static_cast<double>
+        ms = static_cast<double>
         (
             std::chrono::duration_cast<std::chrono::microseconds>(tend - tbeg).count()
         ) / 1000.0;
 
-        const double cdiff = cend - cbeg;
-
-        std::cout << "milliseconds: " << tdiff << std::endl;
-        std::cout << "clock ticks: "  << cdiff << std::endl;
+        ticks = cend - cbeg;
     }
 
     template
@@ -53,7 +49,8 @@ namespace utility
         typename ...Args,
         typename = detail::enable_if_t<!detail::is_void<Task, Args...>::value>
     >
-    auto benchmark(Task&& task, Args&&... args) -> detail::result_of_t<Task, Args...> 
+    auto benchmark(double& ms, std::clock_t& ticks, Task&& task, Args&&... args) ->
+    detail::result_of_t<Task, Args...> 
     {
         auto tbeg = std::chrono::high_resolution_clock::now();
         auto cbeg = std::clock();
@@ -63,15 +60,12 @@ namespace utility
         auto tend = std::chrono::high_resolution_clock::now();
         auto cend = std::clock();
 
-        const double tdiff = static_cast<double>
+        ms = static_cast<double>
         (
             std::chrono::duration_cast<std::chrono::microseconds>(tend - tbeg).count()
         ) / 1000.0;
 
-        const double cdiff = cend - cbeg;
-
-        std::cout << "milliseconds: " << tdiff << std::endl;
-        std::cout << "clock ticks: "  << cdiff << std::endl;
+        ticks = cend - cbeg;
 
         return rv;
     }
