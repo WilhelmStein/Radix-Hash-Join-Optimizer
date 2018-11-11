@@ -1,9 +1,16 @@
 
 #include <histhash.hpp>
-#include <benchmark.hpp>
 #include <cstdlib>              // std::srand
 #include <ctime>                // std::time
 #include <iostream>             // std::cout
+
+#if defined (__BENCHMARK__)
+    #include <benchmark.hpp>
+    
+    #if !defined (__CACHE_SIZE__)
+        #define __CACHE_SIZE__ (32UL * 1024UL)
+    #endif
+#endif
 
 #if defined (__VERBOSE__)
     #if defined (__QUIET__)

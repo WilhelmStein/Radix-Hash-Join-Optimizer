@@ -8,7 +8,7 @@
     #include <iomanip>          // std::setw, std::setfill, std::left
 #endif
 
-#if !defined(__CACHE_SIZE__)
+#if !defined (__CACHE_SIZE__)
     #define __CACHE_SIZE__ (32UL * 1024UL)
 #endif
 
