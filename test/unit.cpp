@@ -53,7 +53,7 @@
 
 int main()
 {
-    #if defined (__RANDOM__)
+    #if defined (__ARBITRARY__)
         std::srand(static_cast<unsigned>(std::time(nullptr)));
     #endif
 
