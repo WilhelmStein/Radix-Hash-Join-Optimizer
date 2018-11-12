@@ -48,6 +48,7 @@ namespace RHJ
             List();
         #endif
         
+        List(const List&) = delete;
         List(List&&) noexcept;
 
         ~List();

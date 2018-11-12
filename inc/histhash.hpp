@@ -28,8 +28,11 @@ namespace RHJ
                 std::size_t size;
 
                 Bucket(Relation::Tuple *, std::size_t);
+
+                Bucket(const Bucket&) = delete;
                 Bucket(Bucket&&) noexcept;
 
+                Bucket& operator=(const Bucket&) = delete;
                 Bucket& operator=(Bucket&&) noexcept;
             };
 
