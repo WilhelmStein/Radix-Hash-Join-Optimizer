@@ -10,10 +10,10 @@ PATH_BIN="./bin"
 declare -A classes
 
 # grep every global macro and extract its name
-classes[-g]=$(grep -E '__.*__' ${PATH_INC}/* ${PATH_SRC}/* | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
+classes[-g]=$(grep -Ev '//' ${PATH_INC}/* ${PATH_SRC}/* | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
 
 # grep every unit specific macro and extract its name
-classes[-u]=$(grep -E '__.*__' ${PATH_TEST}/* | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
+classes[-u]=$(grep -Ev '//' ${PATH_TEST}/* | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
 
 declare -A shortcuts
 
