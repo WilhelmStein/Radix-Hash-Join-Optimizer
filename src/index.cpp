@@ -89,7 +89,7 @@ bool isPrime(std::size_t candidate)
     return true;
 }
 
-void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results, const RHJ::PsumTable& lpsum) const
+void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::Results& results, const RHJ::PsumTable& lpsum) const
 {
     std::uintptr_t min = reinterpret_cast<std::uintptr_t>(lpsum.table.tuples);
     std::uintptr_t max = reinterpret_cast<std::uintptr_t>(&lpsum.table.tuples[lpsum.table.size - 1UL]);
@@ -105,16 +105,12 @@ void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::List& results, 
         {
             if (tuple.payload == _data.tuples[index].payload)
             {
-                List::Result result;
-
                 std::uintptr_t offset = reinterpret_cast<std::uintptr_t>(&tuple);
 
                 if (min <= offset && offset <= max)
-                    result = { tuple.key, _data.tuples[index].key };
+                    results.push_back(tuple.key, _data.tuples[index].key);
                 else
-                    result = { _data.tuples[index].key, tuple.key };
-
-                results.append(result);
+                    results.push_back(_data.tuples[index].key, tuple.key);
             }
         }
     }

@@ -4,13 +4,13 @@
 #include <types.hpp>
 #include <iosfwd>           // std::ostream
 
-#define CAPACITY (1024UL * 1024UL / sizeof(Result))
+#define CAPACITY (1024UL * 1024UL / sizeof(RHJ::Results::Result))
 
 namespace RHJ
 {
     class Relation;
     
-    struct List
+    struct Results
     {
         struct Result {
             tuple_key_t key1;
@@ -21,42 +21,48 @@ namespace RHJ
         {
             class Buffer
             {
-                friend List;
+                friend struct Results;
 
                 std::size_t _size;
+
                 Result _data[CAPACITY];
 
             public:
 
-                Buffer();
+                Buffer() : _size(0UL) {}
 
                 std::size_t size() const { return _size; }
                 const Result& operator[](std::size_t i) const { return _data[i]; }
+
             } buffer;
 
             Node * next;
 
-            Node();
-            ~Node();
+            Node() : next(nullptr) {}
+            ~Node() { if (next) delete next; }
+
         } * head, * tail;
 
         #if defined (__VERBOSE__)
-            const Relation& left, & right;
+            const Relation * left, * right;
 
-            List(const Relation&, const Relation&);
+            Results(const Relation&, const Relation&);
         #else
-            List();
+            Results();
         #endif
         
-        List(const List&) = delete;
-        List(List&&) noexcept;
+        Results(const Results&) = delete;
+        Results(Results&&) noexcept;
 
-        ~List();
+        ~Results();
 
-        friend std::ostream& operator<<(std::ostream&, const List&);
+        Results& operator=(const Results&) = delete;
+        Results& operator=(Results&&) noexcept;
 
-        void append(const Result&);
+        friend std::ostream& operator<<(std::ostream&, const Results&);
+
+        void push_back(tuple_key_t, tuple_key_t);
     };
 
-    std::ostream& operator<<(std::ostream&, const List&);
+    std::ostream& operator<<(std::ostream&, const Results&);
 }

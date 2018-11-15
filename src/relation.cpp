@@ -56,7 +56,7 @@ std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Relation& relation)
     return os;
 }
 
-RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Relation& relS) {
+RHJ::Results RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Relation& relS) {
 
     radix_t radix; std::size_t range;
 
@@ -67,9 +67,9 @@ RHJ::List RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::Rel
     PsumTable hashTableS(relS, radix, range);
 
     #if defined (__VERBOSE__)
-        List results(relR, relS);
+        Results results(relR, relS);
     #else
-        List results;
+        Results results;
     #endif
 
     for (std::size_t hash = 0UL; hash < range; hash++)
