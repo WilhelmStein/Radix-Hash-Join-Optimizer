@@ -40,7 +40,7 @@ namespace RHJ
 
         friend std::ostream& operator<<(std::ostream&, const Relation&);
 
-        static List RadixHashJoin(const Relation& relR, const Relation& relS);
+        static Results RadixHashJoin(const Relation& relR, const Relation& relS);
     };
 
     #if defined (__VERBOSE__)

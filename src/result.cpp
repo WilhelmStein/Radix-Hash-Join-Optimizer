@@ -4,71 +4,76 @@
 #include <utility>          // std::move
 #include <fstream>          // std::ostream
 
-RHJ::List::Node::Buffer::Buffer()
-:
-_size(0UL)
-{
-}
-
-RHJ::List::Node::Node()
-:
-next(nullptr)
-{
-}
-
-RHJ::List::Node::~Node()
-{
-    if (next)
-        delete next;
-}
-
 #if defined (__VERBOSE__)
-    RHJ::List::List(const RHJ::Relation& left, const RHJ::Relation& right)
+    RHJ::Results::Results(const RHJ::Relation& left, const RHJ::Relation& right)
     :
-    head(new RHJ::List::Node()), tail(head), left(left), right(right)
+    head(new Node), tail(head), left(&left), right(&right)
     {
     }
-#else
-    RHJ::List::List()
-    :
-    head(new RHJ::List::Node()), tail(head)
-    {
-    }
-#endif
 
-#if defined (__VERBOSE__)
-    RHJ::List::List(List&& other) noexcept
+    RHJ::Results::Results(Results&& other) noexcept
     :
     head(std::move(other.head)), tail(std::move(other.tail)), left(std::move(other.left)), right(std::move(other.right))
     {
+        other.head = other.tail = nullptr;
+    }
+
+    RHJ::Results& RHJ::Results::operator=(Results&& other) noexcept
+    {
+        head  = std::move(other.head);
+        tail  = std::move(other.tail);
+        left  = std::move(other.left);
+        right = std::move(other.right);
+
+        other.head = other.tail = nullptr;
+
+        return *this;
     }
 #else
-    RHJ::List::List(List&& other) noexcept
+    RHJ::Results::Results()
+    :
+    head(new Node), tail(head)
+    {
+    }
+
+    RHJ::Results::Results(Results&& other) noexcept
     :
     head(std::move(other.head)), tail(std::move(other.tail))
     {
+        other.head = other.tail = nullptr;
+    }
+
+    RHJ::Results& RHJ::Results::operator=(Results&& other) noexcept
+    {
+        head = std::move(other.head);
+        tail = std::move(other.tail);
+
+        other.head = other.tail = nullptr;
+
+        return *this;
     }
 #endif
 
-RHJ::List::~List()
+RHJ::Results::~Results()
 {
-    delete head;
+    if (head)
+        delete head;
 }
 
-void RHJ::List::append(const RHJ::List::Result& result)
+void RHJ::Results::push_back(tuple_key_t key1, tuple_key_t key2)
 {
     if (tail->buffer._size == CAPACITY)
         tail = tail->next = new Node;
 
-    tail->buffer._data[tail->buffer._size++] = result;
+    tail->buffer._data[tail->buffer._size++] = { key1, key2 };
 }
 
-std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::List& results)
+std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Results& results)
 {
     std::size_t count = 0UL;
     for
     (
-        const RHJ::List::Node * current = results.head;
+        const RHJ::Results::Node * current = results.head;
         current != nullptr;
         current = current->next
     )
@@ -82,13 +87,13 @@ std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::List& results)
                 const std::size_t rowR = current->buffer[i].key1;
                 const std::size_t rowS = current->buffer[i].key2;
 
-                os << "|" << results.left.tuples[rowR]  << "|" << results.right.tuples[rowS] << "|" << std::endl;
+                os << "|" << results.left->tuples[rowR]  << "|" << results.right->tuples[rowS] << "|" << std::endl;
             }
             os << "+----------+----------+----------+----------+" << std::endl;
 
             os
-            << "\n[L=\""    << results.left.name
-            << "\", R=\"" << results.right.name
+            << "\n[L=\""    << results.left->name
+            << "\", R=\"" << results.right->name
             << "\"]: ";
         #else
             count += current->buffer.size();

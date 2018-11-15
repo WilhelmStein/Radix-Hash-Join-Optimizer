@@ -21,6 +21,6 @@ namespace RHJ
         Index(const PsumTable::Bucket&);
         ~Index();
 
-        void join(const PsumTable::Bucket&, RHJ::List&, const PsumTable&) const;
+        void join(const PsumTable::Bucket&, RHJ::Results&, const PsumTable&) const;
     };
 }

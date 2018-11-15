@@ -86,28 +86,9 @@ int main()
     }
     
     #if defined (__BENCHMARK__)
-        double ms; std::clock_t ticks;
-
-        RHJ::List results
-        (
-            utility::benchmark(ms, ticks, RHJ::Relation::RadixHashJoin, R, S)
-        );
-
-        #if defined (__LARGE__)
-            std::cout << "\nlarge : ";
-        #elif defined(__MEDIUM__)
-            std::cout << "\nmedium : ";
-        #else
-            std::cout << "\nsmall : ";
-        #endif
-        
-        std::cout
-        << __CACHE_SIZE__ / 1024UL << " kilobytes : "
-        << std::fixed << std::setprecision(6) << ms << " milliseconds : "
-        << ticks << " ticks"
-        << std::endl;
+        auto [ms, ticks, results] = utility::benchmark(RHJ::Relation::RadixHashJoin, R, S);
     #else
-        RHJ::List results(RHJ::Relation::RadixHashJoin(R, S));
+        RHJ::Results results(RHJ::Relation::RadixHashJoin(R, S));
     #endif
 
     #if !defined (__QUIET__)
@@ -115,6 +96,22 @@ int main()
         std::cout << S << std::endl;
         
         std::cout << results << std::endl;
+    #endif
+
+    #if defined (__BENCHMARK__)
+        #if defined (__LARGE__)
+            std::cout << "large : ";
+        #elif defined(__MEDIUM__)
+            std::cout << "medium : ";
+        #else
+            std::cout << "small : ";
+        #endif
+        
+        std::cout
+        << __CACHE_SIZE__ / 1024UL << " kilobytes : "
+        << std::fixed << std::setprecision(6) << ms << " milliseconds : "
+        << ticks << " ticks"
+        << std::endl;
     #endif
 
     return 0;
