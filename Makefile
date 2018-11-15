@@ -1,6 +1,6 @@
 
 CC = g++
-CFLAGS = -Wall -Wextra -std=c++14 -g3
+CFLAGS = -Wall -Wextra -std=c++17 -g3
 
 PATH_SRC = ./src
 PATH_INC = ./inc
