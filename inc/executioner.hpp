@@ -32,14 +32,14 @@ namespace RHJ
             ~IntermediateResults();
 
             void contains(std::size_t Rel_1, std::size_t Rel_2, Node * node_1, Node * node_2);
-            void contains(std::size_t Rel, Node * node);
+            void contains(std::size_t Rel, Node *& node, std::size_t *index);
 
             void append(std::size_t *relationNames, std::size_t columnSize, std::size_t columnNum, tuple_key_t *array);
 
         } inteResults;
 
-        void executeFilter();
-        void executeJoin();
+        void executeFilter(Query::Predicate pred);
+        void executeJoin(Query::Predicate pred);
 
     public:
 

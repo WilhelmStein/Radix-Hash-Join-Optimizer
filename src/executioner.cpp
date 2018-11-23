@@ -1,6 +1,5 @@
 #include <executioner.hpp>
 
-
 RHJ::Executioner::IntermediateResults::~IntermediateResults() {
     if (head)
         delete head;
@@ -35,18 +34,20 @@ void RHJ::Executioner::IntermediateResults::contains(std::size_t Rel_1, std::siz
     } while (!found_1 || !found_2);
 }
 
-void RHJ::Executioner::IntermediateResults::contains(std::size_t Rel, Node * node) {
+void RHJ::Executioner::IntermediateResults::contains(std::size_t Rel, Node *& node, std::size_t *index) {
 
     bool found = false;
     node = nullptr;
+    *index = -1;
 
     Node * current = head;
 
     do {
-        for (int i = 0; i < current->content.columnNum; i++) {
+        for (std::size_t i = 0; i < current->content.columnNum; i++) {
             if (current->content.relationNames[i] == Rel) {
                 found = true;
                 node = current;
+                *index = i;
                 break;
             }
         }
@@ -73,9 +74,43 @@ void RHJ::Executioner::IntermediateResults::append(std::size_t *relationNames, s
 
 void RHJ::Executioner::execute(const Query& query) {
 
-    
-
     for (int i = 0; i < query.preCount; i++) {
 
+        switch(query.predicates[i].type) {
+            case Query::Predicate::Type::join_t:
+                executeJoin(query.predicates[i]);
+                break;
+            default:
+                executeFilter(query.predicates[i]);
+                break;
+        }
     }
+}
+
+void RHJ::Executioner::executeFilter(Query::Predicate pred) {
+    IntermediateResults::Node * node;
+    std::size_t index;
+
+    inteResults.contains(pred.left.rel, node, &index);
+
+    if (node) {
+        // Our array of rowids exists in
+        // content.array[content.columnSize * index] - content.array[content.columnSize * (index + 1)]
+
+        for (   
+                std::size_t i = node->content.columnSize * index; 
+                i < node->content.columnSize * (index + 1); 
+                i++
+            ) 
+        {
+            
+        }
+    }
+    else {
+
+    }
+}
+
+void RHJ::Executioner::executeJoin(Query::Predicate pred) {
+
 }
