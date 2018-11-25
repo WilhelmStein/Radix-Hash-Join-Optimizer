@@ -68,6 +68,7 @@ namespace utility
         list& operator=(list&&) noexcept;
 
         void push_back(T&&);
+        void pop_back();
 
         template <typename ...Args>
         void emplace_back(Args&&...);
