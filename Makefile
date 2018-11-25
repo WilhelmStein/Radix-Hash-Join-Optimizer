@@ -28,7 +28,7 @@ $(PATH_BIN)/%.exe: $(PATH_TST)/%.cpp $(OBJS) $(PATH_INC)/benchmark.hpp
 
 HIST_DEP = $(addprefix $(PATH_INC)/, histhash.hpp) $(PATH_SRC)/histhash.cpp
 INDX_DEP = $(PATH_INC)/index.hpp $(PATH_SRC)/index.cpp
-RDXL_DEP = $(addprefix $(PATH_INC)/, result.hpp) $(PATH_SRC)/result.cpp
+RSLT_DEP = $(addprefix $(PATH_INC)/, result.hpp list.hpp) $(PATH_SRC)/result.cpp
 RLTN_DEP = $(addprefix $(PATH_INC)/, relation.hpp histhash.hpp) $(PATH_SRC)/relation.cpp
 QUER_DEP = $(addprefix $(PATH_INC)/, types.hpp query.hpp) $(PATH_SRC)/query.cpp
 
@@ -38,7 +38,7 @@ $(PATH_BIN)/histhash.o: $(HIST_DEP)
 $(PATH_BIN)/index.o: $(INDX_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CFLAGS) $(PATH_SRC)/index.cpp -c -o $(PATH_BIN)/index.o
 
-$(PATH_BIN)/result.o: $(RDXL_DEP)
+$(PATH_BIN)/result.o: $(RSLT_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CFLAGS) $(PATH_SRC)/result.cpp -c -o $(PATH_BIN)/result.o
 
 $(PATH_BIN)/relation.o: $(RLTN_DEP)
