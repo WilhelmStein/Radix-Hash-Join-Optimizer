@@ -1,0 +1,4 @@
+./test/test_data/small/r0
+./test/test_data/small/r1
+./test/test_data/small/r2
+Done
