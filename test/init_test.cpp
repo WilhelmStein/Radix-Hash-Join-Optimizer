@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <fstream>
 #include <relation.hpp>
+#include <list.hpp>
 
 using std::cout;
 using std::endl;
