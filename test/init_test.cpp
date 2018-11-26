@@ -37,7 +37,7 @@ int main(void)
             delete[] str;
             break;
         }
-        paths.push_back(str);
+        paths.emplace_back(str);
     }
     
     if(!paths.size())
@@ -54,8 +54,8 @@ int main(void)
         // Get each file path
         FILE* inputFile = nullptr;
 
-        if( !( inputFile = fopen(paths.back(), "r+b") ) ){
-            cerr<<"Could not open file "<<paths.back()<<"\nErrorno: "<<errno<<endl;
+        if( !( inputFile = fopen(paths.front(), "r+b") ) ){
+            cerr<<"Could not open file "<<paths.front()<<"\nErrorno: "<<errno<<endl;
             return -1;
         }
 
