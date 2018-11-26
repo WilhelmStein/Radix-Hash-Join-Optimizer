@@ -1,9 +1,31 @@
 
 #include <types.hpp>
 #include <query.hpp>
+#include <relation.hpp>
+
 
 namespace RHJ
 {
+    class Test {
+
+    public:
+
+        struct Relation {
+
+            int columnNum;
+            int columnSize;
+            RHJ::Relation::Tuple *array;
+
+            RHJ::Relation::Tuple *column(int index);
+
+            void print();
+        } relations[5];
+
+        Test();
+        void print();
+        // ~Test();
+    };
+
     class Executioner {
 
         struct IntermediateResults {
@@ -38,9 +60,18 @@ namespace RHJ
 
         } inteResults;
 
+        Test Relations;
+
         void executeFilter(const Query& query, Query::Predicate pred);
+
         void executeJoin(const Query& query, Query::Predicate pred);
+        void externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
+        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::Node *innerNode, 
+                            std::size_t innerIndex, Query::Predicate::Operand outer);
+        void internalSelfJoin();
+
         void executeSelfJoin(const Query& query, Query::Predicate pred);
+
 
         bool compare(tuple_payload_t u, tuple_key_t v, Query::Predicate::Type op);
 

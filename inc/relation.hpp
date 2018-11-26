@@ -34,6 +34,7 @@ namespace RHJ
             Relation(std::size_t size, const char * name) : name(name), tuples(new Tuple[size]), size(size) {}
         #else
             Relation(std::size_t size) : tuples(new Tuple[size]), size(size) {}
+            Relation() : tuples(nullptr), size(0UL) {}
         #endif
 
         ~Relation() { delete[] tuples; }

@@ -12,6 +12,8 @@ namespace RHJ
     
     struct Results
     {
+        friend class Executioner;
+
         struct Result {
             tuple_key_t key1;
             tuple_key_t key2;
@@ -42,6 +44,8 @@ namespace RHJ
             ~Node() { if (next) delete next; }
 
         } * head, * tail;
+
+        std::size_t count;
 
         #if defined (__VERBOSE__)
             const Relation * left, * right;

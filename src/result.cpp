@@ -32,7 +32,7 @@
 #else
     RHJ::Results::Results()
     :
-    head(new Node), tail(head)
+    head(new Node), tail(head), count(0)
     {
     }
 
@@ -66,6 +66,7 @@ void RHJ::Results::push_back(tuple_key_t key1, tuple_key_t key2)
         tail = tail->next = new Node;
 
     tail->buffer._data[tail->buffer._size++] = { key1, key2 };
+    count++;
 }
 
 std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Results& results)
