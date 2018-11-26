@@ -55,7 +55,7 @@ do
             # If they do have different names but same keys
             # then report a macro collision that needs to be
             # taken care of
-            echo "$prog: macro collision detected \"$macro\" \""$entry"\""
+            echo "$prog: macro collision detected \"$macro\" \""$(echo "$entry" | cut -d ' ' -f 2)"\""
             exit 1
         else
             shortcuts["$key"]="$class $macro"
