@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <iosfwd>       // std::ostream
+#include <cstddef>       // std::size_t
 
 namespace utility
 {
@@ -49,7 +49,7 @@ namespace utility
 
             iterator& operator++();
 
-            const T& operator*() const;
+            T& operator*() const;
 
             friend bool operator!=(const iterator& lhs, const iterator& rhs)
             {

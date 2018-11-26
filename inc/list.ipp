@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include <fstream>          // std::ostream
 #include <utility>          // std::move, std::forward
 
 // node<T> implementation
@@ -63,7 +62,7 @@ inline typename utility::list<T>::iterator& utility::list<T>::iterator::operator
 }
 
 template <typename T>
-inline const T& utility::list<T>::iterator::operator*() const
+inline T& utility::list<T>::iterator::operator*() const
 {
     return ptr->data;
 }
