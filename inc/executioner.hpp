@@ -2,6 +2,8 @@
 #include <types.hpp>
 #include <query.hpp>
 #include <relation.hpp>
+#include <unordered_map>
+#include <vector>
 
 
 namespace RHJ
@@ -34,10 +36,10 @@ namespace RHJ
 
                 struct Content {
                     
-                    std::size_t *relationNames; // Relation indexes existing in this ContentS
                     std::size_t columnSize;     // Number of Values in each Column
                     std::size_t columnNum;      // Number of Columns
-                    tuple_key_t *array;         // Array of Columns
+
+                    std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
 
                 } content;
 
@@ -53,10 +55,10 @@ namespace RHJ
             IntermediateResults() : head(nullptr), tail(nullptr) { }
             ~IntermediateResults();
 
-            void search(std::size_t Rel_1, std::size_t Rel_2, Node *& node_1, Node *& node_2, std::size_t *index_1, std::size_t *index_2);
-            void search(std::size_t Rel, Node *& node, std::size_t *index);
+            void search(std::size_t Rel_1, std::size_t Rel_2, Node *& node_1, Node *& node_2);
+            void search(std::size_t Rel, Node *& node);
 
-            void append(std::size_t *relationNames, std::size_t columnSize, std::size_t columnNum, tuple_key_t *array);
+            void append(std::unordered_map<std::size_t, std::vector<tuple_key_t>>& map);
 
         } inteResults;
 
@@ -66,8 +68,7 @@ namespace RHJ
 
         void executeJoin(const Query& query, Query::Predicate pred);
         void externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
-        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::Node *innerNode, 
-                            std::size_t innerIndex, Query::Predicate::Operand outer);
+        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::Node *innerNode, Query::Predicate::Operand outer);
         void internalSelfJoin();
 
         void executeSelfJoin(const Query& query, Query::Predicate pred);
@@ -83,6 +84,8 @@ namespace RHJ
         void execute(const Query& query);
     };
 }
+
+std::vector<std::size_t> findIndexes(std::vector<tuple_key_t> vec, tuple_key_t val);
 
 
 
