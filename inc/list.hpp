@@ -58,6 +58,11 @@ namespace utility
             {
                 return lhs.ptr != rhs.ptr;
             }
+            
+            friend bool operator==(const iterator& lhs, const iterator& rhs)
+            {
+                return lhs.ptr == rhs.ptr;
+            }
         };
 
         list();

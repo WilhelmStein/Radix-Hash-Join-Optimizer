@@ -39,6 +39,9 @@ namespace RHJ
 
             std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
 
+            Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map);
+            ~Entity();
+
         };
 
         struct IntermediateResults : public utility::list<Entity> {
@@ -46,7 +49,7 @@ namespace RHJ
             IntermediateResults();
             ~IntermediateResults();
 
-            pair<iterator, iterator> find(std::size_t Rel_1, std::size_t Rel_2);
+            utility::pair<iterator, iterator> find(std::size_t Rel_1, std::size_t Rel_2);
             iterator find(std::size_t Rel);
 
         } inteResults;
@@ -65,7 +68,7 @@ namespace RHJ
                                               Query::Predicate::Operand outer, IntermediateResults::iterator outerIt);
 
         void internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
-        void executeSelfJoin(const Query& query, Query::Predicate pred);
+        void externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
 
 
         bool compare(tuple_payload_t u, tuple_key_t v, Query::Predicate::Type op);
