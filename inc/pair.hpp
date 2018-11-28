@@ -3,35 +3,40 @@
 
 #include <iosfwd>
 
-template <typename First, typename Second> struct pair;
-template <typename First, typename Second>
-std::ostream& operator<<(std::ostream&, const pair<First, Second>&);
-
-template <typename First, typename Second>
-struct pair
+namespace utility
 {
-    First first;
-    Second second;
+    template <typename First, typename Second> struct pair;
+    template <typename First, typename Second>
+    std::ostream& operator<<(std::ostream&, const pair<First, Second>&);
 
-    pair();
-    pair(const First&, const Second&);
-    pair(const pair&);
+    template <typename First, typename Second>
+    struct pair
+    {
+        First first;
+        Second second;
 
-    pair& operator=(const pair&);
+        pair();
+        pair(const First&, const Second&);
+        pair(const pair&);
+        pair(pair&&) noexcept;
 
-    friend std::ostream& operator<< <First, Second>(std::ostream&, const pair<First, Second>&);
-};
+        pair& operator=(const pair&);
+        pair& operator=(pair&&) noexcept;
 
-template <typename First, typename Second>
-bool operator<(const pair<First, Second>&, const pair<First, Second>&);
+        friend std::ostream& operator<< <First, Second>(std::ostream&, const pair<First, Second>&);
+    };
 
-template <typename First, typename Second>
-bool operator>(const pair<First, Second>&, const pair<First, Second>&);
+    template <typename First, typename Second>
+    bool operator<(const pair<First, Second>&, const pair<First, Second>&);
 
-template <typename First, typename Second>
-bool operator==(const pair<First, Second>&, const pair<First, Second>&);
+    template <typename First, typename Second>
+    bool operator>(const pair<First, Second>&, const pair<First, Second>&);
 
-template <typename First, typename Second>
-bool operator!=(const pair<First, Second>&, const pair<First, Second>&);
+    template <typename First, typename Second>
+    bool operator==(const pair<First, Second>&, const pair<First, Second>&);
+
+    template <typename First, typename Second>
+    bool operator!=(const pair<First, Second>&, const pair<First, Second>&);
+}
 
 #include "pair.ipp"

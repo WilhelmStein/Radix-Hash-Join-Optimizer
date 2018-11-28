@@ -5,6 +5,9 @@
 
 namespace utility
 {
+    template <typename InputIt, typename T>
+    InputIt find(InputIt, InputIt, const T&);
+
     template <typename T>
     class list
     {
@@ -41,10 +44,10 @@ namespace utility
 
             iterator();
 
-            iterator(const iterator&) = delete;
+            iterator(const iterator&);
             iterator(iterator&&) noexcept;
 
-            iterator& operator=(const iterator&) = delete;
+            iterator& operator=(const iterator&);
             iterator& operator=(iterator&&) noexcept;
 
             iterator& operator++();
