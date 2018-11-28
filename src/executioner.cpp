@@ -2,7 +2,6 @@
 #include <relation.hpp>
 #include <cstdlib>
 #include <iostream>
-#include <unordered_set>
 
 RHJ::Executioner::Entity::Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map) 
 :
@@ -77,7 +76,7 @@ std::vector<std::size_t> findIndexes(std::vector<tuple_key_t> vec, tuple_key_t v
 }
 
 
-void RHJ::Executioner::execute(const Query& query) {
+std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
     for (int i = 0; i < query.preCount; i++) {
 
@@ -90,6 +89,15 @@ void RHJ::Executioner::execute(const Query& query) {
                 break;
         }
     }
+
+    while (inteResults.size() > 1) {
+        IntermediateResults::iterator left = inteResults.begin();
+        IntermediateResults::iterator right = ++inteResults.begin();
+
+        cartesianProduct(left, right);
+    }
+
+    return calculateCheckSums(query);
 }
 
 void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) {
@@ -409,6 +417,55 @@ void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Op
     this->inteResults.emplace_back(map.size(), filteredVector.size(), map);
 }
 
+void RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right) {
+
+    std::unordered_map<std::size_t, std::vector<tuple_key_t>> map;
+
+    for (std::size_t i = 0; i < (*left).columnSize; i++) {
+
+        for (std::size_t j = 0; j < (*right).columnSize; j++) {
+
+            for (auto &item : (*left).map) {
+                map[item.first].push_back(item.second[i]);
+            }
+
+            for (auto &item : (*right).map) {
+                map[item.first].push_back(item.second[j]);   
+            }
+        }
+    }
+
+    (*left).map = map;
+    (*left).columnNum = map.size();
+    if ((*left).columnNum)
+        (*left).columnSize = map.begin()->second.size();
+    else (*left).columnSize = 0;
+
+    this->inteResults.erase(right);
+}
+
+std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query) {
+    std::vector<std::string> ret;
+
+    for (int i = 0; i < query.cheCount; i++) {
+
+        if ( (*inteResults.begin()).columnSize == 0 ) {
+            ret.push_back("NULL");
+            continue;
+        }
+        
+        tuple_payload_t sum = 0;
+        for (auto &rowId : (*inteResults.begin()).map[query.checksums[i].rel] ) {
+            sum += Relations.relations[ query.relations[query.checksums[i].rel] ].column(query.checksums[i].col)[rowId].payload;
+        }
+
+        ret.push_back(std::to_string(sum));
+
+    }
+
+    return ret;
+}
+
 
 bool RHJ::Executioner::compare(tuple_payload_t u, tuple_payload_t v, Query::Predicate::Type op) {
     switch (op) {
@@ -456,8 +513,8 @@ RHJ::Test::Test() {
     this->relations[0].array[9].payload = 1;
 
     // rel 1
-    this->relations[1].columnSize = 10;
-    this->relations[1].columnNum = 1;
+    this->relations[1].columnSize = 5;
+    this->relations[1].columnNum = 2;
     this->relations[1].array = new RHJ::Relation::Tuple[10];
     this->relations[1].array[0].key = 0; 
     this->relations[1].array[0].payload = 4;

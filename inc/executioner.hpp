@@ -2,10 +2,14 @@
 #include <types.hpp>
 #include <query.hpp>
 #include <relation.hpp>
+
 #include <unordered_map>
 #include <vector>
+#include <string>
+
 #include <list.hpp>
 #include <pair.hpp>
+
 
 
 namespace RHJ
@@ -70,6 +74,10 @@ namespace RHJ
         void internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
         void externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
 
+        void cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right);
+
+        using Checksum = Query::Predicate::Operand;
+        std::vector<std::string> calculateCheckSums(const Query& query);
 
         bool compare(tuple_payload_t u, tuple_key_t v, Query::Predicate::Type op);
 
@@ -78,7 +86,7 @@ namespace RHJ
         Executioner();
         ~Executioner();
 
-        void execute(const Query& query);
+        std::vector<std::string> execute(const Query& query);
     };
 }
 
