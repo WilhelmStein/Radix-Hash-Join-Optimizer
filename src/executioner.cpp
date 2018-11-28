@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_set>
 
+
 RHJ::Executioner::IntermediateResults::IntermediateResults() : list() { }
 
 RHJ::Executioner::IntermediateResults::~IntermediateResults() { }
@@ -13,24 +14,21 @@ RHJ::Executioner::Executioner() : inteResults() { }
 RHJ::Executioner::~Executioner() { }
 
 
-std::vector<RHJ::Executioner::IntermediateResults::iterator> RHJ::Executioner::IntermediateResults::find(std::size_t Rel_1, std::size_t Rel_2, 
-                                                IntermediateResults::iterator innerIt, IntermediateResults::iterator outerIt) 
-{
+pair<RHJ::Executioner::IntermediateResults::iterator, RHJ::Executioner::IntermediateResults::iterator> 
+RHJ::Executioner::IntermediateResults::find(std::size_t Rel_1, std::size_t Rel_2) {
 
-    std::vector<iterator> vec;
+    pair<iterator, iterator> ret;
 
     bool found_1 = false;
-    innerIt = end();
 
     bool found_2 = false;
-    outerIt = end();
 
 
     for (iterator it = begin(); it != end(); ++it) {
         
         if ( (*it).map.find(Rel_1) != (*it).map.end() ) {
             found_1 = true;
-            vec.push_back()
+            ret.first = it;
         }
         if ( (*it).map.find(Rel_2) != (*it).map.end() ) {
             found_2 = true;

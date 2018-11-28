@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <list.hpp>
+#include <pair.hpp>
 
 
 namespace RHJ
@@ -45,7 +46,7 @@ namespace RHJ
             IntermediateResults();
             ~IntermediateResults();
 
-            std::vector<iterator> find(std::size_t Rel_1, std::size_t Rel_2, iterator it_1, iterator it_2);
+            pair<iterator, iterator> find(std::size_t Rel_1, std::size_t Rel_2);
             iterator find(std::size_t Rel);
 
         } inteResults;
