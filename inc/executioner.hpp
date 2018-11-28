@@ -4,6 +4,7 @@
 #include <relation.hpp>
 #include <unordered_map>
 #include <vector>
+#include <list.hpp>
 
 
 namespace RHJ
@@ -30,35 +31,22 @@ namespace RHJ
 
     class Executioner {
 
-        struct IntermediateResults {
+        struct Entity {
 
-            struct Node {
+            std::size_t columnSize;     // Number of Values in each Column
+            std::size_t columnNum;      // Number of Columns
 
-                struct Content {
-                    
-                    std::size_t columnSize;     // Number of Values in each Column
-                    std::size_t columnNum;      // Number of Columns
+            std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
 
-                    std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
+        };
 
-                } content;
+        struct IntermediateResults : public utility::list<Entity> {
 
-                Node * next;
-
-                Node();
-                ~Node() { if (next) delete next; }
-            };
-
-            Node * head;
-            Node * tail;
-
-            IntermediateResults() : head(nullptr), tail(nullptr) { }
+            IntermediateResults();
             ~IntermediateResults();
 
-            void search(std::size_t Rel_1, std::size_t Rel_2, Node *& node_1, Node *& node_2);
-            void search(std::size_t Rel, Node *& node);
-
-            void append(std::unordered_map<std::size_t, std::vector<tuple_key_t>>& map);
+            std::vector<iterator> find(std::size_t Rel_1, std::size_t Rel_2, iterator it_1, iterator it_2);
+            iterator find(std::size_t Rel);
 
         } inteResults;
 
@@ -67,10 +55,15 @@ namespace RHJ
         void executeFilter(const Query& query, Query::Predicate pred);
 
         void executeJoin(const Query& query, Query::Predicate pred);
-        void externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
-        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::Node *innerNode, Query::Predicate::Operand outer);
-        void internalSelfJoin();
 
+        void externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
+
+        void semiInternalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
+
+        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, 
+                                              Query::Predicate::Operand outer, IntermediateResults::iterator outerIt);
+
+        void internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
         void executeSelfJoin(const Query& query, Query::Predicate pred);
 
 
