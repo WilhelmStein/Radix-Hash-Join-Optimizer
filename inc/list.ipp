@@ -3,6 +3,16 @@
 
 #include <utility>          // std::move, std::forward
 
+template <typename InputIt, typename T>
+InputIt utility::find(InputIt first, InputIt last, const T& value)
+{
+    for (; first != last; ++first)
+        if (value == *first)
+            return first;
+
+    return last;
+}
+
 // node<T> implementation
 template <typename T>
 inline utility::list<T>::node::node(node * prev, T&& data)
@@ -42,11 +52,24 @@ ptr(ptr)
 }
 
 template <typename T>
+inline utility::list<T>::iterator::iterator(const iterator& other)
+:
+ptr(other.ptr)
+{
+}
+
+template <typename T>
 inline utility::list<T>::iterator::iterator(iterator&& other) noexcept
 :
 ptr(other.ptr)
 {
     other.ptr = nullptr;
+}
+
+template <typename T>
+inline typename utility::list<T>::iterator& utility::list<T>::iterator::operator=(const iterator& other)
+{
+    ptr = other.ptr; return *this;
 }
 
 template <typename T>
