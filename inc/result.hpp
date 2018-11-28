@@ -2,51 +2,40 @@
 #pragma once
 
 #include <types.hpp>
+#include <list.hpp>
 #include <iosfwd>           // std::ostream
 
-#define CAPACITY (1024UL * 1024UL / sizeof(RHJ::Results::Result))
+#define CAPACITY (1024UL * 1024UL / sizeof(RHJ::Result))
 
 namespace RHJ
 {
     class Relation;
     
-    struct Results
+    struct Result
     {
-        friend class Executioner;
+        tuple_key_t key1;
+        tuple_key_t key2;
+    };
 
-        struct Result {
-            tuple_key_t key1;
-            tuple_key_t key2;
-        };
+    class Buffer
+    {
+        friend struct Results;
 
-        struct Node
-        {
-            class Buffer
-            {
-                friend struct Results;
+        std::size_t _size;
 
-                std::size_t _size;
+        Result _data[CAPACITY];
 
-                Result _data[CAPACITY];
+    public:
 
-            public:
+        Buffer() : _size(0UL) {}
 
-                Buffer() : _size(0UL) {}
+        std::size_t size() const { return _size; }
+        const Result& operator[](std::size_t i) const { return _data[i]; }
 
-                std::size_t size() const { return _size; }
-                const Result& operator[](std::size_t i) const { return _data[i]; }
+    };
 
-            } buffer;
-
-            Node * next;
-
-            Node() : next(nullptr) {}
-            ~Node() { if (next) delete next; }
-
-        } * head, * tail;
-
-        std::size_t count;
-
+    struct Results : public utility::list<Buffer>
+    {
         #if defined (__VERBOSE__)
             const Relation * left, * right;
 

@@ -2,3 +2,4 @@
 .vscode/
 bin/
 data/
+test/test_data/*
