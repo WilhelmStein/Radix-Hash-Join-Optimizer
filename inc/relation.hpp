@@ -12,6 +12,13 @@
 
 namespace RHJ
 {
+
+    extern struct Meta
+    {
+        uint64_t rowSize, columnSize;
+        tuple_key_t** columns;
+    } * meta;
+
     struct Relation {
         #if defined (__VERBOSE__)
             const char * name;

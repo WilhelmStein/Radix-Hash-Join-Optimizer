@@ -14,25 +14,6 @@
 
 namespace RHJ
 {
-    class Test {
-
-    public:
-
-        struct Relation {
-
-            int columnNum;
-            int columnSize;
-            RHJ::Relation::Tuple *array;
-
-            RHJ::Relation::Tuple *column(int index);
-
-            void print();
-        } relations[5];
-
-        Test();
-        void print();
-        // ~Test();
-    };
 
     class Executioner {
 
@@ -57,8 +38,6 @@ namespace RHJ
             iterator find(std::size_t Rel);
 
         } inteResults;
-
-        Test Relations;
 
         void executeFilter(const Query& query, Query::Predicate pred);
 

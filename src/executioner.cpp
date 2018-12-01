@@ -52,15 +52,14 @@ RHJ::Executioner::IntermediateResults::find(std::size_t Rel_1, std::size_t Rel_2
 
 RHJ::Executioner::IntermediateResults::iterator RHJ::Executioner::IntermediateResults::find(std::size_t Rel) {
 
-    bool found = false;
-
     for (iterator it = begin(); it != end(); ++it) {
         
         if ( (*it).map.find(Rel) != (*it).map.end() ) {
-            found = true;
             return it;
         }
     }
+
+    return end();
 }
 
 std::vector<std::size_t> findIndexes(std::vector<tuple_key_t> vec, tuple_key_t val) {
@@ -114,13 +113,14 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
     if (node != inteResults.end() ) {
 
         // Iterate over all rows in array
-        for (int i = 0; i < (*node).columnSize; i++ ) 
+        for (std::size_t i = 0; i < (*node).columnSize; i++ ) 
         {
             // For each one get its value from its appropriate relation and check if filter is true
-            int rowID = (*node).map[relation][i];
+            tuple_key_t rowID = (*node).map[relation][i];
 
             // So we want something like:
-            int value = Relations.relations[ query.relations[relation] ].column(column)[rowID].payload;
+            tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][rowID];
+            // int value = Relations.relations[ query.relations[relation] ].column(column)[rowID].payload;
 
             if (!compare(value, immediate, op)) {
 
@@ -139,14 +139,14 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
     else {
         // construct new node
 
-        int columnSize = Relations.relations[ query.relations[relation] ].columnSize;;
+        int columnSize = RHJ::meta[query.relations[relation]].columnSize;
 
         std::vector<tuple_key_t> filteredVector;
 
         // Iterate over whole column
         for (std::size_t i = 0; i < columnSize; i++) {
 
-            int value = Relations.relations[ query.relations[relation] ].column(column)[i].payload;
+            tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][i];
 
             if (compare(value, immediate, op)) {
                 
@@ -202,12 +202,26 @@ void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
     int rightColumn = outer.col;
 
     RHJ::Relation left;
-    left.size = Relations.relations[ query.relations[inner.rel] ].columnSize;
-    left.tuples = Relations.relations[ query.relations[inner.rel] ].column(leftColumn);
+    left.size = RHJ::meta[query.relations[inner.rel]].columnSize;
+    left.tuples = new Relation::Tuple[ RHJ::meta[query.relations[inner.rel]].columnSize ];
+
+    for (tuple_key_t i = 0; i < RHJ::meta[query.relations[inner.rel]].columnSize; i++)  
+    {
+        left.tuples[i].key = i;
+        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[leftColumn][i];
+        i++;
+    }
 
     RHJ::Relation right;
-    right.size = Relations.relations[ query.relations[outer.rel] ].columnSize;
-    right.tuples = Relations.relations[ query.relations[outer.rel] ].column(rightColumn);
+    right.size = RHJ::meta[query.relations[outer.rel]].columnSize;
+    right.tuples = new Relation::Tuple[ RHJ::meta[query.relations[outer.rel]].columnSize ];
+
+    for (tuple_key_t i = 0; i < RHJ::meta[query.relations[outer.rel]].columnSize; i++)  
+    {
+        right.tuples[i].key = i;
+        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[rightColumn][i];
+        i++;
+    }
 
     
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
@@ -231,9 +245,8 @@ void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
 
     inteResults.emplace_back(map.size(), leftVector.size(), map);
 
-    left.tuples = nullptr;
-    right.tuples = nullptr;
-
+    // delete[] left.tuples;
+    // delete[] right.tuples;
 }
 
 
@@ -253,13 +266,20 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
     for (auto &rowId : (*innerIt).map[inner.rel])  
     {
         left.tuples[i].key = rowId;
-        left.tuples[i].payload = Relations.relations[ query.relations[inner.rel] ].column(leftColumn)[rowId].payload;
+        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[leftColumn][rowId];
         i++;
     }
 
     RHJ::Relation right;
-    right.size = Relations.relations[ query.relations[outer.rel] ].columnSize;
-    right.tuples = Relations.relations[ query.relations[outer.rel] ].column(rightColumn);
+    right.size = RHJ::meta[query.relations[outer.rel]].columnSize;
+    right.tuples = new Relation::Tuple[ RHJ::meta[query.relations[outer.rel]].columnSize ];
+
+    for (tuple_key_t i = 0; i < RHJ::meta[query.relations[outer.rel]].columnSize; i++)  
+    {
+        right.tuples[i].key = i;
+        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[rightColumn][i];
+        i++;
+    }
 
     
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
@@ -285,10 +305,14 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
 
 
     (*innerIt).map = map;
-    (*innerIt).columnSize = map.begin()->second.size();
+    (*innerIt).columnNum = map.size();
+    if ((*innerIt).columnNum)
+        (*innerIt).columnSize = map.begin()->second.size();
+    else (*innerIt).columnSize = 0;
     (*innerIt).columnNum = map.size();
 
-    right.tuples = nullptr;
+    // delete[] left.tuples;
+    // delete[] right.tuples;
 }
 
 void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt,
@@ -304,7 +328,7 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
     for (auto &rowId : (*innerIt).map[inner.rel])  
     {
         left.tuples[i].key = rowId;
-        left.tuples[i].payload = Relations.relations[ query.relations[inner.rel] ].column(inner.col)[rowId].payload;
+        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[inner.col][rowId];
         i++;
     }
 
@@ -317,7 +341,7 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
     for (auto &rowId : (*outerIt).map[outer.rel])  
     {
         right.tuples[i].key = rowId;
-        right.tuples[i].payload = Relations.relations[ query.relations[outer.rel] ].column(outer.col)[rowId].payload;
+        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[outer.col][rowId];
         i++;
     }
 
@@ -375,8 +399,8 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
         int rowID_2 = (*innerIt).map[outer.rel][i];
 
         // So we want something like:
-        tuple_payload_t value_1 = Relations.relations[ query.relations[inner.rel] ].column(inner.col)[rowID_1].payload;
-        tuple_payload_t value_2 = Relations.relations[ query.relations[outer.rel] ].column(outer.col)[rowID_2].payload;
+        tuple_payload_t value_1 = RHJ::meta[ query.relations[inner.rel] ].columns[inner.col][rowID_1];
+        tuple_payload_t value_2 = RHJ::meta[ query.relations[outer.rel] ].columns[outer.col][rowID_2];
 
         if (!compare(value_1, value_2, Query::Predicate::Type::filter_eq_t)) {
 
@@ -395,15 +419,15 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
 
 void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
 
-    int columnSize = Relations.relations[ query.relations[inner.rel] ].columnSize;;
+    int columnSize = RHJ::meta[ query.relations[inner.rel] ].columnSize;;
 
     std::vector<tuple_key_t> filteredVector;
 
     // Iterate over whole column
     for (std::size_t i = 0; i < columnSize; i++) {
 
-        int value_1 = Relations.relations[ query.relations[inner.rel] ].column(inner.col)[i].payload;
-        int value_2 = Relations.relations[ query.relations[outer.rel] ].column(outer.col)[i].payload;
+        int value_1 = RHJ::meta[ query.relations[inner.rel] ].columns[inner.col][i];
+        int value_2 = RHJ::meta[ query.relations[outer.rel] ].columns[outer.col][i];
 
         if (compare(value_1, value_2, Query::Predicate::Type::filter_eq_t)) {
             
@@ -456,7 +480,7 @@ std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query
         
         tuple_payload_t sum = 0;
         for (auto &rowId : (*inteResults.begin()).map[query.checksums[i].rel] ) {
-            sum += Relations.relations[ query.relations[query.checksums[i].rel] ].column(query.checksums[i].col)[rowId].payload;
+            sum += RHJ::meta[ query.relations[query.checksums[i].rel] ].columns[query.checksums[i].col][rowId];
         }
 
         ret.push_back(std::to_string(sum));
@@ -481,142 +505,4 @@ bool RHJ::Executioner::compare(tuple_payload_t u, tuple_payload_t v, Query::Pred
         default:
             break;
     }
-}
-
-
-
-
-RHJ::Test::Test() {
-    // rel 0
-    this->relations[0].columnSize = 5;
-    this->relations[0].columnNum = 2;
-    this->relations[0].array = new RHJ::Relation::Tuple[10];
-    this->relations[0].array[0].key = 0; 
-    this->relations[0].array[0].payload = 1050; 
-    this->relations[0].array[1].key = 1; 
-    this->relations[0].array[1].payload = 3010;
-    this->relations[0].array[2].key = 2; 
-    this->relations[0].array[2].payload = 15764;
-    this->relations[0].array[3].key = 3; 
-    this->relations[0].array[3].payload = 5010;
-    this->relations[0].array[4].key = 4; 
-    this->relations[0].array[4].payload = 2;
-    this->relations[0].array[5].key = 0; 
-    this->relations[0].array[5].payload = 4052;
-    this->relations[0].array[6].key = 1; 
-    this->relations[0].array[6].payload = 3040;
-    this->relations[0].array[7].key = 2; 
-    this->relations[0].array[7].payload = 137;
-    this->relations[0].array[8].key = 3; 
-    this->relations[0].array[8].payload = 25;
-    this->relations[0].array[9].key = 4; 
-    this->relations[0].array[9].payload = 1;
-
-    // rel 1
-    this->relations[1].columnSize = 5;
-    this->relations[1].columnNum = 2;
-    this->relations[1].array = new RHJ::Relation::Tuple[10];
-    this->relations[1].array[0].key = 0; 
-    this->relations[1].array[0].payload = 4;
-    this->relations[1].array[1].key = 1; 
-    this->relations[1].array[1].payload = 4; 
-    this->relations[1].array[2].key = 2; 
-    this->relations[1].array[2].payload = 1; 
-    this->relations[1].array[3].key = 3; 
-    this->relations[1].array[3].payload = 2; 
-    this->relations[1].array[4].key = 4; 
-    this->relations[1].array[4].payload = 3; 
-    this->relations[1].array[5].key = 5; 
-    this->relations[1].array[5].payload = 5; 
-    this->relations[1].array[6].key = 6; 
-    this->relations[1].array[6].payload = 9; 
-    this->relations[1].array[7].key = 7; 
-    this->relations[1].array[7].payload = 9; 
-    this->relations[1].array[8].key = 8; 
-    this->relations[1].array[8].payload = 10; 
-    this->relations[1].array[9].key = 9; 
-    this->relations[1].array[9].payload = 3; 
-
-    // rel 2
-    this->relations[2].columnSize = 5;
-    this->relations[2].columnNum = 3;
-    this->relations[2].array = new RHJ::Relation::Tuple[15];
-    this->relations[2].array[0].key = 0; 
-    this->relations[2].array[0].payload = 5; 
-    this->relations[2].array[1].key = 1; 
-    this->relations[2].array[1].payload = 4;
-    this->relations[2].array[2].key = 2; 
-    this->relations[2].array[2].payload = 3;
-    this->relations[2].array[3].key = 3; 
-    this->relations[2].array[3].payload = 2;
-    this->relations[2].array[4].key = 4; 
-    this->relations[2].array[4].payload = 1;
-    this->relations[2].array[5].key = 0; 
-    this->relations[2].array[5].payload = 20;
-    this->relations[2].array[6].key = 1; 
-    this->relations[2].array[6].payload = 21;
-    this->relations[2].array[7].key = 2; 
-    this->relations[2].array[7].payload = 22;
-    this->relations[2].array[8].key = 3; 
-    this->relations[2].array[8].payload = 23;
-    this->relations[2].array[9].key = 4; 
-    this->relations[2].array[9].payload = 24;
-    this->relations[2].array[10].key = 0; 
-    this->relations[2].array[10].payload = 2100;
-    this->relations[2].array[11].key = 1; 
-    this->relations[2].array[11].payload = 4052;
-    this->relations[2].array[12].key = 2; 
-    this->relations[2].array[12].payload = 9;
-    this->relations[2].array[13].key = 3; 
-    this->relations[2].array[13].payload = 3040;
-    this->relations[2].array[14].key = 4; 
-    this->relations[2].array[14].payload = 137;
-
-    // rel 4
-    this->relations[4].columnSize = 5;
-    this->relations[4].columnNum = 2;
-    this->relations[4].array = new RHJ::Relation::Tuple[10];
-    this->relations[4].array[0].key = 0; 
-    this->relations[4].array[0].payload = 30; 
-    this->relations[4].array[1].key = 1; 
-    this->relations[4].array[1].payload = 31;
-    this->relations[4].array[2].key = 2; 
-    this->relations[4].array[2].payload = 32;
-    this->relations[4].array[3].key = 3; 
-    this->relations[4].array[3].payload = 33;
-    this->relations[4].array[4].key = 4; 
-    this->relations[4].array[4].payload = 34;
-    this->relations[4].array[5].key = 0; 
-    this->relations[4].array[5].payload = 10;
-    this->relations[4].array[6].key = 1; 
-    this->relations[4].array[6].payload = 4;
-    this->relations[4].array[7].key = 2; 
-    this->relations[4].array[7].payload = 9;
-    this->relations[4].array[8].key = 3; 
-    this->relations[4].array[8].payload = 2;
-    this->relations[4].array[9].key = 4; 
-    this->relations[4].array[9].payload = 5;
-}
-
-RHJ::Relation::Tuple *RHJ::Test::Relation::column(int index) {
-    if (index >= columnNum) return nullptr;
-
-    return &(this->array[index * columnSize]);
-}
-
-void RHJ::Test::Relation::print() {
-    for (int i = 0; i < this->columnNum * this->columnSize; i++) {
-        std::cout << this->array[i].payload << std::endl;
-    }
-}
-
-void RHJ::Test::print() {
-    this->relations[0].print();
-    std::cout << std::endl;
-
-    this->relations[2].print();
-    std::cout << std::endl;
-
-    this->relations[4].print();
-    std::cout << std::endl;
 }
