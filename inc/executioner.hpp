@@ -2,8 +2,14 @@
 #include <types.hpp>
 #include <query.hpp>
 #include <relation.hpp>
+
 #include <unordered_map>
 #include <vector>
+#include <string>
+
+#include <list.hpp>
+#include <pair.hpp>
+
 
 
 namespace RHJ
@@ -30,35 +36,25 @@ namespace RHJ
 
     class Executioner {
 
-        struct IntermediateResults {
+        struct Entity {
 
-            struct Node {
+            std::size_t columnSize;     // Number of Values in each Column
+            std::size_t columnNum;      // Number of Columns
 
-                struct Content {
-                    
-                    std::size_t columnSize;     // Number of Values in each Column
-                    std::size_t columnNum;      // Number of Columns
+            std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
 
-                    std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
+            Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map);
+            ~Entity();
 
-                } content;
+        };
 
-                Node * next;
+        struct IntermediateResults : public utility::list<Entity> {
 
-                Node();
-                ~Node() { if (next) delete next; }
-            };
-
-            Node * head;
-            Node * tail;
-
-            IntermediateResults() : head(nullptr), tail(nullptr) { }
+            IntermediateResults();
             ~IntermediateResults();
 
-            void search(std::size_t Rel_1, std::size_t Rel_2, Node *& node_1, Node *& node_2);
-            void search(std::size_t Rel, Node *& node);
-
-            void append(std::unordered_map<std::size_t, std::vector<tuple_key_t>>& map);
+            utility::pair<iterator, iterator> find(std::size_t Rel_1, std::size_t Rel_2);
+            iterator find(std::size_t Rel);
 
         } inteResults;
 
@@ -67,12 +63,21 @@ namespace RHJ
         void executeFilter(const Query& query, Query::Predicate pred);
 
         void executeJoin(const Query& query, Query::Predicate pred);
+
         void externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
-        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::Node *innerNode, Query::Predicate::Operand outer);
-        void internalSelfJoin();
 
-        void executeSelfJoin(const Query& query, Query::Predicate pred);
+        void semiInternalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
 
+        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, 
+                                              Query::Predicate::Operand outer, IntermediateResults::iterator outerIt);
+
+        void internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
+        void externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
+
+        void cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right);
+
+        using Checksum = Query::Predicate::Operand;
+        std::vector<std::string> calculateCheckSums(const Query& query);
 
         bool compare(tuple_payload_t u, tuple_key_t v, Query::Predicate::Type op);
 
@@ -81,7 +86,7 @@ namespace RHJ
         Executioner();
         ~Executioner();
 
-        void execute(const Query& query);
+        std::vector<std::string> execute(const Query& query);
     };
 }
 
