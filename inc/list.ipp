@@ -1,8 +1,17 @@
 
 #pragma once
 
-#include <fstream>          // std::ostream
 #include <utility>          // std::move, std::forward
+
+template <typename InputIt, typename T>
+InputIt utility::find(InputIt first, InputIt last, const T& value)
+{
+    for (; first != last; ++first)
+        if (value == *first)
+            return first;
+
+    return last;
+}
 
 // node<T> implementation
 template <typename T>
@@ -43,11 +52,24 @@ ptr(ptr)
 }
 
 template <typename T>
+inline utility::list<T>::iterator::iterator(const iterator& other)
+:
+ptr(other.ptr)
+{
+}
+
+template <typename T>
 inline utility::list<T>::iterator::iterator(iterator&& other) noexcept
 :
 ptr(other.ptr)
 {
     other.ptr = nullptr;
+}
+
+template <typename T>
+inline typename utility::list<T>::iterator& utility::list<T>::iterator::operator=(const iterator& other)
+{
+    ptr = other.ptr; return *this;
 }
 
 template <typename T>
@@ -63,7 +85,7 @@ inline typename utility::list<T>::iterator& utility::list<T>::iterator::operator
 }
 
 template <typename T>
-inline const T& utility::list<T>::iterator::operator*() const
+inline T& utility::list<T>::iterator::operator*() const
 {
     return ptr->data;
 }
@@ -118,6 +140,23 @@ inline void utility::list<T>::push_back(T&& data)
 }
 
 template <typename T>
+inline void utility::list<T>::pop_back()
+{
+    if (!tail->prev)
+    {
+        delete tail; head = tail = nullptr;
+    }
+    else
+    {
+        tail = tail->prev;
+
+        delete tail->next; tail->next = nullptr;
+    }
+
+    s--;
+}
+
+template <typename T>
 template <typename ...Args>
 inline void utility::list<T>::emplace_back(Args&&... args)
 {
@@ -134,7 +173,7 @@ inline void utility::list<T>::emplace_back(Args&&... args)
 }
 
 template <typename T>
-inline typename utility::list<T>::iterator utility::list<T>::find(const T& data)
+typename utility::list<T>::iterator utility::list<T>::find(const T& data)
 {
     for (node * current = head; current; current = current->next)
         if (current->data == data)
@@ -144,9 +183,9 @@ inline typename utility::list<T>::iterator utility::list<T>::find(const T& data)
 }
 
 template <typename T>
-inline typename utility::list<T>::iterator utility::list<T>::erase(const iterator& cit)
+typename utility::list<T>::iterator utility::list<T>::erase(const iterator& it)
 {
-    node ** prevptr = &(cit.ptr->prev), ** nextptr = &(cit.ptr->next);
+    node ** prevptr = &(it.ptr->prev), ** nextptr = &(it.ptr->next);
 
     if (!*prevptr && !*nextptr)
     {
@@ -166,11 +205,11 @@ inline typename utility::list<T>::iterator utility::list<T>::erase(const iterato
         (*nextptr)->prev = *prevptr;
     }
 
-    iterator it(*nextptr);
+    iterator nit(*nextptr);
 
-    *prevptr = *nextptr = nullptr; delete cit.ptr; s--;
+    *prevptr = *nextptr = nullptr; delete it.ptr; s--;
 
-    return it;
+    return nit;
 }
 
 template <typename T>

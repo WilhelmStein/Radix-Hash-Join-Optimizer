@@ -8,6 +8,8 @@ namespace RHJ
 {
     class Query
     {
+        friend class Executioner;
+
         std::size_t relCount, preCount, cheCount;
 
         std::size_t * relations;

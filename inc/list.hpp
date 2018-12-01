@@ -1,10 +1,13 @@
 
 #pragma once
 
-#include <iosfwd>       // std::ostream
+#include <cstddef>       // std::size_t
 
 namespace utility
 {
+    template <typename InputIt, typename T>
+    InputIt find(InputIt, InputIt, const T&);
+
     template <typename T>
     class list
     {
@@ -45,15 +48,25 @@ namespace utility
             iterator(iterator&&) noexcept;
 
             iterator& operator=(const iterator&) = delete;
+            iterator(const iterator&);
+            iterator(iterator&&) noexcept;
+
+            iterator& operator=(const iterator&);
             iterator& operator=(iterator&&) noexcept;
 
             iterator& operator++();
 
             const T& operator*() const;
+            T& operator*() const;
 
             friend bool operator!=(const iterator& lhs, const iterator& rhs)
             {
                 return lhs.ptr != rhs.ptr;
+            }
+            
+            friend bool operator==(const iterator& lhs, const iterator& rhs)
+            {
+                return lhs.ptr == rhs.ptr;
             }
         };
 
@@ -68,6 +81,7 @@ namespace utility
         list& operator=(list&&) noexcept;
 
         void push_back(T&&);
+        void pop_back();
 
         template <typename ...Args>
         void emplace_back(Args&&...);
