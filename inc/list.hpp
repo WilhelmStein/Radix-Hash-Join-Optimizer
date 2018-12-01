@@ -44,10 +44,6 @@ namespace utility
 
             iterator();
 
-            iterator(const iterator&) = delete;
-            iterator(iterator&&) noexcept;
-
-            iterator& operator=(const iterator&) = delete;
             iterator(const iterator&);
             iterator(iterator&&) noexcept;
 
@@ -56,7 +52,6 @@ namespace utility
 
             iterator& operator++();
 
-            const T& operator*() const;
             T& operator*() const;
 
             friend bool operator!=(const iterator& lhs, const iterator& rhs)

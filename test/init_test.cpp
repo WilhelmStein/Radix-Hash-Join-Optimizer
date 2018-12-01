@@ -1,108 +1,95 @@
 #include <iostream>
 #include <cstdint>
-#include <cstdio>
-#include <unistd.h>
 #include <cstring>
 #include <climits>
-#include <sys/mman.h>
 #include <fstream>
 #include <relation.hpp>
-#include <list.hpp>
+#include <vector>
 
 using std::cout;
 using std::endl;
 using std::cin;
 using std::cerr;
 
+using std::vector;
+
 using RHJ::Relation;
 
-struct Meta
+struct Table {
+    Relation r;
+    Relation::Tuple** index;
+    uint64_t rows, columns;
+
+    Table(uint64_t rows, uint64_t columns): rows(rows),
+                                            columns(columns),
+                                            r( (size_t) (rows * columns), "L" ) 
+                                            { index = new Relation::Tuple*[columns]; }
+    ~Table() { delete[] index; }
+};
+
+int main()
 {
-    uint64_t rowSize, columnSize;
-    tuple_key_t** columns;
-} * meta;
+    vector<Table> relations;
+    relations.reserve(40);
+    char* str = new char[PATH_MAX + 1];
 
-
-int main(void)
-{
-    utility::list<char*> paths;
-    char* str = nullptr;
-
-    while(true) {
-        str = new char[PATH_MAX + 1];
+    do {
+        //get each file path and load it to memory
         cin.getline(str, PATH_MAX);
 
         if (!strcmp(str, "Done"))
-        {
-            delete[] str;
             break;
-        }
-        paths.emplace_back(str);
-    }
-    
-    if(!paths.size())
-    {
-        cerr<<"Error: no paths"<<endl;
-        return -1;
-    }
 
-    meta = new Meta[paths.size()];
+        std::ifstream inputFile(str, std::ios::in | std::ios::binary);
 
-    size_t currentFileNo = 0;
-
-    while( !paths.empty() ) {
-        // Get each file path
-        FILE* inputFile = nullptr;
-
-        if( !( inputFile = fopen(paths.front(), "r+b") ) ){
-            cerr<<"Could not open file "<<paths.front()<<"\nErrorno: "<<errno<<endl;
+        if(!inputFile.is_open()){
+            cerr<<"Could not open file\n";
             return -1;
         }
 
-        delete[] paths.front();
-        paths.erase(paths.begin());
+        // get length of file
+        inputFile.seekg(0, inputFile.end);
+        size_t buff_size = inputFile.tellg();
+        inputFile.seekg(0, inputFile.beg);
 
-        // Get length of file
-        fseek(inputFile, 0, SEEK_END);
-        size_t file_size = (size_t) ftell(inputFile);
-        fseek(inputFile, 0, SEEK_END);
+        //load whole file in memory
+        char* buffer = new char[buff_size + 1];
+        inputFile.read( buffer, buff_size); // H read isws na skaei an einai megalo to file
+        inputFile.close();
 
-        // Load whole file in memory
-        void* p = mmap(NULL, file_size, PROT_READ | PROT_WRITE , MAP_SHARED, fileno(inputFile), 0);
-        if( p == MAP_FAILED )
-        {
-            cerr<<"Error: Mmap failed.\nErrorno: "<<errno<<endl;
+        uint64_t tuples(0UL), columns(0UL);
+        void* p = (void*) buffer;
 
-            return -1;
-        }
+        //copy metadata
+        memmove( (void *) &tuples, p, sizeof(uint64_t));
+        p += sizeof(uint64_t);
+        memmove( (void *) &columns, p, sizeof(uint64_t));
+        p += sizeof(uint64_t);
 
-        fclose(inputFile);
-
-        // Copy Metadata
-        memmove( (void *) &meta[currentFileNo].rowSize, p, sizeof(uint64_t));
-        p = (char*)p + sizeof(uint64_t);
-        memmove( (void *) &meta[currentFileNo].columnSize, p, sizeof(uint64_t));
-        p = (char*)p + sizeof(uint64_t);
-
-        // Create Index
-        meta[currentFileNo].columns = new tuple_key_t*[meta[currentFileNo].columnSize]; 
-        for(uint64_t j = 0UL; j < meta[currentFileNo].columnSize; j++) {
-            meta[currentFileNo].columns[j] = ((tuple_key_t*)p + j*meta[currentFileNo].rowSize);
+        //create relation
+        //Table* tmp = new Table(tuples, columns);
+        relations.emplace_back(tuples, columns);   
+        
+        for(uint64_t j = 0UL; j < columns; j++) {
+            relations[relations.size() - 1].index[j] = &(relations[relations.size() - 1].r.tuples[j*tuples]);
+            for(uint64_t i = 0UL; i < tuples; i++) {
+                relations[relations.size() - 1].r.tuples[j*tuples + i].key = i;
+                memmove(&relations[relations.size() - 1].r.tuples[j*tuples + i].payload, p, sizeof(uint64_t) );
+                p += sizeof(uint64_t);
+            }
         }
         
-        currentFileNo++;
+        delete[] buffer;
+    } while( true );
+    
+    while(relations.size()){
+        #ifdef __VERBOSE__
+            cout<<relations[relations.size() - 1].r;
+        #endif
+        //delete relations[relations.size() - 1];
+        relations.pop_back();
     }
 
-    for(size_t i = 0; i < currentFileNo; i++) {
-        size_t ret = munmap( (void*) (  *meta[i].columns - 2 ) , (meta[i].columnSize * meta[i].rowSize + 2) * sizeof(uint64_t) );
-        if(ret)
-        {
-            cerr<<"Error: Munmap failed\nErrorno: "<<errno<<endl;
-            return -1;
-        }
-        delete[] meta[i].columns;
-    }
-
-    delete[] meta;
+    delete[] str;
     return 0;
 }
