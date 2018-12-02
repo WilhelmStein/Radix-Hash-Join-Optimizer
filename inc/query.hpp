@@ -16,7 +16,7 @@ namespace RHJ
 
         struct Predicate
         {
-            enum Type { join_t, filter_eq_t, filter_lt_t, filter_gt_t } type;
+            enum Type { filter_eq_t, filter_lt_t, filter_gt_t, join_t } type;
 
             struct Operand
             {
