@@ -12,7 +12,6 @@
 
 namespace RHJ
 {
-
     extern struct Meta
     {
         uint64_t rowSize, columnSize;

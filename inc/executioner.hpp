@@ -58,7 +58,7 @@ namespace RHJ
         using Checksum = Query::Predicate::Operand;
         std::vector<std::string> calculateCheckSums(const Query& query);
 
-        bool compare(tuple_payload_t u, tuple_key_t v, Query::Predicate::Type op);
+        bool compare(tuple_payload_t u, tuple_payload_t v, Query::Predicate::Type op);
 
     public:
 

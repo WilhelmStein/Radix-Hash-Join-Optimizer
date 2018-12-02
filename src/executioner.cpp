@@ -6,7 +6,7 @@
 
 RHJ::Executioner::Entity::Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map) 
 :
-columnNum(_columnNum), columnSize(_columnSize), map(_map)
+columnSize(_columnSize), columnNum(_columnNum), map(_map)
 {
 
 }
@@ -70,7 +70,7 @@ RHJ::Executioner::IntermediateResults::iterator RHJ::Executioner::IntermediateRe
 std::vector<std::size_t> findIndexes(std::vector<tuple_key_t> vec, tuple_key_t val) {
     std::vector<std::size_t> found;
 
-    for (int i = 0; i < vec.size(); i++) {
+    for (std::size_t i = 0; i < vec.size(); i++) {
         if (vec[i] == val) {
             found.push_back(i);
         }
@@ -103,7 +103,7 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
         return a.type < b.type;
     });
 
-    for (int i = 0; i < query.preCount; i++) {
+    for (std::size_t i = 0; i < query.preCount; i++) {
 
         switch(query.predicates[i].type) {
             case Query::Predicate::Type::join_t:
@@ -179,7 +179,7 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
     else {
         // construct new node
 
-        int columnSize = RHJ::meta[query.relations[relation]].rowSize;
+        std::size_t columnSize = RHJ::meta[query.relations[relation]].rowSize;
 
         std::vector<tuple_key_t> filteredVector;
 
@@ -330,7 +330,7 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
         for (std::size_t i = 0; i < buffer.size(); i++) {
             // Does sorting really matter? (i dont think so)
 
-            for (int j = 0; j < indexes[buffer[i].key1].size(); j++) {
+            for (std::size_t j = 0; j < indexes[buffer[i].key1].size(); j++) {
 
                 for (auto &item : (*innerIt).map) {
                     inteResults.back().map[item.first].push_back( item.second[indexes[buffer[i].key1][j]] );
@@ -403,9 +403,9 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
             std::unordered_map<tuple_key_t, std::vector<std::size_t>> outerIndexes = mapIndexes( (*outerIt).map[outer.rel] );
 
 
-            for (int j = 0; j < innerIndexes[buffer[i].key1].size(); j++) {
+            for (std::size_t j = 0; j < innerIndexes[buffer[i].key1].size(); j++) {
 
-                for (int k = 0; k < outerIndexes[buffer[i].key2].size(); k++) {
+                for (std::size_t k = 0; k < outerIndexes[buffer[i].key2].size(); k++) {
 
                     for (auto &item : (*innerIt).map) {
                         inteResults.back().map[item.first].push_back( item.second[innerIndexes[buffer[i].key1][j]] );
@@ -485,7 +485,7 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
 
 void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
 
-    int columnSize = RHJ::meta[ query.relations[inner.rel] ].rowSize;
+    std::size_t columnSize = RHJ::meta[ query.relations[inner.rel] ].rowSize;
 
     std::vector<tuple_key_t> filteredVector;
 
@@ -540,7 +540,7 @@ void RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, Inte
 std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query) {
     std::vector<std::string> ret;
 
-    for (int i = 0; i < query.cheCount; i++) {
+    for (std::size_t i = 0; i < query.cheCount; i++) {
 
         if ( (*inteResults.begin()).columnSize == 0 ) {
             ret.push_back("NULL");
@@ -564,14 +564,11 @@ bool RHJ::Executioner::compare(tuple_payload_t u, tuple_payload_t v, Query::Pred
     switch (op) {
         case Query::Predicate::Type::filter_eq_t:
             return u == v;
-            break;
         case Query::Predicate::Type::filter_gt_t:
             return u > v;
-            break;
         case Query::Predicate::Type::filter_lt_t:
             return u < v;
-            break;
         default:
-            break;
+            return false;
     }
 }
