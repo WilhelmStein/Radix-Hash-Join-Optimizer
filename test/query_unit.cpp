@@ -90,26 +90,52 @@ int main(void)
         RHJ::meta[currentFileNo].columns = new tuple_key_t*[RHJ::meta[currentFileNo].columnSize]; 
         for(uint64_t j = 0UL; j < RHJ::meta[currentFileNo].columnSize; j++) {
             RHJ::meta[currentFileNo].columns[j] = ((tuple_key_t*)p + j*RHJ::meta[currentFileNo].rowSize);
-            
         }
   
         currentFileNo++;
     }
-    
 
-    char q[] = "0 1 2|0.1=1.1&1.0=2.1&0.1>3000|0.0 1.1";
+    std::ifstream infile("./test_data/small/small.work");
+    std::ofstream outfile("./test_data/results/results");
 
-    // std::cout << q << std::endl << RHJ::Query(q) << std::endl;
+    std::string line;
+    while ( getline(infile, line) ) {
+        if (line != "F") {
+            char *q = new char[line.length() + 1];
+            strcpy(q, line.c_str());
+            RHJ::Query query = RHJ::Query(q);
+            RHJ::Executioner demios;
 
-    RHJ::Query query = RHJ::Query(q);
+            std::vector<std::string> checkSums = demios.execute(query);
+            
+            for (auto &c : checkSums) {
+                outfile << c << " ";
+            }
+            outfile << endl;
+            delete[] q;
+        }
+        // break;
+    }
 
-    RHJ::Executioner demios;
+    outfile.close();
+    infile.close();
 
 
-    std::vector<std::string> checkSums = demios.execute(query);
 
-    for (auto &i : checkSums)
-        std::cout << i << std::endl;
+
+    // char q[] = "0 1 2|0.1=1.1&1.0=2.1&0.1>3000|0.0 1.1";
+
+    // // std::cout << q << std::endl << RHJ::Query(q) << std::endl;
+
+    // RHJ::Query query = RHJ::Query(q);
+
+    // RHJ::Executioner demios;
+
+
+    // std::vector<std::string> checkSums = demios.execute(query);
+
+    // for (auto &i : checkSums)
+    //     std::cout << i << std::endl;
 
 
     for(size_t i = 0; i < currentFileNo; i++) {

@@ -2,4 +2,6 @@
 .vscode/
 bin/
 data/
-test/test_data/*
+*.sql
+*.tbl
+test_data/results
