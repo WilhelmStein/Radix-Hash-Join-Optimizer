@@ -1,11 +1,11 @@
 #!/bin/bash
 
 CC="g++"
-CFLAGS="-Wall -Wextra -std=c++17 -g3"
+CCFLAGS="-Wall -Wextra -std=c++17 -g3"
 
 PATH_INC="./inc"
 PATH_SRC="./src"
-PATH_TST="./test"
+PATH_TEST="./test"
 PATH_BIN="./bin"
 
 function confirm
@@ -51,13 +51,13 @@ function generate
 {
     echo
     echo "CC = $CC"
-    echo "CFLAGS = $CFLAGS"
+    echo "CCFLAGS = $CCFLAGS"
     echo
 
     echo "PATH_SRC = $PATH_SRC"
     echo "PATH_INC = $PATH_INC"
     echo "PATH_BIN = $PATH_BIN"
-    echo "PATH_TST = $PATH_TST"
+    echo "PATH_TEST = $PATH_TEST"
     echo
 
     echo ".PHONY: all"
@@ -78,8 +78,8 @@ function generate
     echo -e "\t@echo \"***\""
 
     echo
-    echo "\$(PATH_BIN)/%.exe: \$(PATH_TST)/%.cpp \$(OBJS)"
-    echo -e "\t\$(CC) -I \$(PATH_INC) \$(DEFINED) \$(CFLAGS) \$< \$(OBJS) -o \$@"
+    echo "\$(PATH_BIN)/%.exe: \$(PATH_TEST)/%.cpp \$(OBJS)"
+    echo -e "\t\$(CC) -I \$(PATH_INC) \$(DEFINED) \$(CCFLAGS) \$< \$(OBJS) -o \$@"
     echo
 
     objs="OBJS = \$(addprefix \$(PATH_BIN)/, "
@@ -102,7 +102,7 @@ function generate
 
         if [ -n "$includes" ]
         then
-            deps_name=$(echo $file | head -c 4 | tr [:lower:] [:upper:])_DEP
+            deps_name=$(echo $file | tr [:lower:] [:upper:])_DEP
 
             rule="$rule \$($deps_name)"
 
@@ -114,7 +114,7 @@ function generate
             deps_list=""
         fi
         
-        rule="$rule\n\t\$(CC) -I \$(PATH_INC) \$(DEFINED) \$(CFLAGS) \$(PATH_SRC)/$file.cpp -c -o \$(PATH_BIN)/$file.o"
+        rule="$rule\n\t\$(CC) -I \$(PATH_INC) \$(DEFINED) \$(CCFLAGS) \$(PATH_SRC)/$file.cpp -c -o \$(PATH_BIN)/$file.o"
 
         rules="$rules$rule\n\n"
 
@@ -134,7 +134,7 @@ declare -A classes
 classes[-g]=$(grep -Ev '//' ${PATH_INC}/* ${PATH_SRC}/* | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
 
 # grep every unit specific macro and extract its name
-classes[-u]=$(grep -Ev '//' ${PATH_TST}/* | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
+classes[-u]=$(grep -Ev '//' ${PATH_TEST}/* | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
 
 declare -A shortcuts
 
@@ -264,7 +264,7 @@ make "DEFINED=$dlib"
 
 if [ -z "$fexe" ]
 then
-    fexe=$(ls $PATH_TST)
+    fexe=$(ls $PATH_TEST)
 fi
 
 echo "-e" "\n*** Compiling exe files ***"
