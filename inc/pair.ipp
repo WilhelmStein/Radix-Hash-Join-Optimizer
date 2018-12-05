@@ -47,35 +47,3 @@ utility::pair<First, Second>& utility::pair<First, Second>::operator=(utility::p
 
     return *this;
 }
-
-template <typename First, typename Second>
-bool operator<(const utility::pair<First, Second>& A, const utility::pair<First, Second>& B)
-{
-    return A.first < B.first || (A.first == B.first && A.second < B.second);
-}
-
-template <typename First, typename Second>
-bool operator>(const utility::pair<First, Second>& A, const utility::pair<First, Second>& B)
-{
-    return B < A;
-}
-
-template <typename First, typename Second>
-bool operator==(const utility::pair<First, Second>& A, const utility::pair<First, Second>& B)
-{
-    return !(A < B) && !(B < A);
-}
-
-template <typename First, typename Second>
-bool operator!=(const utility::pair<First, Second>& A, const utility::pair<First, Second>& B)
-{
-    return !(A == B);
-}
-
-template <typename First, typename Second>
-std::ostream& operator<<(std::ostream& os, const utility::pair<First, Second>& p)
-{
-    os << p.first << ' ' << p.second;
-
-    return os;
-}
