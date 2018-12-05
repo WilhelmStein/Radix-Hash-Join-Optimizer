@@ -14,8 +14,11 @@ namespace RHJ
 {
     extern struct Meta
     {
-        uint64_t rowSize, columnSize;
-        tuple_key_t** columns;
+        __off_t mappingSize;
+        void * mapping;
+
+        tuple_key_t rowSize, columnSize;
+        tuple_payload_t ** columns;
     } * meta;
 
     struct Relation {
