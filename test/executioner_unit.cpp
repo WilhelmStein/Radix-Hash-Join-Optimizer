@@ -12,11 +12,10 @@
 
 #include <fcntl.h>
 
-#include <relation.hpp>
 #include <list.hpp>
-
-// Generate a list of the full paths of the relations and store it in files.txt
-// for file in "$(ls ./test_data/small/r*)"; do echo "$(realpath $file)"; done > ./test_data/files.txt &&  echo "Done" >> ./test_data/files.txt
+#include <relation.hpp>
+#include <query.hpp>
+#include <executioner.hpp>
 
 // Macro used in order to exit if condition is met
 #define exit_if(condition, message)                 \
@@ -96,10 +95,14 @@ int main()
         std::memmove(rsptr, mapping_clone, sizeof(tuple_key_t));
         reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
 
+        std::cout << "RHJ::meta[" << i << "].rowSize = " << RHJ::meta[i].rowSize << std::endl;
+
         void * csptr = reinterpret_cast<void *>(&RHJ::meta[i].columnSize);
         std::memmove(csptr, mapping_clone, sizeof(tuple_key_t));
         reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
         
+        std::cout << "RHJ::meta[" << i << "].columnSize = " << RHJ::meta[i].columnSize << std::endl;
+
         // Create Index
         RHJ::meta[i].columns = new tuple_payload_t*[RHJ::meta[i].columnSize]; 
         for(tuple_key_t j = 0UL; j < RHJ::meta[i].columnSize; j++)
@@ -111,6 +114,33 @@ int main()
             RHJ::meta[i].columns[j] = mapping;
         }
     }
+
+    std::size_t query_max = 256UL; char * query_str = new char[query_max];
+
+    for (;;)
+    {
+        ssize_t query_len;
+        if ((query_len = getline(&query_str, &query_max, stdin)) < 0)
+        {
+            exit_if(errno == EINVAL || errno == ENOMEM, query_str); break;
+        }
+
+        if (query_str[query_len - 1] == '\n') query_str[--query_len] = '\0';
+
+        if (!std::strcmp(query_str, "F"))
+            continue;
+
+        RHJ::Executioner demios;
+
+        std::vector<std::string> checksums = demios.execute(RHJ::Query(query_str));
+        
+        for (const auto &checksum : checksums)
+            std::cout << checksum << ' ';
+
+        std::cout << std::endl;
+    }
+
+    delete[] query_str;
 
     for(std::size_t i = 0; i < total; i++)
     {
