@@ -135,8 +135,11 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
     // SUBJECT TO CHANGE //
 
     IntermediateResults::iterator node = inteResults.find(pred.left.rel);
+    std::cout << "    Executing Filter..  " << pred << std::endl;
 
     if (node != inteResults.end() ) {
+
+        std::cout << "        Internal Filter produced: ";
 
         std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
         inteResults.emplace_back(-1, -1, map);
@@ -173,12 +176,13 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
             inteResults.back().columnSize = 0;
         inteResults.erase(node);
 
+
         // (*node).map = map;
         // (*node).columnSize = map[relation].size();
     }
     else {
         // construct new node
-
+        std::cout << "        External Filter produced: ";
         int columnSize = RHJ::meta[query.relations[relation]].rowSize;
 
         std::vector<tuple_key_t> filteredVector;
@@ -200,9 +204,12 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
         this->inteResults.emplace_back(map.size(), filteredVector.size(), map);
         this->inteResults.back().map[relation] = filteredVector;
     }
+
+    std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
 }
 
 void RHJ::Executioner::executeJoin(const Query& query, Query::Predicate pred) {
+    std::cout << "    Executing Join..  " << pred << std::endl;
 
     utility::pair<RHJ::Executioner::IntermediateResults::iterator, RHJ::Executioner::IntermediateResults::iterator> nodes;
     nodes = inteResults.find(pred.left.rel, pred.right.operand.rel);
@@ -237,6 +244,8 @@ void RHJ::Executioner::executeJoin(const Query& query, Query::Predicate pred) {
 
 
 void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
+    std::cout << "        External Join produced: ";
+
     int leftColumn = inner.col;
     int rightColumn = outer.col;
 
@@ -282,6 +291,8 @@ void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
     inteResults.back().map[inner.rel] = leftVector;
     inteResults.back().map[outer.rel] = rightVector;
 
+    std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+
     // delete[] left.tuples;
     // delete[] right.tuples;
 }
@@ -290,7 +301,7 @@ void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
 void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt,
                                         Query::Predicate::Operand outer) 
 {
-
+    std::cout << "        Semi-Internal Join produced: ";
     int leftColumn = inner.col;
     int rightColumn = outer.col;
 
@@ -346,7 +357,7 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
     else
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
-
+    std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
     // (*innerIt).map = map;
     // (*innerIt).columnNum = map.size();
     // if ((*innerIt).columnNum)
@@ -361,7 +372,7 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
 void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt,
                                                         Query::Predicate::Operand outer, IntermediateResults::iterator outerIt) 
 {
-
+    std::cout << "        Internal Join produced: ";
     RHJ::Relation left;
     left.size = (*innerIt).columnSize;
     left.tuples = new Relation::Tuple[(*innerIt).columnSize];
@@ -426,6 +437,7 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
     else
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
+    std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
 
     // (*innerIt).map = map;
     // (*innerIt).columnNum = map.size();
@@ -442,6 +454,7 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
 void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, 
                                                             Query::Predicate::Operand outer) 
 {
+    std::cout << "        Internal Self-Join produced: ";
     // Iterate over all rows in array
     std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
     this->inteResults.emplace_back(-1, -1, map);
@@ -477,6 +490,7 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
     else
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
+    std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
 
 
     // (*innerIt).map = map;
@@ -484,7 +498,7 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
 }
 
 void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
-
+    std::cout << "        External Self-Join produced: ";
     int columnSize = RHJ::meta[ query.relations[inner.rel] ].rowSize;
 
     std::vector<tuple_key_t> filteredVector;
@@ -506,10 +520,12 @@ void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Op
 
     this->inteResults.emplace_back(map.size(), filteredVector.size(), map);
     inteResults.back().map[inner.rel] = filteredVector;
+    std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
 }
 
 void RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right) {
 
+    std::cout << "    Cartesian Product produced: ";
     std::unordered_map<std::size_t, std::vector<tuple_key_t>> map;
 
     for (std::size_t i = 0; i < (*left).columnSize; i++) {
@@ -535,6 +551,7 @@ void RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, Inte
         (*left).columnSize = 0;
 
     this->inteResults.erase(right);
+    std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
 }
 
 std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query) {

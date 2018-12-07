@@ -3,6 +3,7 @@
 #include <index.hpp>
 #include <cmath>                // std::ceil, std::log
 #include <fstream>              // std::ostream
+#include <iostream>
 
 #if defined (__VERBOSE__)
     #include <iomanip>          // std::setw, std::setfill, std::left
@@ -90,5 +91,6 @@ RHJ::Results RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::
         }
     }
 
+    std::cout << results;
     return results;
 }
