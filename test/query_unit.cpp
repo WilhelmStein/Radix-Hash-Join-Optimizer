@@ -103,6 +103,9 @@ int main(void)
         if (line != "F") {
             char *q = new char[line.length() + 1];
             strcpy(q, line.c_str());
+
+            cout << endl << "Executing..  " << q << endl << endl;
+
             RHJ::Query query = RHJ::Query(q);
             RHJ::Executioner demios;
 
