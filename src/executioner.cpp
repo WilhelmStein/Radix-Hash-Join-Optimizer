@@ -7,25 +7,17 @@
 RHJ::Executioner::Entity::Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map) 
 :
 columnNum(_columnNum), columnSize(_columnSize), map(_map)
-{
+{ }
 
-}
-
-RHJ::Executioner::Entity::~Entity() {
-    
-}
+RHJ::Executioner::Entity::~Entity() { }
 
 RHJ::Executioner::IntermediateResults::IntermediateResults() : list() { }
 
-RHJ::Executioner::IntermediateResults::~IntermediateResults() { 
-
-}
+RHJ::Executioner::IntermediateResults::~IntermediateResults() { }
 
 RHJ::Executioner::Executioner() : inteResults() { }
 
-RHJ::Executioner::~Executioner() { 
-
-}
+RHJ::Executioner::~Executioner() { }
 
 
 utility::pair<RHJ::Executioner::IntermediateResults::iterator, RHJ::Executioner::IntermediateResults::iterator> 
@@ -67,29 +59,6 @@ RHJ::Executioner::IntermediateResults::iterator RHJ::Executioner::IntermediateRe
     return end();
 }
 
-std::vector<std::size_t> findIndexes(std::vector<tuple_key_t> vec, tuple_key_t val) {
-    std::vector<std::size_t> found;
-
-    for (int i = 0; i < vec.size(); i++) {
-        if (vec[i] == val) {
-            found.push_back(i);
-        }
-    }
-
-    return found;
-}
-
-std::unordered_map<tuple_key_t, std::vector<std::size_t>> mapIndexes(std::vector<tuple_key_t> vec) {
-    std::unordered_map<tuple_key_t, std::vector<std::size_t>> map;
-    std::size_t size = vec.size();
-
-    for (std::size_t i = 0; i < size; i++) {
-        map[vec[i]].push_back(i);
-    }
-
-    return map;
-}
-
 
 std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
@@ -127,12 +96,12 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
 void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) {
 
-    // SUBJECT TO CHANGE //
+
     int relation = pred.left.rel;
     int column = pred.left.col;
     int immediate = pred.right.constraint;
     Query::Predicate::Type op = pred.type;
-    // SUBJECT TO CHANGE //
+
 
     IntermediateResults::iterator node = inteResults.find(pred.left.rel);
     std::cout << "    Executing Filter..  " << pred << std::endl;
@@ -152,16 +121,12 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
         // Iterate over all rows in array
         for (std::size_t i = 0; i < (*node).columnSize; i++ ) 
         {
-            // For each one get its value from its appropriate relation and check if filter is true
             tuple_key_t rowID = (*node).map[relation][i];
 
-            // So we want something like:
             tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][rowID];
-            // int value = Relations.relations[ query.relations[relation] ].column(column)[rowID].payload;
 
             if (compare(value, immediate, op)) {
 
-                // if comparison returns false then remove the value from the vector
                 for (auto &vec : (*node).map) {
                     inteResults.back().map[vec.first].push_back(vec.second[i]);
                 }
@@ -246,27 +211,30 @@ void RHJ::Executioner::executeJoin(const Query& query, Query::Predicate pred) {
 void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
     std::cout << "        External Join produced: ";
 
-    int leftColumn = inner.col;
-    int rightColumn = outer.col;
+    RHJ::Meta innerRelation = RHJ::meta[query.relations[inner.rel]];
+    RHJ::Meta outerRelation = RHJ::meta[query.relations[outer.rel]];
+    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+
 
     RHJ::Relation left;
-    left.size = RHJ::meta[query.relations[inner.rel]].rowSize;
+    left.size = innerRelation.rowSize;
     left.tuples = new Relation::Tuple[ left.size ];
 
     for (tuple_key_t i = 0; i < left.size; i++)
     {
         left.tuples[i].key = i;
-        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[leftColumn][i];
+        left.tuples[i].payload = innerColumn[i];
     }
 
     RHJ::Relation right;
-    right.size = RHJ::meta[query.relations[outer.rel]].rowSize;
+    right.size = outerRelation.rowSize;
     right.tuples = new Relation::Tuple[ right.size ];
 
     for (tuple_key_t i = 0; i < right.size; i++)  
     {
         right.tuples[i].key = i;
-        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[rightColumn][i];
+        right.tuples[i].payload = outerColumn[i];
     }
 
     
@@ -278,7 +246,7 @@ void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
 
     for (auto &buffer : results) {
         for (std::size_t i = 0; i < buffer.size(); i++) {
-            // Does sorting really matter? (i dont think so)
+
             leftVector.push_back(buffer[i].key1);
             rightVector.push_back(buffer[i].key2);
             
@@ -302,52 +270,55 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
                                         Query::Predicate::Operand outer) 
 {
     std::cout << "        Semi-Internal Join produced: ";
-    int leftColumn = inner.col;
-    int rightColumn = outer.col;
+
+    RHJ::Meta innerRelation = RHJ::meta[query.relations[inner.rel]];
+    RHJ::Meta outerRelation = RHJ::meta[query.relations[outer.rel]];
+    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+
 
     RHJ::Relation left;
     left.size = (*innerIt).columnSize;
     left.tuples = new Relation::Tuple[(*innerIt).columnSize];
 
-    std::size_t i = 0;
-    // Iterate over all rows in array
+    tuple_key_t innerIndex = 0;
     for (auto &rowId : (*innerIt).map[inner.rel])  
     {
-        left.tuples[i].key = rowId;
-        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[leftColumn][rowId];
-        i++;
+        left.tuples[innerIndex].key = innerIndex;
+        left.tuples[innerIndex].payload = innerColumn[rowId];
+        innerIndex++;
     }
 
-    RHJ::Relation right;
-    right.size = RHJ::meta[query.relations[outer.rel]].rowSize;
-    right.tuples = new Relation::Tuple[ RHJ::meta[query.relations[outer.rel]].rowSize ];
 
-    for (tuple_key_t i = 0; i < RHJ::meta[query.relations[outer.rel]].rowSize; i++)  
+    RHJ::Relation right;
+    right.size = outerRelation.rowSize;
+    right.tuples = new Relation::Tuple[ right.size ];
+
+    for (tuple_key_t outerIndex = 0; outerIndex < right.size; outerIndex++)  
     {
-        right.tuples[i].key = i;
-        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[rightColumn][i];
+        right.tuples[outerIndex].key = outerIndex;
+        right.tuples[outerIndex].payload = outerColumn[outerIndex];
     }
 
     
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
 
     std::unordered_map<std::size_t, std::vector<tuple_key_t>> map;
-    std::unordered_map<tuple_key_t, std::vector<std::size_t>> indexes = mapIndexes( (*innerIt).map[inner.rel] );
-
     this->inteResults.emplace_back(-1, -1, map);
+
     
-
     for (auto &buffer : results) {
+
         for (std::size_t i = 0; i < buffer.size(); i++) {
-            // Does sorting really matter? (i dont think so)
 
-            for (int j = 0; j < indexes[buffer[i].key1].size(); j++) {
+            for (auto &item : (*innerIt).map) {
 
-                for (auto &item : (*innerIt).map) {
-                    inteResults.back().map[item.first].push_back( item.second[indexes[buffer[i].key1][j]] );
-                }
-                inteResults.back().map[outer.rel].push_back(buffer[i].key2);
+                tuple_key_t innerRowID = item.second[buffer[i].key1];
+                inteResults.back().map[item.first].push_back( innerRowID );
             }
+
+            tuple_key_t outerRowID = buffer[i].key2;
+            inteResults.back().map[outer.rel].push_back( outerRowID );
         }
     }
 
@@ -357,6 +328,7 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
     else
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
+
     std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
     // (*innerIt).map = map;
     // (*innerIt).columnNum = map.size();
@@ -373,30 +345,35 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
                                                         Query::Predicate::Operand outer, IntermediateResults::iterator outerIt) 
 {
     std::cout << "        Internal Join produced: ";
+
+    RHJ::Meta innerRelation = RHJ::meta[query.relations[inner.rel]];
+    RHJ::Meta outerRelation = RHJ::meta[query.relations[outer.rel]];
+    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+
+
     RHJ::Relation left;
     left.size = (*innerIt).columnSize;
-    left.tuples = new Relation::Tuple[(*innerIt).columnSize];
+    left.tuples = new Relation::Tuple[ left.size ];
 
-    std::size_t i = 0;
-    // Iterate over all rows in array
+    tuple_key_t innerIndex = 0;
     for (auto &rowId : (*innerIt).map[inner.rel])  
     {
-        left.tuples[i].key = rowId;
-        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[inner.col][rowId];
-        i++;
+        left.tuples[innerIndex].key = innerIndex;
+        left.tuples[innerIndex].payload = innerColumn[rowId];
+        innerIndex++;
     }
 
     RHJ::Relation right;
     right.size = (*outerIt).columnSize;
-    right.tuples = new Relation::Tuple[(*outerIt).columnSize];
+    right.tuples = new Relation::Tuple[ right.size ];
 
-    i = 0;
-    // Iterate over all rows in array
+    tuple_key_t outerIndex = 0;
     for (auto &rowId : (*outerIt).map[outer.rel])  
     {
-        right.tuples[i].key = rowId;
-        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[outer.col][rowId];
-        i++;
+        right.tuples[outerIndex].key = rowId;
+        right.tuples[outerIndex].payload = outerColumn[rowId];
+        outerIndex++;
     }
 
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
@@ -404,32 +381,21 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
     std::unordered_map<std::size_t, std::vector<tuple_key_t>> map;
     this->inteResults.emplace_back(-1, -1, map);
 
-    
     for (auto &buffer : results) {
         for (std::size_t i = 0; i < buffer.size(); i++) {
 
-            // Does sorting really matter? (i dont think so)
-
-            std::unordered_map<tuple_key_t, std::vector<std::size_t>> innerIndexes = mapIndexes( (*innerIt).map[inner.rel] );
-            std::unordered_map<tuple_key_t, std::vector<std::size_t>> outerIndexes = mapIndexes( (*outerIt).map[outer.rel] );
-
-
-            for (int j = 0; j < innerIndexes[buffer[i].key1].size(); j++) {
-
-                for (int k = 0; k < outerIndexes[buffer[i].key2].size(); k++) {
-
-                    for (auto &item : (*innerIt).map) {
-                        inteResults.back().map[item.first].push_back( item.second[innerIndexes[buffer[i].key1][j]] );
-                    }
-                    
-                    for (auto &item : (*outerIt).map) {
-                        inteResults.back().map[item.first].push_back( item.second[outerIndexes[buffer[i].key2][k]] );
-                    }  
-                }
-            
+            for (auto &item : (*innerIt).map) {
+                tuple_key_t innerRowID = item.second[buffer[i].key1];
+                inteResults.back().map[item.first].push_back( innerRowID );
             }
+            
+            for (auto &item : (*outerIt).map) {
+                tuple_key_t outerRowID = item.second[buffer[i].key2];
+                inteResults.back().map[item.first].push_back( outerRowID );
+            }  
         }
     }
+    
 
     inteResults.back().columnNum = inteResults.back().map.size();
     if (inteResults.back().columnNum)
@@ -437,6 +403,7 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
     else
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
+    
     std::cout << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
 
     // (*innerIt).map = map;
@@ -455,32 +422,36 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
                                                             Query::Predicate::Operand outer) 
 {
     std::cout << "        Internal Self-Join produced: ";
-    // Iterate over all rows in array
+
+    RHJ::Meta innerRelation = RHJ::meta[query.relations[inner.rel]];
+    RHJ::Meta outerRelation = RHJ::meta[query.relations[outer.rel]];
+    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+
+
     std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
     this->inteResults.emplace_back(-1, -1, map);
 
-    for (auto &vec : (*innerIt).map) {
+    for (auto &item : (*innerIt).map) {
         std::vector<tuple_key_t> vector;
-        map[vec.first] = vector;
+        map[item.first] = vector;
     }
 
     for (std::size_t i = 0; i < (*innerIt).columnSize; i++ ) 
     { 
-        // For each one get its value from its appropriate relation and check if filter is true
         tuple_key_t rowID_1 = (*innerIt).map[inner.rel][i];
         tuple_key_t rowID_2 = (*innerIt).map[outer.rel][i];
 
-        // So we want something like:
-        tuple_payload_t value_1 = RHJ::meta[ query.relations[inner.rel] ].columns[inner.col][rowID_1];
-        tuple_payload_t value_2 = RHJ::meta[ query.relations[outer.rel] ].columns[outer.col][rowID_2];
+
+        tuple_payload_t value_1 = innerColumn[rowID_1];
+        tuple_payload_t value_2 = outerColumn[rowID_2];
 
         if (value_1 == value_2) {
 
-            // if comparison returns false then remove the value from the vector
-            for (auto &vec : (*innerIt).map) {
-                inteResults.back().map[vec.first].push_back(vec.second[i]);
+            for (auto &item : (*innerIt).map) {
+                inteResults.back().map[item.first].push_back(item.second[i]);
             }
-            // Decreasing iterators because we erased one value
+
         }
     }
 
@@ -499,15 +470,21 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
 
 void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
     std::cout << "        External Self-Join produced: ";
-    int columnSize = RHJ::meta[ query.relations[inner.rel] ].rowSize;
+
+    RHJ::Meta innerRelation = RHJ::meta[query.relations[inner.rel]];
+    RHJ::Meta outerRelation = RHJ::meta[query.relations[outer.rel]];
+    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+
+    int columnSize = innerRelation.rowSize;
 
     std::vector<tuple_key_t> filteredVector;
 
     // Iterate over whole column
     for (std::size_t i = 0; i < columnSize; i++) {
 
-        int value_1 = RHJ::meta[ query.relations[inner.rel] ].columns[inner.col][i];
-        int value_2 = RHJ::meta[ query.relations[outer.rel] ].columns[outer.col][i];
+        int value_1 = innerColumn[i];
+        int value_2 = outerColumn[i];
 
         if (compare(value_1, value_2, Query::Predicate::Type::filter_eq_t)) {
             
