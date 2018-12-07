@@ -72,7 +72,7 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
         return a.type < b.type;
     });
 
-    for (int i = 0; i < query.preCount; i++) {
+    for (std::size_t i = 0; i < query.preCount; i++) {
 
         switch(query.predicates[i].type) {
             case Query::Predicate::Type::join_t:
@@ -97,9 +97,9 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) {
 
 
-    int relation = pred.left.rel;
-    int column = pred.left.col;
-    int immediate = pred.right.constraint;
+    std::size_t relation = pred.left.rel;
+    std::size_t column = pred.left.col;
+    tuple_key_t immediate = pred.right.constraint;
     Query::Predicate::Type op = pred.type;
 
 
@@ -118,7 +118,6 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
             map[vec.first] = vector;
         }
 
-        // Iterate over all rows in array
         for (std::size_t i = 0; i < (*node).columnSize; i++ ) 
         {
             tuple_key_t rowID = (*node).map[relation][i];
@@ -146,13 +145,11 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
         // (*node).columnSize = map[relation].size();
     }
     else {
-        // construct new node
         std::cout << "        External Filter produced: ";
-        int columnSize = RHJ::meta[query.relations[relation]].rowSize;
+        std::size_t columnSize = RHJ::meta[query.relations[relation]].rowSize;
 
         std::vector<tuple_key_t> filteredVector;
 
-        // Iterate over whole column
         for (std::size_t i = 0; i < columnSize; i++) {
 
             tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][i];
@@ -476,15 +473,15 @@ void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Op
     tuple_key_t * innerColumn = innerRelation.columns[inner.col];
     tuple_key_t * outerColumn = outerRelation.columns[outer.col];
 
-    int columnSize = innerRelation.rowSize;
+    std::size_t columnSize = innerRelation.rowSize;
 
     std::vector<tuple_key_t> filteredVector;
 
     // Iterate over whole column
     for (std::size_t i = 0; i < columnSize; i++) {
 
-        int value_1 = innerColumn[i];
-        int value_2 = outerColumn[i];
+        tuple_payload_t value_1 = innerColumn[i];
+        tuple_payload_t value_2 = outerColumn[i];
 
         if (compare(value_1, value_2, Query::Predicate::Type::filter_eq_t)) {
             
@@ -534,7 +531,7 @@ void RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, Inte
 std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query) {
     std::vector<std::string> ret;
 
-    for (int i = 0; i < query.cheCount; i++) {
+    for (std::size_t i = 0; i < query.cheCount; i++) {
 
         if ( (*inteResults.begin()).columnSize == 0 ) {
             ret.push_back("NULL");
