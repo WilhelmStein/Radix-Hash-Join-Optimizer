@@ -1,0 +1,15 @@
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r0
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r1
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r10
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r11
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r12
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r13
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r2
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r3
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r4
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r5
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r6
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r7
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r8
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r9
+Done

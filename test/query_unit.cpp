@@ -22,8 +22,6 @@ using std::cerr;
 
 using RHJ::Relation;
 
-RHJ::Meta * RHJ::meta;
-
 int main(void)
 {
     utility::list<char*> paths;
@@ -95,7 +93,7 @@ int main(void)
         currentFileNo++;
     }
 
-    std::ifstream infile("./test_data/small/small.work");
+    std::ifstream infile("./test_data/small/tiny.work");
     std::ofstream outfile("./test_data/results/results");
 
     std::string line;

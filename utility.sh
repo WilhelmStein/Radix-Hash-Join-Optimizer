@@ -60,7 +60,7 @@ then
         confirm "${target////}.tar.gz"
 
         tar -zcvf "${target////}".tar.gz "$target"
-    fi    
+    fi
 else
     echo "# Options:"
     echo "# -t, --transfer    Transfer a file / directory over ssh"

@@ -84,6 +84,8 @@ namespace utility
         iterator find(const T&);
         iterator erase(const iterator&);
 
+        void clear();
+
         T& front();
         T& back();
 
