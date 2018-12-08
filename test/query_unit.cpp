@@ -101,13 +101,19 @@ int main(void)
         if (line != "F") {
             char *q = new char[line.length() + 1];
             strcpy(q, line.c_str());
+
+            cerr << endl << "Executing..  " << q << endl << endl;
+
             RHJ::Query query = RHJ::Query(q);
             RHJ::Executioner demios;
 
             std::vector<std::string> checkSums = demios.execute(query);
             
             for (auto &c : checkSums) {
-                outfile << c << " ";
+                outfile << c;
+                if (&c != &checkSums.back())
+                    outfile << " ";
+                    
             }
             outfile << endl;
             delete[] q;
@@ -118,22 +124,6 @@ int main(void)
     outfile.close();
     infile.close();
 
-
-
-
-    // char q[] = "0 1 2|0.1=1.1&1.0=2.1&0.1>3000|0.0 1.1";
-
-    // // std::cout << q << std::endl << RHJ::Query(q) << std::endl;
-
-    // RHJ::Query query = RHJ::Query(q);
-
-    // RHJ::Executioner demios;
-
-
-    // std::vector<std::string> checkSums = demios.execute(query);
-
-    // for (auto &i : checkSums)
-    //     std::cout << i << std::endl;
 
 
     for(size_t i = 0; i < currentFileNo; i++) {
