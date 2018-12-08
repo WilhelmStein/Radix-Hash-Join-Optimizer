@@ -12,15 +12,6 @@
 
 namespace RHJ
 {
-    extern struct Meta
-    {
-        __off_t mappingSize;
-        void * mapping;
-
-        tuple_key_t rowSize, columnSize;
-        tuple_payload_t ** columns;
-    } * meta;
-
     struct Relation {
         #if defined (__VERBOSE__)
             const char * name;

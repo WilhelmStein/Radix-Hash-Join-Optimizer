@@ -1,8 +1,140 @@
+
 #include <executioner.hpp>
 #include <relation.hpp>
-#include <cstdlib>
+#include <list.hpp>
+
 #include <iostream>
 #include <algorithm>
+
+#include <cstring>
+#include <climits>
+#include <cassert>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <sys/mman.h>
+
+#include <fcntl.h>
+
+// Macro used in order to exit if condition is met
+#define exit_if(condition, message)                 \
+do                                                  \
+{                                                   \
+    if (condition)                                  \
+    {                                               \
+        std::perror(message); std::exit(errno);     \
+    }                                               \
+} while (false)                                     \
+
+// Macro definition for consistency with above declaration
+#define exit_if_not(condition) assert(condition)
+
+static struct Meta
+{
+    __off_t mappingSize;
+    void * mapping;
+
+    tuple_key_t rowSize, columnSize;
+    tuple_payload_t ** columns;
+} * meta = nullptr;
+
+static std::size_t total = 0UL;
+
+void RHJ::Executioner::createMetadata()
+{
+    utility::list<char *> paths;
+
+    // Throw exception if any of the following flags are set for std::cin
+    std::cin.exceptions(std::ios_base::badbit | std::ios_base::failbit);
+
+    while(true)
+    {
+        char buff[PATH_MAX + 1UL];
+        
+        // Atempt to read the current line
+        try
+        {
+            std::cin.getline(buff, sizeof(buff));
+        }
+        catch (std::ios_base::failure& f)
+        {
+            std::cerr
+            << "iteration: "  << paths.size()
+            << " exception: " << f.what()
+            << std::endl;
+
+            std::exit(f.code().value());
+        }
+
+        if (!std::strcmp(buff, "Done"))
+            break;
+        
+        paths.push_back(new char[std::strlen(buff) + 1UL]);
+        
+        std::strcpy(paths.back(), buff);
+    }
+    
+    total = paths.size(); exit_if_not(total > 0UL);
+
+    meta = new Meta[total];
+
+    for (std::size_t i = 0UL; i < total; i++)
+    {
+        // Open file
+        int fd = open(paths.front(), O_RDONLY);
+        exit_if(fd < 0, paths.front());
+
+        // Retrieve its size
+        struct stat st;
+        exit_if(fstat(fd, &st) < 0, paths.front());
+
+        // Map file to memory
+        meta[i].mapping = mmap(nullptr, (meta[i].mappingSize = st.st_size), PROT_READ, MAP_PRIVATE, fd, 0);
+        exit_if(meta[i].mapping == MAP_FAILED, paths.front());
+
+        // Close file
+        exit_if(close(fd) < 0, paths.front());
+
+        // Deallocate uneccessary memory
+        delete[] paths.front(); paths.erase(paths.begin());
+
+        // Copy Metadata
+        void * mapping_clone = meta[i].mapping;
+
+        void * rsptr = reinterpret_cast<void *>(&meta[i].rowSize);
+        std::memmove(rsptr, mapping_clone, sizeof(tuple_key_t));
+        reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
+
+        void * csptr = reinterpret_cast<void *>(&meta[i].columnSize);
+        std::memmove(csptr, mapping_clone, sizeof(tuple_key_t));
+        reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
+        
+        // Create Index
+        meta[i].columns = new tuple_payload_t*[meta[i].columnSize]; 
+        for(tuple_key_t j = 0UL; j < meta[i].columnSize; j++)
+        {
+            const tuple_key_t index = j * meta[i].rowSize;
+
+            tuple_payload_t * const mapping = &(reinterpret_cast<tuple_payload_t*>(meta[i].mapping)[index]);
+
+            meta[i].columns[j] = mapping;
+        }
+    }
+}
+
+void RHJ::Executioner::deleteMetadata()
+{
+    for(std::size_t i = 0; i < total; i++)
+    {
+        exit_if(munmap(meta[i].mapping, meta[i].mappingSize) < 0, ("munmap No." + std::to_string(i)).c_str());
+        
+        delete[] meta[i].columns;
+    }
+
+    delete[] meta;
+}
 
 RHJ::Executioner::Entity::Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map) 
 :
@@ -153,7 +285,7 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
             tuple_key_t rowID = (*node).map[relation][i];
 
             // So we want something like:
-            tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][rowID];
+            tuple_payload_t value = meta[query.relations[relation]].columns[column][rowID];
             // int value = Relations.relations[ query.relations[relation] ].column(column)[rowID].payload;
 
             if (compare(value, immediate, op)) {
@@ -179,14 +311,14 @@ void RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
     else {
         // construct new node
 
-        std::size_t columnSize = RHJ::meta[query.relations[relation]].rowSize;
+        std::size_t columnSize = meta[query.relations[relation]].rowSize;
 
         std::vector<tuple_key_t> filteredVector;
 
         // Iterate over whole column
         for (std::size_t i = 0; i < columnSize; i++) {
 
-            tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][i];
+            tuple_payload_t value = meta[query.relations[relation]].columns[column][i];
 
             if (compare(value, immediate, op)) {
                 
@@ -241,23 +373,23 @@ void RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
     int rightColumn = outer.col;
 
     RHJ::Relation left;
-    left.size = RHJ::meta[query.relations[inner.rel]].rowSize;
+    left.size = meta[query.relations[inner.rel]].rowSize;
     left.tuples = new Relation::Tuple[ left.size ];
 
     for (tuple_key_t i = 0; i < left.size; i++)
     {
         left.tuples[i].key = i;
-        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[leftColumn][i];
+        left.tuples[i].payload = meta[query.relations[inner.rel]].columns[leftColumn][i];
     }
 
     RHJ::Relation right;
-    right.size = RHJ::meta[query.relations[outer.rel]].rowSize;
+    right.size = meta[query.relations[outer.rel]].rowSize;
     right.tuples = new Relation::Tuple[ right.size ];
 
     for (tuple_key_t i = 0; i < right.size; i++)  
     {
         right.tuples[i].key = i;
-        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[rightColumn][i];
+        right.tuples[i].payload = meta[query.relations[outer.rel]].columns[rightColumn][i];
     }
 
     
@@ -303,18 +435,18 @@ void RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
     for (auto &rowId : (*innerIt).map[inner.rel])  
     {
         left.tuples[i].key = rowId;
-        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[leftColumn][rowId];
+        left.tuples[i].payload = meta[query.relations[inner.rel]].columns[leftColumn][rowId];
         i++;
     }
 
     RHJ::Relation right;
-    right.size = RHJ::meta[query.relations[outer.rel]].rowSize;
-    right.tuples = new Relation::Tuple[ RHJ::meta[query.relations[outer.rel]].rowSize ];
+    right.size = meta[query.relations[outer.rel]].rowSize;
+    right.tuples = new Relation::Tuple[ meta[query.relations[outer.rel]].rowSize ];
 
-    for (tuple_key_t i = 0; i < RHJ::meta[query.relations[outer.rel]].rowSize; i++)  
+    for (tuple_key_t i = 0; i < meta[query.relations[outer.rel]].rowSize; i++)  
     {
         right.tuples[i].key = i;
-        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[rightColumn][i];
+        right.tuples[i].payload = meta[query.relations[outer.rel]].columns[rightColumn][i];
     }
 
     
@@ -371,7 +503,7 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
     for (auto &rowId : (*innerIt).map[inner.rel])  
     {
         left.tuples[i].key = rowId;
-        left.tuples[i].payload = RHJ::meta[query.relations[inner.rel]].columns[inner.col][rowId];
+        left.tuples[i].payload = meta[query.relations[inner.rel]].columns[inner.col][rowId];
         i++;
     }
 
@@ -384,7 +516,7 @@ void RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
     for (auto &rowId : (*outerIt).map[outer.rel])  
     {
         right.tuples[i].key = rowId;
-        right.tuples[i].payload = RHJ::meta[query.relations[outer.rel]].columns[outer.col][rowId];
+        right.tuples[i].payload = meta[query.relations[outer.rel]].columns[outer.col][rowId];
         i++;
     }
 
@@ -458,8 +590,8 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
         tuple_key_t rowID_2 = (*innerIt).map[outer.rel][i];
 
         // So we want something like:
-        tuple_payload_t value_1 = RHJ::meta[ query.relations[inner.rel] ].columns[inner.col][rowID_1];
-        tuple_payload_t value_2 = RHJ::meta[ query.relations[outer.rel] ].columns[outer.col][rowID_2];
+        tuple_payload_t value_1 = meta[ query.relations[inner.rel] ].columns[inner.col][rowID_1];
+        tuple_payload_t value_2 = meta[ query.relations[outer.rel] ].columns[outer.col][rowID_2];
 
         if (value_1 == value_2) {
 
@@ -485,15 +617,15 @@ void RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
 
 void RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
 
-    std::size_t columnSize = RHJ::meta[ query.relations[inner.rel] ].rowSize;
+    std::size_t columnSize = meta[ query.relations[inner.rel] ].rowSize;
 
     std::vector<tuple_key_t> filteredVector;
 
     // Iterate over whole column
     for (std::size_t i = 0; i < columnSize; i++) {
 
-        int value_1 = RHJ::meta[ query.relations[inner.rel] ].columns[inner.col][i];
-        int value_2 = RHJ::meta[ query.relations[outer.rel] ].columns[outer.col][i];
+        int value_1 = meta[ query.relations[inner.rel] ].columns[inner.col][i];
+        int value_2 = meta[ query.relations[outer.rel] ].columns[outer.col][i];
 
         if (compare(value_1, value_2, Query::Predicate::Type::filter_eq_t)) {
             
@@ -549,7 +681,7 @@ std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query
         
         tuple_payload_t sum = 0;
         for (auto &rowId : (*inteResults.begin()).map[query.checksums[i].rel] ) {
-            sum += RHJ::meta[ query.relations[query.checksums[i].rel] ].columns[query.checksums[i].col][rowId];
+            sum += meta[ query.relations[query.checksums[i].rel] ].columns[query.checksums[i].col][rowId];
         }
 
         ret.push_back(std::to_string(sum));

@@ -62,6 +62,9 @@ namespace RHJ
 
     public:
 
+        static void createMetadata();
+        static void deleteMetadata();
+
         Executioner();
         ~Executioner();
 
