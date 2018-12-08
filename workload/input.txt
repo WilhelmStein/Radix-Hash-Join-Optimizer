@@ -1,17 +1,17 @@
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r0
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r1
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r10
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r11
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r12
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r13
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r2
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r3
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r4
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r5
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r6
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r7
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r8
-/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/test_data/small/r9
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r0
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r1
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r2
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r3
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r4
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r5
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r6
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r7
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r8
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r9
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r10
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r11
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r12
+/home/massiva/Documents/Courses/Application-Development-for-Information-Systems/workload/small/r13
 Done
 3 0 1|0.2=1.0&0.1=2.0&0.2>3499|1.2 0.1
 5 0|0.2=1.0&0.3=9881|1.1 0.2 1.0

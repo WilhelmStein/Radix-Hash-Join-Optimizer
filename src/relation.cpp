@@ -4,8 +4,6 @@
 #include <cmath>                // std::ceil, std::log
 #include <fstream>              // std::ostream
 
-RHJ::Meta * RHJ::meta;
-
 #if defined (__VERBOSE__)
     #include <iomanip>          // std::setw, std::setfill, std::left
 #endif
