@@ -95,14 +95,10 @@ int main()
         std::memmove(rsptr, mapping_clone, sizeof(tuple_key_t));
         reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
 
-        std::cout << "RHJ::meta[" << i << "].rowSize = " << RHJ::meta[i].rowSize << std::endl;
-
         void * csptr = reinterpret_cast<void *>(&RHJ::meta[i].columnSize);
         std::memmove(csptr, mapping_clone, sizeof(tuple_key_t));
         reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
         
-        std::cout << "RHJ::meta[" << i << "].columnSize = " << RHJ::meta[i].columnSize << std::endl;
-
         // Create Index
         RHJ::meta[i].columns = new tuple_payload_t*[RHJ::meta[i].columnSize]; 
         for(tuple_key_t j = 0UL; j < RHJ::meta[i].columnSize; j++)
