@@ -213,6 +213,15 @@ typename utility::list<T>::iterator utility::list<T>::erase(const iterator& it)
 }
 
 template <typename T>
+inline void utility::list<T>::clear()
+{
+    if (head)
+        delete head;
+
+    head = tail = nullptr; s = 0UL;
+}
+
+template <typename T>
 inline T& utility::list<T>::front()
 {
     return head->data;
