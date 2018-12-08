@@ -1,33 +1,22 @@
 #!/bin/bash
 
-if [ "$#" -lt 2 ]
+if [ "$#" -lt 5 ]
 then
-    echo "Usage: $(basename "$0") [EXE] [OUT] [MACROS]"
+    echo "Usage: $(basename "$0") <UNIT> <WORKLOAD> <STDERR> <STDOUT> <FILES>"
     exit 1
 fi
 
-exe="$1"; shift;
-out="$1"; shift;
+unit="$1";     shift
+workload="$1"; shift
+stderr="$1";   shift
+stdout="$1";   shift
 
-if [ -f "$out" ]
-then
-    read -p "Are you sure you want to overwrite $out: " answer
-    if [[ "$answer" != [yY] ]] && [[ "$answer" != [yY][eE][sS] ]]
-    then
-        exit 2
-    fi
-fi
+eval "./build.sh -x $unit"
 
-truncate --size=0 "$out"
+files=$(for file in "$*"; do echo "$(realpath $file)"; done | rev | sort -n -k1.2 | rev)
 
-macros=(__SMALL__ ""$*""); shift;
+queries=$(cat "$workload")
 
-for ((pow = 4; pow <= 64; pow *= 2))
-do
-    eval "./build.sh -g __CACHE_SIZE__=$((pow * 1024))"
-    for macro in "${macros[@]}"
-    do
-        eval "./build.sh -b -q -u $macro -u __CACHE_SIZE__=$((pow * 1024)) -x $exe"
-        "$exe" >> "$out"
-    done
-done
+input=$(echo -e "$files\nDone\n$queries")
+
+echo "$input" | "$unit" > "$stdout" 2> "$stderr"
