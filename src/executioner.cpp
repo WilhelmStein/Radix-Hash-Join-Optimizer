@@ -117,7 +117,7 @@ void RHJ::Executioner::createMetadata()
         {
             const tuple_key_t index = j * meta[i].rowSize;
 
-            tuple_payload_t * const mapping = &(reinterpret_cast<tuple_payload_t*>(meta[i].mapping)[index]);
+            tuple_payload_t * const mapping = &(reinterpret_cast<tuple_payload_t*>(mapping_clone)[index]);
 
             meta[i].columns[j] = mapping;
         }
