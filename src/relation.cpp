@@ -91,6 +91,5 @@ RHJ::Results RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::
         }
     }
 
-    std::cerr << results;
     return results;
 }
