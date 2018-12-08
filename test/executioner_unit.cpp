@@ -30,6 +30,8 @@ int main()
 
         RHJ::Executioner demios;
 
+        std::cerr << std::endl << "Executing..  " << query_str << std::endl << std::endl;
+
         std::vector<std::string> checksums = demios.execute(RHJ::Query(query_str));
         
         for (const auto &checksum : checksums)

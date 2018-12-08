@@ -7,3 +7,5 @@ data/
 test_data/results
 test_data/tiny
 test_data/tiny.txt
+workload/results
+workload/*

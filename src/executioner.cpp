@@ -348,8 +348,8 @@ bool RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
 
     RHJ::Relation left;
@@ -409,8 +409,8 @@ bool RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
 
     RHJ::Relation left;
@@ -492,8 +492,8 @@ bool RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
 
     RHJ::Relation left;
@@ -582,8 +582,8 @@ bool RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
 
     std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
@@ -628,8 +628,8 @@ bool RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Op
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_key_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_key_t * outerColumn = outerRelation.columns[outer.col];
+    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
+    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
     std::size_t columnSize = innerRelation.rowSize;
   
