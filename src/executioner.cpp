@@ -136,10 +136,10 @@ void RHJ::Executioner::deleteMetadata()
     delete[] meta;
 }
 
+
 RHJ::Executioner::Entity::Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map) 
 :
-columnSize(_columnSize), columnNum(_columnNum), map(_map)
-{ }
+columnSize(_columnSize), columnNum(_columnNum), map(_map) { }
 
 RHJ::Executioner::Entity::~Entity() { }
 
@@ -150,6 +150,7 @@ RHJ::Executioner::IntermediateResults::~IntermediateResults() { }
 RHJ::Executioner::Executioner() : inteResults() { }
 
 RHJ::Executioner::~Executioner() { }
+
 
 
 utility::pair<RHJ::Executioner::IntermediateResults::iterator, RHJ::Executioner::IntermediateResults::iterator> 
@@ -192,7 +193,50 @@ RHJ::Executioner::IntermediateResults::iterator RHJ::Executioner::IntermediateRe
 }
 
 
+RHJ::Relation RHJ::Executioner::getInternalData(const Query& query, Query::Predicate::Operand op, IntermediateResults::iterator it) {
+
+    const Meta& relation = meta[query.relations[op.rel]];
+    tuple_payload_t * column = relation.columns[op.col];
+
+    RHJ::Relation ret;
+    ret.size = (*it).columnSize;
+    ret.tuples = new Relation::Tuple[ ret.size ];
+
+    tuple_key_t i = 0;
+    for (auto &rowId : (*it).map[op.rel])  
+    {
+        ret.tuples[i].key = i;
+        ret.tuples[i].payload = column[rowId];
+        i++;
+    }
+
+    return ret;
+}
+
+RHJ::Relation RHJ::Executioner::getExternalData(const Query& query, Query::Predicate::Operand op) {
+
+    const Meta& relation = meta[query.relations[op.rel]];
+    tuple_payload_t * column = relation.columns[op.col];
+
+    RHJ::Relation ret;
+
+    ret.size = relation.rowSize;
+    ret.tuples = new Relation::Tuple[ ret.size ];
+
+    for (tuple_key_t i = 0; i < ret.size; i++)
+    {
+        ret.tuples[i].key = i;
+        ret.tuples[i].payload = column[i];
+    }
+
+    return ret;
+}
+
+
 std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
+
+    if (!inteResults.empty())
+        inteResults.clear();
 
     std::sort(query.predicates, query.predicates + query.preCount, [](Query::Predicate a, Query::Predicate b) {
         if ( a.type == Query::Predicate::Type::join_t && b.type == Query::Predicate::Type::join_t ) {
@@ -229,12 +273,13 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
     return calculateCheckSums(query);
 }
 
+
 bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) {
 
 
     std::size_t relation = pred.left.rel;
     std::size_t column = pred.left.col;
-    tuple_key_t immediate = pred.right.constraint;
+    tuple_payload_t immediate = pred.right.constraint;
     Query::Predicate::Type op = pred.type;
 
 
@@ -362,34 +407,11 @@ bool RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
         std::cerr << "\t\tExternal Join produced: ";
     #endif
 
-    const Meta& innerRelation = meta[query.relations[inner.rel]];
-    const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
+
+    RHJ::Relation left = getExternalData(query, inner);
+    RHJ::Relation right = getExternalData(query, outer);
 
 
-    RHJ::Relation left;
-
-    left.size = innerRelation.rowSize;
-    left.tuples = new Relation::Tuple[ left.size ];
-
-    for (tuple_key_t i = 0; i < left.size; i++)
-    {
-        left.tuples[i].key = i;
-        left.tuples[i].payload = innerColumn[i];
-    }
-
-    RHJ::Relation right;
-    right.size = outerRelation.rowSize;
-    right.tuples = new Relation::Tuple[ right.size ];
-
-    for (tuple_key_t i = 0; i < right.size; i++)  
-    {
-        right.tuples[i].key = i;
-        right.tuples[i].payload = outerColumn[i];
-    }
-
-    
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
 
     std::vector<tuple_key_t> leftVector;
@@ -428,34 +450,9 @@ bool RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
         std::cerr << "\t\tSemi-Internal Join produced: ";
     #endif
 
-    const Meta& innerRelation = meta[query.relations[inner.rel]];
-    const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
-
-    RHJ::Relation left;
-    left.size = (*innerIt).columnSize;
-    left.tuples = new Relation::Tuple[(*innerIt).columnSize];
-
-    tuple_key_t innerIndex = 0;
-    for (auto &rowId : (*innerIt).map[inner.rel])  
-    {
-        left.tuples[innerIndex].key = innerIndex;
-        left.tuples[innerIndex].payload = innerColumn[rowId];
-        innerIndex++;
-    }
-
-
-    RHJ::Relation right;
-    right.size = outerRelation.rowSize;
-    right.tuples = new Relation::Tuple[ right.size ];
-
-    for (tuple_key_t outerIndex = 0; outerIndex < right.size; outerIndex++)  
-    {
-        right.tuples[outerIndex].key = outerIndex;
-        right.tuples[outerIndex].payload = outerColumn[outerIndex];
-    }
+    RHJ::Relation left = getInternalData(query, inner, innerIt);
+    RHJ::Relation right = getExternalData(query, outer);
 
     
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
@@ -516,35 +513,10 @@ bool RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
         std::cerr << "\t\tInternal Join produced: ";
     #endif
 
-    const Meta& innerRelation = meta[query.relations[inner.rel]];
-    const Meta& outerRelation = meta[query.relations[outer.rel]];
-    tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
-    tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
+    RHJ::Relation left = getInternalData(query, inner, innerIt);
+    RHJ::Relation right = getInternalData(query, outer, outerIt);
 
-    RHJ::Relation left;
-    left.size = (*innerIt).columnSize;
-    left.tuples = new Relation::Tuple[ left.size ];
-
-    tuple_key_t innerIndex = 0;
-    for (auto &rowId : (*innerIt).map[inner.rel])  
-    {
-        left.tuples[innerIndex].key = innerIndex;
-        left.tuples[innerIndex].payload = innerColumn[rowId];
-        innerIndex++;
-    }
-
-    RHJ::Relation right;
-    right.size = (*outerIt).columnSize;
-    right.tuples = new Relation::Tuple[ right.size ];
-
-    tuple_key_t outerIndex = 0;
-    for (auto &rowId : (*outerIt).map[outer.rel])  
-    {
-        right.tuples[outerIndex].key = rowId;
-        right.tuples[outerIndex].payload = outerColumn[rowId];
-        outerIndex++;
-    }
 
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
 
