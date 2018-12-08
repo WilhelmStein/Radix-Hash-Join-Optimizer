@@ -81,6 +81,8 @@ int main()
     for (std::size_t i = 0UL; i < 10UL; i++)
         points.emplace_back(i, i);
 
+    points.clear();
+
     while (!points.empty())
     {
         std::cout << points.back() << std::endl; points.pop_back();
