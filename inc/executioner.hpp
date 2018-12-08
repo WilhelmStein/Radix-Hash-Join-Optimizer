@@ -39,21 +39,21 @@ namespace RHJ
 
         } inteResults;
 
-        void executeFilter(const Query& query, Query::Predicate pred);
+        bool executeFilter(const Query& query, Query::Predicate pred);
 
-        void executeJoin(const Query& query, Query::Predicate pred);
+        bool executeJoin(const Query& query, Query::Predicate pred);
 
-        void externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
+        bool externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
 
-        void semiInternalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
+        bool semiInternalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
 
-        void internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, 
+        bool internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, 
                                               Query::Predicate::Operand outer, IntermediateResults::iterator outerIt);
 
-        void internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
-        void externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
+        bool internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, Query::Predicate::Operand outer);
+        bool externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
 
-        void cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right);
+        bool cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right);
 
         using Checksum = Query::Predicate::Operand;
         std::vector<std::string> calculateCheckSums(const Query& query);

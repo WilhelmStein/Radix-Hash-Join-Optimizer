@@ -104,7 +104,7 @@ int main(void)
             char *q = new char[line.length() + 1];
             strcpy(q, line.c_str());
 
-            cout << endl << "Executing..  " << q << endl << endl;
+            cerr << endl << "Executing..  " << q << endl << endl;
 
             RHJ::Query query = RHJ::Query(q);
             RHJ::Executioner demios;
@@ -112,7 +112,10 @@ int main(void)
             std::vector<std::string> checkSums = demios.execute(query);
             
             for (auto &c : checkSums) {
-                outfile << c << " ";
+                outfile << c;
+                if (&c != &checkSums.back())
+                    outfile << " ";
+                    
             }
             outfile << endl;
             delete[] q;
