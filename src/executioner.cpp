@@ -239,11 +239,16 @@ bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
 
 
     IntermediateResults::iterator node = inteResults.find(pred.left.rel);
-    std::cerr << "    Executing Filter..  " << pred << std::endl;
+
+    #if !defined (__QUIET__)
+        std::cerr << "\tExecuting Filter..  " << pred << std::endl;
+    #endif
 
     if (node != inteResults.end() ) {
 
-        std::cerr << "        Internal Filter produced: ";
+        #if !defined (__QUIET__)
+            std::cerr << "\t\tInternal Filter produced: ";
+        #endif
 
         std::unordered_map<std::size_t, std::vector<tuple_key_t> > map;
         inteResults.emplace_back(-1, -1, map);
@@ -280,7 +285,10 @@ bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
         // (*node).columnSize = map[relation].size();
     }
     else {
-        std::cerr << "        External Filter produced: ";
+
+        #if !defined (__QUIET__)
+            std::cerr << "\t\tExternal Filter produced: ";
+        #endif
 
         std::size_t columnSize = meta[query.relations[relation]].rowSize;
 
@@ -303,13 +311,18 @@ bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
         inteResults.back().map[relation] = filteredVector;
     }
 
-    std::cerr << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+    #if !defined (__QUIET__)
+        std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
+    #endif
 
     return inteResults.back().columnSize > 0;
 }
 
 bool RHJ::Executioner::executeJoin(const Query& query, Query::Predicate pred) {
-    std::cerr << "    Executing Join..  " << pred << std::endl;
+
+    #if !defined (__QUIET__)
+        std::cerr << "\tExecuting Join..  " << pred << std::endl;
+    #endif
 
     utility::pair<RHJ::Executioner::IntermediateResults::iterator, RHJ::Executioner::IntermediateResults::iterator> nodes;
     nodes = inteResults.find(pred.left.rel, pred.right.operand.rel);
@@ -344,7 +357,10 @@ bool RHJ::Executioner::executeJoin(const Query& query, Query::Predicate pred) {
 
 
 bool RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
-    std::cerr << "        External Join produced: ";
+    
+    #if !defined (__QUIET__)
+        std::cerr << "\t\tExternal Join produced: ";
+    #endif
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
@@ -395,7 +411,10 @@ bool RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
     inteResults.back().map[inner.rel] = leftVector;
     inteResults.back().map[outer.rel] = rightVector;
 
-    std::cerr << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+    #if !defined (__QUIET__)
+        std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
+    #endif
+
     return inteResults.back().columnSize > 0;
     // delete[] left.tuples;
     // delete[] right.tuples;
@@ -405,7 +424,9 @@ bool RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
 bool RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt,
                                         Query::Predicate::Operand outer) 
 {
-    std::cerr << "        Semi-Internal Join produced: ";
+    #if !defined (__QUIET__)
+        std::cerr << "\t\tSemi-Internal Join produced: ";
+    #endif
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
@@ -472,7 +493,10 @@ bool RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
 
-    std::cerr << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+    #if !defined (__QUIET__)
+        std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
+    #endif
+
     return inteResults.back().columnSize > 0;
     // (*innerIt).map = map;
     // (*innerIt).columnNum = map.size();
@@ -488,7 +512,9 @@ bool RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
 bool RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt,
                                                         Query::Predicate::Operand outer, IntermediateResults::iterator outerIt) 
 {
-    std::cerr << "        Internal Join produced: ";
+    #if !defined (__QUIET__)
+        std::cerr << "\t\tInternal Join produced: ";
+    #endif
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
@@ -558,7 +584,9 @@ bool RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
     
-    std::cerr << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+    #if !defined (__QUIET__)
+        std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
+    #endif
     
 
     // (*innerIt).map = map;
@@ -578,7 +606,9 @@ bool RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
 bool RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Operand inner, IntermediateResults::iterator innerIt, 
                                                             Query::Predicate::Operand outer) 
 {
-    std::cerr << "        Internal Self-Join produced: ";
+    #if !defined (__QUIET__)
+        std::cerr << "\t\tInternal Self-Join produced: ";
+    #endif
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
@@ -616,7 +646,11 @@ bool RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
     else
         inteResults.back().columnSize = 0;
     inteResults.erase(innerIt);
-    std::cerr << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+
+    #if !defined (__QUIET__)
+        std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
+    #endif
+
     return inteResults.back().columnSize > 0;
 
     // (*innerIt).map = map;
@@ -624,7 +658,10 @@ bool RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
 }
 
 bool RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer) {
-    std::cerr << "        External Self-Join produced: ";
+
+    #if !defined (__QUIET__)
+        std::cerr << "\t\tExternal Self-Join produced: ";
+    #endif
 
     const Meta& innerRelation = meta[query.relations[inner.rel]];
     const Meta& outerRelation = meta[query.relations[outer.rel]];
@@ -652,13 +689,20 @@ bool RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Op
 
     inteResults.emplace_back(map.size(), filteredVector.size(), map);
     inteResults.back().map[inner.rel] = filteredVector;
-    std::cerr << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+
+    #if !defined (__QUIET__)
+        std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
+    #endif
+
     return inteResults.back().columnSize > 0;
 }
 
 bool RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right) {
 
-    std::cerr << "    Cartesian Product produced: ";
+    #if !defined (__QUIET__)
+        std::cerr << "\tCartesian Product produced: ";
+    #endif
+
     std::unordered_map<std::size_t, std::vector<tuple_key_t>> map;
 
     for (std::size_t i = 0; i < (*left).columnSize; i++) {
@@ -684,7 +728,11 @@ bool RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, Inte
         (*left).columnSize = 0;
 
     inteResults.erase(right);
-    std::cerr << inteResults.back().columnSize << " rows" << std::endl  << std::endl;
+
+    #if !defined (__QUIET__)
+        std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
+    #endif
+
     return inteResults.back().columnSize > 0;
 }
 
