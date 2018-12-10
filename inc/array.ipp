@@ -2,100 +2,106 @@
 #include <utility>  // std::move
 
 // iterator<T> implementation
-template <typename T>
-inline utility::array<T>::iterator::iterator(T * ptr)
+template <typename T, std::size_t N>
+inline utility::array<T, N>::iterator::iterator(T * ptr)
 :
 ptr(ptr)
 {
 }
 
-template <typename T>
-inline utility::array<T>::iterator::iterator()
+template <typename T, std::size_t N>
+inline utility::array<T, N>::iterator::iterator()
 :
 ptr(nullptr)
 {
 }
 
-template <typename T>
-inline utility::array<T>::iterator::iterator(iterator&& other) noexcept
+template <typename T, std::size_t N>
+inline utility::array<T, N>::iterator::iterator(const iterator& other)
+:
+ptr(other.ptr)
+{
+}
+
+template <typename T, std::size_t N>
+inline utility::array<T, N>::iterator::iterator(iterator&& other) noexcept
 :
 ptr(other.ptr)
 {
     other.ptr = nullptr;
 }
 
-template <typename T>
-inline typename utility::array<T>::iterator& utility::array<T>::iterator::operator=(iterator&& other) noexcept
+template <typename T, std::size_t N>
+inline typename utility::array<T, N>::iterator& utility::array<T, N>::iterator::operator=(const iterator& other)
+{
+    ptr = other.ptr; return *this;
+}
+
+template <typename T, std::size_t N>
+inline typename utility::array<T, N>::iterator& utility::array<T, N>::iterator::operator=(iterator&& other) noexcept
 {
     ptr = other.ptr; other.ptr = nullptr;
 
     return *this;
 }
 
-template <typename T>
-inline typename utility::array<T>::iterator& utility::array<T>::iterator::operator++()
+template <typename T, std::size_t N>
+inline typename utility::array<T, N>::iterator& utility::array<T, N>::iterator::operator++()
 {
     ++ptr; return *this;
 }
 
-template <typename T>
-inline T& utility::array<T>::iterator::operator*() const
+template <typename T, std::size_t N>
+inline T& utility::array<T, N>::iterator::operator*() const
 {
     return *ptr;
 }
 
 // array<T> implementation
-template <typename T>
-inline utility::array<T>::array(std::size_t s)
-:
-data(new T[s]), s(s)
+template <typename T, std::size_t N>
+inline utility::array<T, N>::array()
 {
 }
 
-// template <typename T>
-// inline utility::array<T>::array(array&& other) noexcept
-// :
-// data(other.data), s(std::move(other.s))
-// {
-//     other.data = nullptr;
-// }
-
-template <typename T>
-inline utility::array<T>::~array()
+template <typename T, std::size_t N>
+inline utility::array<T, N>::array(const array& other)
 {
-    delete[] data;
+    for (std::size_t i = 0UL; i < N; i++)
+        data[i] = other.data[i];
 }
 
-// template <typename T>
-// inline utility::array<T>& utility::array<T>::operator=(array&& other) noexcept
-// {
-//     data = other.data; other.data = nullptr;
-
-//     s = std::move(other.s);
-
-//     return *this;
-// }
-
-template <typename T>
-inline T& utility::array<T>::operator[](std::size_t index)
+template <typename T, std::size_t N>
+inline T& utility::array<T, N>::operator[](std::size_t index)
 {
     return data[index];
 }
 
-template <typename T>
-inline std::size_t utility::array<T>::size() const
+template <typename T, std::size_t N>
+inline std::size_t utility::array<T, N>::size() const
 {
-    return s;
+    return N;
 }
 
-template <typename T>
-inline typename utility::array<T>::iterator utility::array<T>::begin() const
+template <typename T, std::size_t N>
+inline T& utility::array<T, N>::front()
+{
+    return data[0UL];
+}
+
+template <typename T, std::size_t N>
+inline T& utility::array<T, N>::back()
+{
+    return data[N - 1UL];
+}
+
+template <typename T, std::size_t N>
+inline typename utility::array<T, N>::iterator utility::array<T, N>::begin()
 {
     return iterator(data);
 }
 
-template <typename T>
-inline typename utility::array<T>::iterator utility::array<T>::end() const
+template <typename T, std::size_t N>
+inline typename utility::array<T, N>::iterator utility::array<T, N>::end()
 {
-    return iterator(data + s);
+    return iterator(data + N);
 }
