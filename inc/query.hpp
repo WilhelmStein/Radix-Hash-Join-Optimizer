@@ -28,7 +28,7 @@ namespace RHJ
             union
             {
                 Operand operand;
-                tuple_key_t constraint;
+                tuple_payload_t constraint;
             } right;
 
             Predicate& operator=(char *);

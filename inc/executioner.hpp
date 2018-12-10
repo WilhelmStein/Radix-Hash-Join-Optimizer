@@ -39,6 +39,9 @@ namespace RHJ
 
         } inteResults;
 
+        RHJ::Relation getInternalData(const Query& query, Query::Predicate::Operand op, IntermediateResults::iterator it);
+        RHJ::Relation getExternalData(const Query& query, Query::Predicate::Operand op);
+
         bool executeFilter(const Query& query, Query::Predicate pred);
 
         bool executeJoin(const Query& query, Query::Predicate pred);
