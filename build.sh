@@ -1,12 +1,6 @@
 #!/bin/bash
 
-CC="g++"
-CCFLAGS="-Wall -Wextra -std=c++17 -g3"
-
-PATH_INC="./inc"
-PATH_SRC="./src"
-PATH_TEST="./test"
-PATH_BIN="./bin"
+config="$(pwd)/.config.json"
 
 function confirm
 {
@@ -20,7 +14,7 @@ function confirm
     fi
 }
 
-function grepinc
+function grep_include_directives
 {
 	local includes=$(grep -Eo '["<].*\.[hi]pp[">]' $1)
 
@@ -42,7 +36,7 @@ function grepinc
 			continue
 		else
 			visited["$include"]=true
-			grepinc "$PATH_INC/$include"
+			grep_include_directives "${meta[PATH_INC]}/$include"
 		fi
 	done
 }
@@ -50,16 +44,16 @@ function grepinc
 function generate
 {
     echo
-    echo "CC = $CC"
-    echo "CCFLAGS = $CCFLAGS"
+    echo "CC = ${meta[CC]}"
+    echo "CCFLAGS = ${meta[CCFLAGS]}"
     echo
-
-    echo "PATH_SRC = $PATH_SRC"
-    echo "PATH_INC = $PATH_INC"
-    echo "PATH_BIN = $PATH_BIN"
-    echo "PATH_TEST = $PATH_TEST"
+    echo "LIBS = ${meta[LIBS]}"
     echo
-
+    echo "PATH_SRC = ${meta[PATH_SRC]}"
+    echo "PATH_INC = ${meta[PATH_INC]}"
+    echo "PATH_BIN = ${meta[PATH_BIN]}"
+    echo "PATH_TEST = ${meta[PATH_TEST]}"
+    echo
     echo ".PHONY: all"
     echo "all:"
     echo -e "\tmkdir -p \$(PATH_BIN)"
@@ -68,31 +62,25 @@ function generate
     echo -e "\t@echo \"***\""
     echo -e "\tmake \$(OBJS)"
     echo -e "\t@echo \"***\""
-
+    echo
     echo ".PHONY: clean"
     echo "clean:"
     echo -e "\t@echo"
     echo -e "\t@echo \"*** Purging binaries ***\""
     echo -e "\t@echo \"***\""
-    echo -e "\trm -rv \$(PATH_BIN)"
-    echo -e "\t@echo \"***\""
-
-    echo
-    echo "\$(PATH_BIN)/%.exe: \$(PATH_TEST)/%.cpp \$(OBJS)"
-    echo -e "\t\$(CC) -I \$(PATH_INC) \$(DEFINED) \$(CCFLAGS) \$< \$(OBJS) -o \$@"
-    echo
+    echo -e "\trm -rvf \$(PATH_BIN)"
+    echo -e "\t@echo \"***\"\n\n"
 
     objs="OBJS = \$(addprefix \$(PATH_BIN)/, "
 
     deps=""
     rules=""
 
-    files=$(ls "$PATH_SRC");
-    for file in ""$files""
+    for file in ""$1""
     do
         declare -A visited
 
-        grepinc "$PATH_SRC/$file"; includes=${!visited[@]}
+        grep_include_directives "${meta[PATH_SRC]}/$file"; includes=${!visited[@]}
 
         unset visited
 
@@ -108,7 +96,7 @@ function generate
 
             deps_list="\$(addprefix \$(PATH_INC)/, $includes) \$(PATH_SRC)/$file.cpp"
 
-            deps="$deps$deps_name = $deps_list\n"
+            deps="$deps$deps_name = $deps_list\n\n"
         else
             deps_name=""
             deps_list=""
@@ -123,18 +111,71 @@ function generate
 
     objs="$objs)"
 
-    echo -e "$deps\n$rules\n$objs"
+    echo -e "$deps\n$rules\n$objs\n"
+
+    echo "\$(PATH_BIN)/%.exe: \$(PATH_TEST)/%.cpp \$(OBJS)"
+    echo -e "\t\$(CC) -I \$(PATH_INC) \$(DEFINED) \$(CCFLAGS) \$< \$(OBJS) \$(LIBS) -o \$@"
 }
 
 prog=$(basename "$0")
 
+load_config=\
+"import sys, json;
+
+data = json.load(sys.stdin)
+
+for field in data.keys():
+    if isinstance(data[field], list):
+        data[field] = \" \".join(data[field])
+        
+    print(field, \"=\", '\"', data[field], '\"', sep='')"
+
+declare -A meta
+
+if [ ! -f "$config" ]
+then
+    echo "$prog: Unable to locate \"$config\""
+    exit 1
+else
+    while read line
+    do
+        if [[ $line =~ (.*)=\"(.*)\" ]]
+        then
+            key="${BASH_REMATCH[1]}"
+            val="${BASH_REMATCH[2]}"
+
+            meta["$key"]="$val"
+        fi
+    done <<< $(cat "$config" | python3 -c "$load_config")
+
+    for field in ""CC CCFLAGS LIBS PATH_INC PATH_SRC PATH_TEST PATH_BIN""
+    do
+        if [[ ! -v "meta[$field]" ]]
+        then
+            echo "$prog: Field \"$field\" was not specified"
+            exit 1
+        fi
+    done
+
+    for field in ""PATH_INC PATH_SRC PATH_TEST""
+    do
+        path="${meta[$field]}"
+
+        if [ ! -d "$path" ]
+        then
+            echo "$prog:" No directory named \"$path\"
+            exit 1
+        fi
+    done
+fi
+
 declare -A classes
 
 # grep every global macro and extract its name
-classes[-g]=$(grep -Ev '//' ${PATH_INC}/* ${PATH_SRC}/* | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
+classes[-g]=$(grep -Evs '//' ${meta[PATH_INC]}/*.h*p ${meta[PATH_SRC]}/*.c*p | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
 
 # grep every unit specific macro and extract its name
-classes[-u]=$(grep -Ev '//' ${PATH_TEST}/* | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
+classes[-u]=$(grep -Evs '//' ${meta[PATH_TEST]}/*.c*p | grep -E '__.*__' | cut -d : -f 2 | sed -nE 's/^.*\((__.*__)\).*$/\1/p')
 
 declare -A shortcuts
 
@@ -144,6 +185,11 @@ do
     # For each macro in the current class
     for macro in ""${classes[$class]}""
     do
+        if [[ -z "$macro" ]]
+        then
+            continue
+        fi
+
         # Create a key corresponding to the macro at hand
         key="-$(echo ${macro:2:1} | tr [:upper:] [:lower:])"
 
@@ -176,7 +222,7 @@ do
             # If they do have different names but same keys
             # then report a macro collision that needs to be
             # taken care of
-            echo "$prog: macro collision detected \"$macro\" \""$(echo "$entry" | cut -d ' ' -f 2)"\""
+            echo "$prog: Macro collision detected \"$macro\" \""$(echo "$entry" | cut -d ' ' -f 2)"\""
             exit 1
         else
             shortcuts["$key"]="$class $macro"
@@ -189,14 +235,17 @@ then
     echo "# Options:"
     echo "# -u, --unit-define      Define a macro in a test unit"
     echo "# -g, --global-define    Define a macro globally"
-    echo "# -x, --executable       Compile the specified executable   [default: everything in the test unit directory]"
-    echo "# -r, --rebuild          Recompile library / executable     [default: do not recompile up-to-date files]"
+    echo "# -x, --executable       Compile the specified executable"
+    echo "# -r, --rebuild          Recompile library / executable"
 
-    echo -e "\n# Shortcuts:"
-    for macro in "${!shortcuts[@]}"
-    do
-        printf "# %s, %s\n" "$macro" "${shortcuts[$macro]}"
-    done
+    if [ ${#shortcuts[@]} -gt 0 ]
+    then
+        echo -e "\n# Shortcuts:"
+        for macro in "${!shortcuts[@]}"
+        do
+            printf "# %s, %s\n" "$macro" "${shortcuts[$macro]}"
+        done
+    fi
 
     echo -e "\n# Usage:"
     echo "# $prog -u [MACRO]"
@@ -209,9 +258,17 @@ then
     exit 0
 fi
 
-if [ "$1" == "--makefile" ]
+if [ "$1" == "--makefile" ] || [ ! -f $(pwd)/Makefile ]
 then
-    confirm "Makefile"; generate > Makefile
+    files=$(ls "${meta[PATH_SRC]}");
+    
+    if [ -n "$files" ]
+    then
+        confirm "Makefile"; generate "$files" > Makefile
+    else
+        echo "$prog: Failed to generate a makefile due to directory \"${meta[PATH_SRC]}\" being empty"
+        exit 1
+    fi
 
     exit 0
 fi
@@ -248,7 +305,7 @@ do
         shift
         ;;
         *)
-        echo "$prog: invalid syntax! \"$*\""
+        echo "$prog: Invalid syntax! \"$*\""
         echo "                           ^"
         exit 1
         ;;
@@ -264,7 +321,7 @@ make "DEFINED=$dlib"
 
 if [ -z "$fexe" ]
 then
-    fexe=$(ls $PATH_TEST)
+    fexe=$(ls ${meta[PATH_TEST]})
 fi
 
 echo "-e" "\n*** Compiling exe files ***"
@@ -282,16 +339,16 @@ do
         dir=${BASH_REMATCH[1]}
         file=${BASH_REMATCH[2]}
 
-        if [ "$dir" == "$PATH_BIN" ]
+        if [ "$dir" == "${meta[PATH_BIN]}" ]
         then
             name="$file"
         else
-            echo "$prog: directory mismatch! \"$dir\""
+            echo "$prog: Directory mismatch! \"$dir\""
             continue
         fi
     fi
 
-    name="$PATH_BIN/${name//.*/}.exe"
+    name="${meta[PATH_BIN]}/${name//.*/}.exe"
 
     if ([ "$rebuild" ] || [ ! -z "$dexe" ]) && [ -x "$name" ]
     then

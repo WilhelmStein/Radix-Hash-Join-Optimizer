@@ -2,6 +2,8 @@
 CC = g++
 CCFLAGS = -Wall -Wextra -std=c++17 -g3
 
+LIBS = 
+
 PATH_SRC = ./src
 PATH_INC = ./inc
 PATH_BIN = ./bin
@@ -15,23 +17,28 @@ all:
 	@echo "***"
 	make $(OBJS)
 	@echo "***"
+
 .PHONY: clean
 clean:
 	@echo
 	@echo "*** Purging binaries ***"
 	@echo "***"
-	rm -rv $(PATH_BIN)
+	rm -rvf $(PATH_BIN)
 	@echo "***"
 
-$(PATH_BIN)/%.exe: $(PATH_TEST)/%.cpp $(OBJS)
-	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $< $(OBJS) -o $@
 
 EXECUTIONER_DEP = $(addprefix $(PATH_INC)/, types.hpp executioner.hpp result.hpp relation.hpp list.hpp query.hpp pair.hpp pair.ipp list.ipp) $(PATH_SRC)/executioner.cpp
+
 HISTHASH_DEP = $(addprefix $(PATH_INC)/, types.hpp histhash.hpp result.hpp relation.hpp list.hpp list.ipp) $(PATH_SRC)/histhash.cpp
+
 INDEX_DEP = $(addprefix $(PATH_INC)/, types.hpp histhash.hpp result.hpp relation.hpp list.hpp index.hpp list.ipp) $(PATH_SRC)/index.cpp
+
 QUERY_DEP = $(addprefix $(PATH_INC)/, types.hpp query.hpp) $(PATH_SRC)/query.cpp
+
 RELATION_DEP = $(addprefix $(PATH_INC)/, types.hpp histhash.hpp result.hpp relation.hpp list.hpp index.hpp list.ipp) $(PATH_SRC)/relation.cpp
+
 RESULT_DEP = $(addprefix $(PATH_INC)/, types.hpp result.hpp relation.hpp list.hpp list.ipp) $(PATH_SRC)/result.cpp
+
 
 $(PATH_BIN)/executioner.o: $(EXECUTIONER_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/executioner.cpp -c -o $(PATH_BIN)/executioner.o
@@ -53,3 +60,6 @@ $(PATH_BIN)/result.o: $(RESULT_DEP)
 
 
 OBJS = $(addprefix $(PATH_BIN)/,  executioner.o histhash.o index.o query.o relation.o result.o)
+
+$(PATH_BIN)/%.exe: $(PATH_TEST)/%.cpp $(OBJS)
+	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $< $(OBJS) $(LIBS) -o $@
