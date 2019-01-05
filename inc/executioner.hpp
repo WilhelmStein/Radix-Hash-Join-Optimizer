@@ -4,6 +4,7 @@
 #include <relation.hpp>
 
 #include <unordered_map>
+#include <tuple>
 #include <vector>
 #include <string>
 
@@ -57,6 +58,8 @@ namespace RHJ
         bool externalSelfJoin(const Query& query, Query::Predicate::Operand inner, Query::Predicate::Operand outer);
 
         bool cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right);
+
+        void calculateStatistics(const Query& query);
 
         using Checksum = Query::Predicate::Operand;
         std::vector<std::string> calculateCheckSums(const Query& query);

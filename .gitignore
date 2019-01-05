@@ -9,3 +9,4 @@ test_data/tiny
 test_data/tiny.txt
 workload/results
 workload/*
+workload/input.txt
