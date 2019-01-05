@@ -2,7 +2,7 @@
 CC = g++
 CCFLAGS = -Wall -Wextra -std=c++17 -g3
 
-LIBS = 
+LIBS = -lpthread
 
 PATH_SRC = ./src
 PATH_INC = ./inc
@@ -39,6 +39,8 @@ RELATION_DEP = $(addprefix $(PATH_INC)/, types.hpp histhash.hpp result.hpp relat
 
 RESULT_DEP = $(addprefix $(PATH_INC)/, types.hpp result.hpp relation.hpp list.hpp list.ipp) $(PATH_SRC)/result.cpp
 
+SCHEDULER_DEP = $(addprefix $(PATH_INC)/, list.hpp scheduler.hpp list.ipp) $(PATH_SRC)/scheduler.cpp
+
 
 $(PATH_BIN)/executioner.o: $(EXECUTIONER_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/executioner.cpp -c -o $(PATH_BIN)/executioner.o
@@ -58,8 +60,11 @@ $(PATH_BIN)/relation.o: $(RELATION_DEP)
 $(PATH_BIN)/result.o: $(RESULT_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/result.cpp -c -o $(PATH_BIN)/result.o
 
+$(PATH_BIN)/scheduler.o: $(SCHEDULER_DEP)
+	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/scheduler.cpp -c -o $(PATH_BIN)/scheduler.o
 
-OBJS = $(addprefix $(PATH_BIN)/,  executioner.o histhash.o index.o query.o relation.o result.o)
+
+OBJS = $(addprefix $(PATH_BIN)/,  executioner.o histhash.o index.o query.o relation.o result.o scheduler.o)
 
 $(PATH_BIN)/%.exe: $(PATH_TEST)/%.cpp $(OBJS)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $< $(OBJS) $(LIBS) -o $@
