@@ -50,13 +50,6 @@ int main()
 
     std::cout << std::endl;
 
-    // it = points.erase(points.find(Point(5UL, 5UL)));
-
-    for (const auto& point : points)
-        std::cout << point << std::endl;
-
-    std::cout << std::endl;
-
     it = points.find(Point(5UL, 5UL));
     if (it != points.end())
         points.erase(it);
@@ -64,7 +57,7 @@ int main()
     for (utility::list<Point>::iterator it = points.begin(); it != points.end(); ++it)
         std::cout << *it << std::endl;
 
-    std::cout << points.front() << ' ' << points.back() << std::endl;
+    std::cout << "\n" << points.front() << ' ' << points.back() << std::endl;
 
     std::cout << std::endl;
 
@@ -78,7 +71,7 @@ int main()
 
     std::cout << std::boolalpha << points.empty() << std::endl;
 
-    for (std::size_t i = 0UL; i < 10UL; i++)
+    for (std::size_t i = 0UL; i < 5UL; i++)
         points.emplace_back(i, i);
 
     points.clear();
@@ -89,4 +82,17 @@ int main()
     }
 
     std::cout << std::boolalpha << points.empty() << std::endl;
+    
+    for (std::size_t i = 0UL; i < 5UL; i++)
+        points.push_front(Point(i, i));
+
+    for (const auto& point : points)
+        std::cout << point << std::endl;
+
+    std::cout << std::endl;
+
+    while (!points.empty())
+    {
+        std::cout << points.front() << std::endl; points.pop_front();
+    }
 }

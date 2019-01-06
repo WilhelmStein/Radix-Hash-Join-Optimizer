@@ -15,17 +15,17 @@ InputIt utility::find(InputIt first, InputIt last, const T& value)
 
 // node<T> implementation
 template <typename T>
-inline utility::list<T>::node::node(node * prev, T&& data)
+inline utility::list<T>::node::node(node * prev, node * next, T&& data)
 :
-data(std::forward<T>(data)), prev(prev), next(nullptr)
+data(std::forward<T>(data)), prev(prev), next(next)
 {
 }
 
 template <typename T>
 template <typename ...Args>
-inline utility::list<T>::node::node(node * prev, Args&&... args)
+inline utility::list<T>::node::node(node * prev, node * next, Args&&... args)
 :
-data(std::forward<Args>(args)...), prev(prev), next(nullptr)
+data(std::forward<Args>(args)...), prev(prev), next(next)
 {
 }
 
@@ -129,11 +129,11 @@ inline void utility::list<T>::push_back(T&& data)
 {
     if (!head)
     {
-        head = tail = new node(nullptr, std::forward<T>(data));
+        head = tail = new node(nullptr, nullptr, std::forward<T>(data));
     }
     else
     {
-        tail = tail->next = new node(tail, std::forward<T>(data));
+        tail = tail->next = new node(tail, nullptr, std::forward<T>(data));
     }
 
     s++;
@@ -148,9 +148,41 @@ inline void utility::list<T>::pop_back()
     }
     else
     {
-        tail = tail->prev;
+        tail = tail->prev; tail->next->prev = nullptr;
 
         delete tail->next; tail->next = nullptr;
+    }
+
+    s--;
+}
+
+template <typename T>
+inline void utility::list<T>::push_front(T&& data)
+{
+    if (!tail)
+    {
+        head = tail = new node(nullptr, nullptr, std::forward<T>(data));
+    }
+    else
+    {
+        head = head->prev = new node(nullptr, head, std::forward<T>(data));
+    }
+
+    s++;
+}
+
+template <typename T>
+inline void utility::list<T>::pop_front()
+{
+    if (!head->next)
+    {
+        delete tail; head = tail = nullptr;
+    }
+    else
+    {
+        head = head->next; head->prev->next = nullptr;
+
+        delete head->prev; head->prev = nullptr;
     }
 
     s--;
@@ -162,11 +194,11 @@ inline void utility::list<T>::emplace_back(Args&&... args)
 {
     if (!head)
     {
-        head = tail = new node(nullptr, std::forward<Args>(args)...);
+        head = tail = new node(nullptr, nullptr, std::forward<Args>(args)...);
     }
     else
     {
-        tail = tail->next = new node(tail, std::forward<Args>(args)...);
+        tail = tail->next = new node(tail, nullptr, std::forward<Args>(args)...);
     }
 
     s++;
