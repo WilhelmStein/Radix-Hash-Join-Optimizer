@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <utility>
 
 class Statistics
@@ -40,5 +41,11 @@ public:
         size = std::move(other.size); unique = std::move(other.unique);
 
         return *this;
+    }
+
+    friend std::ostream& operator<<(std::ostream& stream, const Statistics& stat)
+    {
+        stream<<"U: "<<stat.max<<" L: "<<stat.min<<" F: "<<stat.size<<" D: "<<stat.unique<<std::endl;
+        return stream;
     }
 };

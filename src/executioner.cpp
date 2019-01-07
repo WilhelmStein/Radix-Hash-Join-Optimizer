@@ -2,6 +2,7 @@
 #include <executioner.hpp>
 #include <relation.hpp>
 #include <list.hpp>
+#include <statistics.hpp>
 
 #include <iostream>
 #include <algorithm>
@@ -42,13 +43,13 @@ static struct Meta
 
     tuple_key_t rowSize, columnSize;
     tuple_payload_t ** columns;
-    std::unordered_map< std::size_t, std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t> > statistics;
+    Statistics* statistics;
 
 } * meta = nullptr;
 
 static std::size_t total = 0UL;
 
-std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t> calcCol(std::size_t rel, std::size_t col) {
+Statistics calcCol(std::size_t rel, std::size_t col) {
     tuple_payload_t l = TUPLE_PAYLOAD_MAX;
     tuple_payload_t u = TUPLE_PAYLOAD_MIN;
 
@@ -79,8 +80,7 @@ std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t> calcCol(s
     }
 
     delete[] bool_arr;
-    std::cout<<"U: "<<u<<" L: "<<l<<" F: "<<f<<" D: "<<d<<std::endl;
-    return std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t>(u, l, f, d);
+    return Statistics(l, u, f, d);
 }
 
 void RHJ::Executioner::createMetadata()
@@ -163,9 +163,11 @@ void RHJ::Executioner::createMetadata()
             meta[i].columns[j] = mapping;
         }
 
+
+        meta[i].statistics = new Statistics[meta[i].columnSize];
         for(std::size_t j = 0; j < meta[i].columnSize; j++) {
 
-            meta[i].statistics[j] =  calcCol(i, j);
+            meta[i].statistics[j] = calcCol(i, j);
 
         }
     }
@@ -178,7 +180,7 @@ void RHJ::Executioner::deleteMetadata()
         exit_if(munmap(meta[i].mapping, meta[i].mappingSize) < 0, ("munmap No." + std::to_string(i)).c_str());
         
         delete[] meta[i].columns;
-        meta[i].statistics.clear();
+        delete[] meta[i].statistics;
     }
     delete[] meta;
 }
