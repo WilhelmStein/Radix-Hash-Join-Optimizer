@@ -59,8 +59,6 @@ namespace RHJ
 
         bool cartesianProduct(IntermediateResults::iterator left, IntermediateResults::iterator right);
 
-        void calculateStatistics(const Query& query);
-
         using Checksum = Query::Predicate::Operand;
         std::vector<std::string> calculateCheckSums(const Query& query);
 

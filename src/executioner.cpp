@@ -48,6 +48,41 @@ static struct Meta
 
 static std::size_t total = 0UL;
 
+std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t> calcCol(std::size_t rel, std::size_t col) {
+    tuple_payload_t l = TUPLE_PAYLOAD_MAX;
+    tuple_payload_t u = TUPLE_PAYLOAD_MIN;
+
+    tuple_key_t f = meta[rel].rowSize, d = 0;
+
+    for(tuple_key_t i = 0; i < f; i++) {
+        tuple_payload_t item = meta[rel].columns[col][i];
+
+        //std::cout<<item<<std::endl;
+
+        if(item < l) l = item;
+
+        if(item > u) u = item;
+    }
+
+    bool* bool_arr = new bool[ ( (u - l + 1) > N ) ? (N) : (u - l + 1)  ];
+
+    for(tuple_payload_t i = 0; i < (u - l + 1); i++)
+        bool_arr[i] = false;
+
+    for(tuple_key_t i = 0; i < f; i++) {
+        tuple_payload_t item = meta[rel].columns[col][i];
+        if(!bool_arr[ ( item - l ) % N ])
+        {
+            bool_arr[ ( item - l ) % N ] = true;
+            d++;
+        }
+    }
+
+    delete[] bool_arr;
+    std::cout<<"U: "<<u<<" L: "<<l<<" F: "<<f<<" D: "<<d<<std::endl;
+    return std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t>(u, l, f, d);
+}
+
 void RHJ::Executioner::createMetadata()
 {
     utility::list<char *> paths;
@@ -127,6 +162,12 @@ void RHJ::Executioner::createMetadata()
 
             meta[i].columns[j] = mapping;
         }
+
+        for(std::size_t j = 0; j < meta[i].columnSize; j++) {
+
+            meta[i].statistics[j] =  calcCol(i, j);
+
+        }
     }
 }
 
@@ -137,8 +178,8 @@ void RHJ::Executioner::deleteMetadata()
         exit_if(munmap(meta[i].mapping, meta[i].mappingSize) < 0, ("munmap No." + std::to_string(i)).c_str());
         
         delete[] meta[i].columns;
+        meta[i].statistics.clear();
     }
-
     delete[] meta;
 }
 
@@ -243,8 +284,6 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
     if (!inteResults.empty())
         inteResults.clear();
-
-    calculateStatistics(query);
 
     std::sort(query.predicates, query.predicates + query.preCount, [](Query::Predicate a, Query::Predicate b) {
         if ( a.type == Query::Predicate::Type::join_t && b.type == Query::Predicate::Type::join_t ) {
@@ -714,79 +753,6 @@ bool RHJ::Executioner::cartesianProduct(IntermediateResults::iterator left, Inte
     #endif
 
     return inteResults.back().columnSize > 0;
-}
-
-std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t> calcCol(std::size_t rel, std::size_t col) {
-    tuple_payload_t l = TUPLE_PAYLOAD_MAX;
-    tuple_payload_t u = TUPLE_PAYLOAD_MIN;
-
-    tuple_key_t f = meta[rel].rowSize, d = 0;
-
-    for(tuple_key_t i = 0; i < f; i++) {
-        tuple_payload_t item = meta[rel].columns[col][i];
-
-        //std::cout<<item<<std::endl;
-
-        if(item < l) l = item;
-
-        if(item > u) u = item;
-    }
-
-    bool* bool_arr = new bool[ ( (u - l + 1) > N ) ? (N) : (u - l + 1)  ];
-
-    for(tuple_payload_t i = 0; i < (u - l + 1); i++)
-        bool_arr[i] = false;
-
-    for(tuple_key_t i = 0; i < f; i++) {
-        tuple_payload_t item = meta[rel].columns[col][i];
-        if(!bool_arr[ ( item - l ) % N ])
-        {
-            bool_arr[ ( item - l ) % N ] = true;
-            d++;
-        }
-    }
-
-    delete[] bool_arr;
-    //std::cout<<"U: "<<u<<" L: "<<l<<" F: "<<f<<" D: "<<d<<std::endl;
-    return std::tuple<tuple_payload_t, tuple_payload_t, tuple_key_t, tuple_key_t>(u, l, f, d);
-}
-
-void RHJ::Executioner::calculateStatistics(const Query& query) {
-    std::unordered_set<std::string> set;
-
-    for(std::size_t i = 0; i < query.preCount; i++) {
-        std::size_t rel = query.predicates[i].left.rel,
-                    col = query.predicates[i].left.col;
-        
-        std::string str = std::to_string(rel) + "." + std::to_string(col);
-
-        if(set.find(str) == set.end())
-        {
-            set.insert(str);
-
-            // Calculation of left begins
-            meta[rel].statistics[col] =  calcCol(rel, col);
-        }
-
-        if(query.predicates[i].type == RHJ::Query::Predicate::Type::join_t)
-        {
-            rel = query.predicates[i].right.operand.rel;
-            col = query.predicates[i].right.operand.col;
-
-            str = str = std::to_string(rel) + "." + std::to_string(col);
-
-            if(set.find(str) == set.end())
-            {
-                set.insert(str);
-
-                // Calculation of right begins
-
-                meta[rel].statistics[col] =  calcCol(rel, col);
-            }
-        }
-
-    }
-
 }
 
 std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query) {
