@@ -2,6 +2,7 @@
 #include <types.hpp>
 #include <query.hpp>
 #include <relation.hpp>
+#include <statistics.hpp>
 
 #include <unordered_map>
 #include <tuple>
@@ -11,10 +12,18 @@
 #include <list.hpp>
 #include <pair.hpp>
 
-
-
 namespace RHJ
 {
+    extern struct Meta
+    {
+        __off_t mappingSize;
+        void * mapping;
+
+        tuple_key_t rowSize, columnSize;
+        tuple_payload_t ** columns;
+        RHJ::Statistics* statistics;
+
+    } * meta;
 
     class Executioner {
 
