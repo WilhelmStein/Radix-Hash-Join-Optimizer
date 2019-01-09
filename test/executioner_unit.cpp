@@ -1,11 +1,12 @@
 
+#include <meta.hpp>
 #include <executioner.hpp>
 #include <iostream>
 #include <cstring>
 
 int main()
 {
-    RHJ::Executioner::createMetadata();
+    RHJ::Meta::load();
 
     std::size_t query_max = 256UL; char * query_str = new char[query_max];
 
@@ -48,7 +49,7 @@ int main()
 
     delete[] query_str;
 
-    RHJ::Executioner::deleteMetadata();
+    RHJ::Meta::dump();
 
     return 0;
 }
