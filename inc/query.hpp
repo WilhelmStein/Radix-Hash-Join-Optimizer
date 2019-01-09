@@ -9,6 +9,7 @@ namespace RHJ
     class Query
     {
         friend class Executioner;
+        friend class JoinEnumerator;
 
         std::size_t relCount, preCount, cheCount;
 
