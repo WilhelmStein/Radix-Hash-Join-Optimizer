@@ -27,11 +27,13 @@ clean:
 	@echo "***"
 
 
-EXECUTIONER_DEP = $(addprefix $(PATH_INC)/, statistics.hpp types.hpp executioner.hpp result.hpp relation.hpp list.hpp query.hpp pair.hpp pair.ipp list.ipp) $(PATH_SRC)/executioner.cpp
+EXECUTIONER_DEP = $(addprefix $(PATH_INC)/, statistics.hpp executioner.hpp types.hpp result.hpp relation.hpp list.hpp meta.hpp query.hpp pair.hpp pair.ipp list.ipp) $(PATH_SRC)/executioner.cpp
 
 HISTHASH_DEP = $(addprefix $(PATH_INC)/, types.hpp histhash.hpp result.hpp relation.hpp list.hpp list.ipp) $(PATH_SRC)/histhash.cpp
 
 INDEX_DEP = $(addprefix $(PATH_INC)/, types.hpp histhash.hpp result.hpp relation.hpp list.hpp index.hpp list.ipp) $(PATH_SRC)/index.cpp
+
+META_DEP = $(addprefix $(PATH_INC)/, statistics.hpp types.hpp list.hpp meta.hpp query.hpp list.ipp) $(PATH_SRC)/meta.cpp
 
 QUERY_DEP = $(addprefix $(PATH_INC)/, types.hpp query.hpp) $(PATH_SRC)/query.cpp
 
@@ -41,7 +43,7 @@ RESULT_DEP = $(addprefix $(PATH_INC)/, types.hpp result.hpp relation.hpp list.hp
 
 SCHEDULER_DEP = $(addprefix $(PATH_INC)/, list.hpp scheduler.hpp list.ipp) $(PATH_SRC)/scheduler.cpp
 
-STATISTICS_DEP = $(addprefix $(PATH_INC)/, statistics.hpp executioner.hpp types.hpp result.hpp relation.hpp list.hpp query.hpp pair.hpp pair.ipp list.ipp) $(PATH_SRC)/statistics.cpp
+STATISTICS_DEP = $(addprefix $(PATH_INC)/, statistics.hpp types.hpp meta.hpp query.hpp) $(PATH_SRC)/statistics.cpp
 
 
 $(PATH_BIN)/executioner.o: $(EXECUTIONER_DEP)
@@ -52,6 +54,9 @@ $(PATH_BIN)/histhash.o: $(HISTHASH_DEP)
 
 $(PATH_BIN)/index.o: $(INDEX_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/index.cpp -c -o $(PATH_BIN)/index.o
+
+$(PATH_BIN)/meta.o: $(META_DEP)
+	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/meta.cpp -c -o $(PATH_BIN)/meta.o
 
 $(PATH_BIN)/query.o: $(QUERY_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/query.cpp -c -o $(PATH_BIN)/query.o
@@ -69,7 +74,7 @@ $(PATH_BIN)/statistics.o: $(STATISTICS_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/statistics.cpp -c -o $(PATH_BIN)/statistics.o
 
 
-OBJS = $(addprefix $(PATH_BIN)/,  executioner.o histhash.o index.o query.o relation.o result.o scheduler.o statistics.o)
+OBJS = $(addprefix $(PATH_BIN)/,  executioner.o histhash.o index.o meta.o query.o relation.o result.o scheduler.o statistics.o)
 
 $(PATH_BIN)/%.exe: $(PATH_TEST)/%.cpp $(OBJS)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $< $(OBJS) $(LIBS) -o $@

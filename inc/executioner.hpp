@@ -2,7 +2,6 @@
 #include <types.hpp>
 #include <query.hpp>
 #include <relation.hpp>
-#include <statistics.hpp>
 
 #include <unordered_map>
 #include <tuple>
@@ -14,17 +13,6 @@
 
 namespace RHJ
 {
-    extern struct Meta
-    {
-        __off_t mappingSize;
-        void * mapping;
-
-        tuple_key_t rowSize, columnSize;
-        tuple_payload_t ** columns;
-        RHJ::Statistics* statistics;
-
-    } * meta;
-
     class Executioner {
 
         struct Entity {
@@ -74,9 +62,6 @@ namespace RHJ
         bool compare(tuple_payload_t u, tuple_payload_t v, Query::Predicate::Type op);
 
     public:
-
-        static void createMetadata();
-        static void deleteMetadata();
 
         Executioner();
         ~Executioner();

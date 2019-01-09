@@ -3,7 +3,6 @@
 
 #include <types.hpp>
 #include <query.hpp>
-#include <pair.hpp>
 
 #include <iosfwd>
 #include <utility>
