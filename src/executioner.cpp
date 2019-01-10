@@ -4,6 +4,7 @@
 #include <relation.hpp>
 #include <list.hpp>
 #include <statistics.hpp>
+#include <join_enumerator.hpp>
 
 #include <iostream>
 #include <algorithm>
@@ -121,6 +122,14 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
         return a.type < b.type;
     });
+
+    RHJ::JoinEnumerator enumerator(query, meta->statistics, meta->columns);
+    std::deque<std::size_t> list = enumerator.generateBestCombination();
+
+    for (auto &item : list)
+        std::cout << item << " ";
+
+    std::cout << " END" << std::endl;
     
     bool nonzero = true;
     for (std::size_t i = 0; i < query.preCount && nonzero; i++) {

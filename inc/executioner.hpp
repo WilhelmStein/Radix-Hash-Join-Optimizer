@@ -1,4 +1,5 @@
 
+#pragma once
 #include <types.hpp>
 #include <query.hpp>
 #include <relation.hpp>
