@@ -17,6 +17,8 @@ namespace RHJ {
         std::unordered_map<std::string, std::deque<std::size_t> > bestTree;
         std::unordered_map< std::string, std::deque<RHJ::Query::Predicate> > connections;
 
+        std::unordered_map<std::size_t, std::size_t> predToRelIndex;
+
         std::set<std::size_t> startSet;
 
         public:
@@ -25,7 +27,6 @@ namespace RHJ {
         ~JoinEnumerator();
 
         std::deque<std::size_t> generateBestCombination();
-        std::deque<RHJ::Query::Predicate> relToPred(std::deque<std::size_t>);
 
         float cost(std::deque<std::size_t> rel);
         bool connected(std::size_t relA, const std::deque<std::size_t>& permutation);
