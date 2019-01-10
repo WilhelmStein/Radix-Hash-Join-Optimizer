@@ -10,6 +10,23 @@
 #include <algorithm>
 #include <unordered_set>
 
+#define PUSH_RESULTS(self, results, pusher_1, arg_1, pusher_2, arg_2)       \
+do {                                                                        \
+    for (const auto &buffer : results) {                                    \
+        for (std::size_t i = 0; i < buffer.size(); i++) {                   \
+            pusher_1(self, arg_1, buffer[i].key1)                           \
+            pusher_2(self, arg_2, buffer[i].key2)                           \
+        }                                                                   \
+    }                                                                       \
+} while (false)                                                             \
+
+#define PUSH_RESULT(self, relation, value) self->inteResults.back().map[relation].push_back(value);
+
+#define PUSH_INTERNAL_RESULTS(self, iterator, value)            \
+for (const auto &item : (*iterator).map) {                      \
+    PUSH_RESULT(self, item.first, item.second[value])           \
+}                                                               \
+
 #define N 10000000L
 
 RHJ::Executioner::Entity::Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map) 
@@ -110,8 +127,7 @@ RHJ::Relation RHJ::Executioner::getExternalData(const Query& query, Query::Predi
 
 std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
-    if (!inteResults.empty())
-        inteResults.clear();
+    inteResults.clear();
 
     std::sort(query.predicates, query.predicates + query.preCount, [](Query::Predicate a, Query::Predicate b) {
         if ( a.type == Query::Predicate::Type::join_t && b.type == Query::Predicate::Type::join_t ) {
@@ -297,24 +313,16 @@ bool RHJ::Executioner::externalJoin(const Query& query, Query::Predicate::Operan
 
     RHJ::Results results = RHJ::Relation::RadixHashJoin(left, right);
 
-    std::vector<tuple_key_t> leftVector;
-    std::vector<tuple_key_t> rightVector;
-    
-
-    for (auto &buffer : results) {
-        for (std::size_t i = 0; i < buffer.size(); i++) {
-
-            leftVector.push_back(buffer[i].key1);
-            rightVector.push_back(buffer[i].key2);
-            
-        }
-    }
-
     std::unordered_map<std::size_t, std::vector<tuple_key_t>> map;
 
-    inteResults.emplace_back(map.size(), leftVector.size(), map);
-    inteResults.back().map[inner.rel] = leftVector;
-    inteResults.back().map[outer.rel] = rightVector;
+    inteResults.emplace_back(-1, -1, map);
+    inteResults.back().map[inner.rel] = std::vector<tuple_key_t>();
+    inteResults.back().map[outer.rel] = std::vector<tuple_key_t>();
+
+    PUSH_RESULTS(this, results, PUSH_RESULT, inner.rel, PUSH_RESULT, outer.rel);
+
+    inteResults.back().columnNum = inteResults.back().map.size();
+    inteResults.back().columnSize = inteResults.back().map.begin()->second.size();
 
     #if !defined (__QUIET__)
         std::cerr << inteResults.back().columnSize << " rows\n" << std::endl;
@@ -350,21 +358,7 @@ bool RHJ::Executioner::semiInternalJoin(const Query& query, Query::Predicate::Op
     }
     inteResults.back().map[outer.rel] = std::vector<tuple_key_t>();
 
-    
-    for (auto &buffer : results) {
-
-        for (std::size_t i = 0; i < buffer.size(); i++) {
-
-            for (auto &item : (*innerIt).map) {
-
-                tuple_key_t innerRowID = item.second[buffer[i].key1];
-                inteResults.back().map[item.first].push_back( innerRowID );
-            }
-
-            tuple_key_t outerRowID = buffer[i].key2;
-            inteResults.back().map[outer.rel].push_back( outerRowID );
-        }
-    }
+    PUSH_RESULTS(this, results, PUSH_INTERNAL_RESULTS, innerIt, PUSH_RESULT, outer.rel);
 
     inteResults.back().columnNum = inteResults.back().map.size();
     if (inteResults.back().columnNum)
@@ -415,22 +409,7 @@ bool RHJ::Executioner::internalJoin(const Query& query, Query::Predicate::Operan
         inteResults.back().map[item.first] = std::vector<tuple_key_t>();
     }
 
-
-    for (auto &buffer : results) {
-        for (std::size_t i = 0; i < buffer.size(); i++) {
-
-            for (auto &item : (*innerIt).map) {
-                tuple_key_t innerRowID = item.second[buffer[i].key1];
-                inteResults.back().map[item.first].push_back( innerRowID );
-            }
-            
-            for (auto &item : (*outerIt).map) {
-                tuple_key_t outerRowID = item.second[buffer[i].key2];
-                inteResults.back().map[item.first].push_back( outerRowID );
-            }  
-        }
-    }
-    
+    PUSH_RESULTS(this, results, PUSH_INTERNAL_RESULTS, innerIt, PUSH_INTERNAL_RESULTS, outerIt);  
 
     inteResults.back().columnNum = inteResults.back().map.size();
     if (inteResults.back().columnNum)
