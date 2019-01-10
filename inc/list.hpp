@@ -19,10 +19,10 @@ namespace utility
 
             node * prev, * next;
 
-            node(node *, T&&);
+            node(node * prev, node * next, T&&);
 
             template <typename ...Args>
-            node(node *, Args&&...);
+            node(node * prev, node * next, Args&&...);
             
             ~node();
 
@@ -77,6 +77,9 @@ namespace utility
 
         void push_back(T&&);
         void pop_back();
+
+        void push_front(T&&);
+        void pop_front();
 
         template <typename ...Args>
         void emplace_back(Args&&...);

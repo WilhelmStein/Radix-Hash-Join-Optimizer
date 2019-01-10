@@ -5,12 +5,10 @@
 
 namespace utility
 {
-    template <typename T>
+    template <typename T, std::size_t N>
     class array
     {
-        T * data;
-
-        std::size_t s;
+        T data[N];
 
     public:
 
@@ -26,10 +24,10 @@ namespace utility
 
             iterator();
 
-            iterator(const iterator&) = delete;
+            iterator(const iterator&);
             iterator(iterator&&) noexcept;
 
-            iterator& operator=(const iterator&) = delete;
+            iterator& operator=(const iterator&);
             iterator& operator=(iterator&&) noexcept;
 
             iterator& operator++();
@@ -42,22 +40,21 @@ namespace utility
             }
         };
 
-        array(std::size_t);
+        array();
         
-        array(const array&) = delete;
-        array(array&&) noexcept = delete;
+        array(const array&);
 
-        ~array();
-
-        array& operator=(const array&) = delete;
-        array& operator=(array&&) noexcept = delete;
+        array& operator=(const array&);
 
         T& operator[](std::size_t);
 
         std::size_t size() const;
 
-        iterator begin() const;
-        iterator end() const;
+        T& front();
+        T& back();
+
+        iterator begin();
+        iterator end();
     };
 }
 

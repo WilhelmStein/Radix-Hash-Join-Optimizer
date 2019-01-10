@@ -1,20 +1,19 @@
 
+#pragma once
 #include <types.hpp>
 #include <query.hpp>
 #include <relation.hpp>
 
 #include <unordered_map>
+#include <tuple>
 #include <vector>
 #include <string>
 
 #include <list.hpp>
 #include <pair.hpp>
 
-
-
 namespace RHJ
 {
-
     class Executioner {
 
         struct Entity {
@@ -64,9 +63,6 @@ namespace RHJ
         bool compare(tuple_payload_t u, tuple_payload_t v, Query::Predicate::Type op);
 
     public:
-
-        static void createMetadata();
-        static void deleteMetadata();
 
         Executioner();
         ~Executioner();

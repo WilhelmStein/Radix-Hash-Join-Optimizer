@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include <iosfwd>
-
 namespace utility
 {
     template <typename First, typename Second>
@@ -21,4 +19,4 @@ namespace utility
     };
 }
 
-#include "pair.ipp"
+#include <pair.ipp>
