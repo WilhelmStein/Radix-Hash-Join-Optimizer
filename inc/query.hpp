@@ -10,6 +10,7 @@ namespace RHJ
     {
         friend class Executioner;
         friend class JoinEnumerator;
+        friend class Statistics;
 
         std::size_t relCount, preCount, cheCount;
 

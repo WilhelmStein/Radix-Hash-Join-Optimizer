@@ -1,4 +1,5 @@
 
+#include <meta.hpp>
 #include <executioner.hpp>
 #include <relation.hpp>
 #include <list.hpp>
@@ -9,183 +10,7 @@
 #include <algorithm>
 #include <unordered_set>
 
-#include <cstring>
-#include <climits>
-#include <cfloat>
-#include <cassert>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <sys/mman.h>
-
-#include <fcntl.h>
-
 #define N 10000000L
-
-// Macro used in order to exit if condition is met
-#define exit_if(condition, message)                 \
-do                                                  \
-{                                                   \
-    if (condition)                                  \
-    {                                               \
-        std::perror(message); std::exit(errno);     \
-    }                                               \
-} while (false)                                     \
-
-// Macro definition for consistency with above declaration
-#define exit_if_not(condition) assert(condition)
-
-static struct Meta
-{
-    __off_t mappingSize;
-    void * mapping;
-
-    tuple_key_t rowSize, columnSize;
-    tuple_payload_t ** columns;
-    Statistics* statistics;
-
-} * meta = nullptr;
-
-static std::size_t total = 0UL;
-
-Statistics calcCol(std::size_t rel, std::size_t col) {
-    tuple_payload_t l = TUPLE_PAYLOAD_MAX;
-    tuple_payload_t u = TUPLE_PAYLOAD_MIN;
-
-    tuple_key_t f = meta[rel].rowSize, d = 0;
-
-    for(tuple_key_t i = 0; i < f; i++) {
-        tuple_payload_t item = meta[rel].columns[col][i];
-
-        //std::cout<<item<<std::endl;
-
-        if(item < l) l = item;
-
-        if(item > u) u = item;
-    }
-
-    bool* bool_arr = new bool[ ( (u - l + 1) > N ) ? (N) : (u - l + 1)  ];
-
-    for(tuple_payload_t i = 0; i < (u - l + 1); i++)
-        bool_arr[i] = false;
-
-    for(tuple_key_t i = 0; i < f; i++) {
-        tuple_payload_t item = meta[rel].columns[col][i];
-        if(!bool_arr[ ( item - l ) % N ])
-        {
-            bool_arr[ ( item - l ) % N ] = true;
-            d++;
-        }
-    }
-
-    delete[] bool_arr;
-    return Statistics(l, u, f, d);
-}
-
-void RHJ::Executioner::createMetadata()
-{
-    utility::list<char *> paths;
-
-    // Throw exception if any of the following flags are set for std::cin
-    std::cin.exceptions(std::ios_base::badbit | std::ios_base::failbit);
-
-    while(true)
-    {
-        char buff[PATH_MAX + 1UL];
-        
-        // Atempt to read the current line
-        try
-        {
-            std::cin.getline(buff, sizeof(buff));
-        }
-        catch (std::ios_base::failure& f)
-        {
-            std::cerr
-            << "iteration: "  << paths.size()
-            << " exception: " << f.what()
-            << std::endl;
-
-            std::exit(f.code().value());
-        }
-
-        if (!std::strcmp(buff, "Done"))
-            break;
-        
-        paths.push_back(new char[std::strlen(buff) + 1UL]);
-        
-        std::strcpy(paths.back(), buff);
-    }
-    
-    total = paths.size(); exit_if_not(total > 0UL);
-
-    meta = new Meta[total];
-
-    for (std::size_t i = 0UL; i < total; i++)
-    {
-        // Open file
-        int fd = open(paths.front(), O_RDONLY);
-        exit_if(fd < 0, paths.front());
-
-        // Retrieve its size
-        struct stat st;
-        exit_if(fstat(fd, &st) < 0, paths.front());
-
-        // Map file to memory
-        meta[i].mapping = mmap(nullptr, (meta[i].mappingSize = st.st_size), PROT_READ, MAP_PRIVATE, fd, 0);
-        exit_if(meta[i].mapping == MAP_FAILED, paths.front());
-
-        // Close file
-        exit_if(close(fd) < 0, paths.front());
-
-        // Deallocate uneccessary memory
-        delete[] paths.front(); paths.erase(paths.begin());
-
-        // Copy Metadata
-        void * mapping_clone = meta[i].mapping;
-
-        void * rsptr = reinterpret_cast<void *>(&meta[i].rowSize);
-        std::memmove(rsptr, mapping_clone, sizeof(tuple_key_t));
-        reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
-
-        void * csptr = reinterpret_cast<void *>(&meta[i].columnSize);
-        std::memmove(csptr, mapping_clone, sizeof(tuple_key_t));
-        reinterpret_cast<tuple_key_t *&>(mapping_clone)++;
-        
-        // Create Index
-        meta[i].columns = new tuple_payload_t*[meta[i].columnSize]; 
-        for(tuple_key_t j = 0UL; j < meta[i].columnSize; j++)
-        {
-            const tuple_key_t index = j * meta[i].rowSize;
-
-            tuple_payload_t * const mapping = &(reinterpret_cast<tuple_payload_t*>(mapping_clone)[index]);
-
-            meta[i].columns[j] = mapping;
-        }
-
-
-        meta[i].statistics = new Statistics[meta[i].columnSize];
-        for(std::size_t j = 0; j < meta[i].columnSize; j++) {
-
-            meta[i].statistics[j] = calcCol(i, j);
-
-        }
-    }
-}
-
-void RHJ::Executioner::deleteMetadata()
-{
-    for(std::size_t i = 0; i < total; i++)
-    {
-        exit_if(munmap(meta[i].mapping, meta[i].mappingSize) < 0, ("munmap No." + std::to_string(i)).c_str());
-        
-        delete[] meta[i].columns;
-        delete[] meta[i].statistics;
-    }
-    delete[] meta;
-}
-
 
 RHJ::Executioner::Entity::Entity(std::size_t _columnNum, std::size_t _columnSize, std::unordered_map<std::size_t, std::vector<tuple_key_t>> _map) 
 :
@@ -245,7 +70,7 @@ RHJ::Executioner::IntermediateResults::iterator RHJ::Executioner::IntermediateRe
 
 RHJ::Relation RHJ::Executioner::getInternalData(const Query& query, Query::Predicate::Operand op, IntermediateResults::iterator it) {
 
-    const Meta& relation = meta[query.relations[op.rel]];
+    const Meta& relation = RHJ::meta[query.relations[op.rel]];
     tuple_payload_t * column = relation.columns[op.col];
 
     RHJ::Relation ret;
@@ -265,7 +90,7 @@ RHJ::Relation RHJ::Executioner::getInternalData(const Query& query, Query::Predi
 
 RHJ::Relation RHJ::Executioner::getExternalData(const Query& query, Query::Predicate::Operand op) {
 
-    const Meta& relation = meta[query.relations[op.rel]];
+    const Meta& relation = RHJ::meta[query.relations[op.rel]];
     tuple_payload_t * column = relation.columns[op.col];
 
     RHJ::Relation ret;
@@ -365,7 +190,7 @@ bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
         {
             tuple_key_t rowID = (*node).map[relation][i];
 
-            tuple_payload_t value = meta[query.relations[relation]].columns[column][rowID];
+            tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][rowID];
 
             if (compare(value, immediate, op)) {
 
@@ -393,13 +218,13 @@ bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
             std::cerr << "\t\tExternal Filter produced: ";
         #endif
 
-        std::size_t columnSize = meta[query.relations[relation]].rowSize;
+        std::size_t columnSize = RHJ::meta[query.relations[relation]].rowSize;
 
         std::vector<tuple_key_t> filteredVector;
 
         for (std::size_t i = 0; i < columnSize; i++) {
 
-            tuple_payload_t value = meta[query.relations[relation]].columns[column][i];
+            tuple_payload_t value = RHJ::meta[query.relations[relation]].columns[column][i];
 
             if (compare(value, immediate, op)) {
                 
@@ -640,8 +465,8 @@ bool RHJ::Executioner::internalSelfJoin(const Query& query, Query::Predicate::Op
         std::cerr << "\t\tInternal Self-Join produced: ";
     #endif
 
-    const Meta& innerRelation = meta[query.relations[inner.rel]];
-    const Meta& outerRelation = meta[query.relations[outer.rel]];
+    const Meta& innerRelation = RHJ::meta[query.relations[inner.rel]];
+    const Meta& outerRelation = RHJ::meta[query.relations[outer.rel]];
     tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
     tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
@@ -693,8 +518,8 @@ bool RHJ::Executioner::externalSelfJoin(const Query& query, Query::Predicate::Op
         std::cerr << "\t\tExternal Self-Join produced: ";
     #endif
 
-    const Meta& innerRelation = meta[query.relations[inner.rel]];
-    const Meta& outerRelation = meta[query.relations[outer.rel]];
+    const Meta& innerRelation = RHJ::meta[query.relations[inner.rel]];
+    const Meta& outerRelation = RHJ::meta[query.relations[outer.rel]];
     tuple_payload_t * innerColumn = innerRelation.columns[inner.col];
     tuple_payload_t * outerColumn = outerRelation.columns[outer.col];
 
@@ -778,7 +603,7 @@ std::vector<std::string> RHJ::Executioner::calculateCheckSums(const Query& query
         
         tuple_payload_t sum = 0;
         for (auto &rowId : (*inteResults.begin()).map[query.checksums[i].rel] ) {
-            sum += meta[ query.relations[query.checksums[i].rel] ].columns[query.checksums[i].col][rowId];
+            sum += RHJ::meta[ query.relations[query.checksums[i].rel] ].columns[query.checksums[i].col][rowId];
         }
 
         ret.push_back(std::to_string(sum));
