@@ -14,21 +14,20 @@
 namespace RHJ {
     class JoinEnumerator {
 
-        std::unordered_map< std::string, std::deque<std::size_t> > bestTree;
-        std::unordered_set< std::string > connections;
-        Statistics* stats;
-        tuple_payload_t** columns;
-        std::size_t columnSize;
+        std::unordered_map<std::string, std::deque<std::size_t> > bestTree;
+        std::unordered_map< std::string, std::deque<RHJ::Query::Predicate> > connections;
 
-        std::unordered_set<std::size_t> startSet;
-        
+        std::set<std::size_t> startSet;
 
         public:
         
-        JoinEnumerator(const RHJ::Query& query, Statistics* stats, tuple_payload_t** columns);
+        JoinEnumerator(const RHJ::Query& query);
         ~JoinEnumerator();
 
         std::deque<std::size_t> generateBestCombination();
+        std::deque<RHJ::Query::Predicate> relToPred(std::deque<std::size_t>);
+
+        float cost(std::deque<std::size_t> rel);
         bool connected(std::size_t relA, const std::deque<std::size_t>& permutation);
 
         static std::vector< std::deque<std::size_t>> generateSubCombinations(const std::vector<std::size_t>& set);

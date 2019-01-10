@@ -37,13 +37,50 @@ bool findInDeque(const std::deque<std::size_t>& queue, const std::size_t& item)
     return found;
 }
 
-std::size_t cost(std::deque<std::size_t> rel)
+float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
 {
-    return 100 - rel.size();
+
+    // Converting the current permutation to specified format
+
+    std::size_t relArrSize = rels.size(), predArrSize;
+
+    std::size_t* relArr = new std::size_t[relArrSize];
+
+
+    for(std::size_t i = 0; i < relArrSize; i++)
+        relArr[i] = rels[i];
+
+    std::vector<RHJ::Query::Predicate> predList;
+
+    for( size_t i = 0; i < relArrSize - 1; i++ )
+    {
+        std::string key;
+
+        if(relArr[i] < relArr[i + 1])
+            key = (std::to_string(relArr[i]) + '.' + std::to_string(relArr[i + 1]));
+        else
+            key = (std::to_string(relArr[i + 1]) + '.' + std::to_string(relArr[i]));
+
+        const std::deque<RHJ::Query::Predicate>& subPredList = connections.find(key)->second;
+
+        for(const auto& pred : subPredList)
+            predList.emplace_back(pred);
+        
+    }
+
+    predArrSize = predList.size();
+
+    RHJ::Query::Predicate* predArr = new RHJ::Query::Predicate[predArrSize];
+
+
+    for( size_t i = 0; i < predArrSize; i++ )
+        predArr[i] = predList[i];
+    //
+    
+    return RHJ::Statistics::parse(relArr, relArrSize, predArr, predArrSize);
 } 
 
-RHJ::JoinEnumerator::JoinEnumerator(const RHJ::Query& query, Statistics *stats, tuple_payload_t **columns)
-    : stats(stats), columns(columns)
+RHJ::JoinEnumerator::JoinEnumerator(const RHJ::Query& query)
 {
     
     for(std::size_t i = 0; i < query.preCount; i++)
@@ -57,43 +94,18 @@ RHJ::JoinEnumerator::JoinEnumerator(const RHJ::Query& query, Statistics *stats, 
         {
             pair[0] = query.predicates[i].left.rel;
             pair[1] = query.predicates[i].right.operand.rel;
-            // pair[0] = query.predicates[i].left.rel;
-            // pair[1] = query.predicates[i].left.col;
-            // pair[2] = query.predicates[i].right.operand.rel;
-            // pair[3] = query.predicates[i].right.operand.col;
-        }
-        else if ( query.predicates[i].left.rel >= query.predicates[i].right.operand.rel )
-        {
-            pair[0] = query.predicates[i].right.operand.rel;
-            pair[1] = query.predicates[i].left.rel;
-            // pair[0] = query.predicates[i].right.operand.rel;
-            // pair[1] = query.predicates[i].right.operand.col;
-            // pair[2] = query.predicates[i].left.rel;
-            // pair[3] = query.predicates[i].left.col;
         }
         else
         {
-            // if(query.predicates[i].left.col < query.predicates[i].right.operand.col)
-            // {
-            //     pair[0] = query.predicates[i].right.operand.rel;
-            //     pair[1] = query.predicates[i].right.operand.col;
-            //     pair[2] = query.predicates[i].left.rel;
-            //     pair[3] = query.predicates[i].left.col;
-            // }
-            // else
-            // {
-            //     pair[0] = query.predicates[i].right.operand.rel;
-            //     pair[1] = query.predicates[i].right.operand.col;
-            //     pair[2] = query.predicates[i].left.rel;
-            //     pair[3] = query.predicates[i].left.col;
-            // }
+            pair[0] = query.predicates[i].right.operand.rel;
+            pair[1] = query.predicates[i].left.rel;
         }
 
-        connections.insert(std::to_string(pair[0]) + '.' + std::to_string(pair[1]));
+        std::string relA = std::to_string(pair[0]), relB = std::to_string(pair[1]);
+        connections[relA + '.' + relB].emplace_back(query.predicates[i]);
 
-
-        bestTree[std::to_string(pair[0])] = std::deque<std::size_t>(pair[0]);
-        bestTree[std::to_string(pair[1])] = std::deque<std::size_t>(pair[1]);
+        bestTree[relA] = std::deque<std::size_t>(pair[0]);
+        bestTree[relB] = std::deque<std::size_t>(pair[1]);
 
         if(startSet.find(pair[0]) == startSet.end())
             startSet.insert(pair[0]);
@@ -113,8 +125,6 @@ RHJ::JoinEnumerator::~JoinEnumerator()
 
 std::deque<std::size_t> RHJ::JoinEnumerator::generateBestCombination()
 {
-    std::deque<std::size_t> bestOrder;
-
     std::vector<std::size_t> input;
     for(const auto& item : startSet)
         input.push_back(item);
@@ -132,26 +142,39 @@ std::deque<std::size_t> RHJ::JoinEnumerator::generateBestCombination()
             currTree.push_back(nextRelation);
 
             std::string key = "";
-            std::size_t treeSize = currTree.size();
+            std::deque<std::size_t> copy = currTree;
+            std::size_t treeSize = copy.size();
+            std::sort(copy.begin(), copy.end());
 
             for(std::size_t i = 0; i < treeSize; i++)
             {
                 if(i == treeSize - 1)
-                    key += currTree[i];
+                    key += copy[i];
                 else
-                    key += currTree[i] + '.';
+                    key += copy[i] + '.';
             }
+            
 
             if( bestTree.find(key) == bestTree.end() || cost(bestTree[key]) > cost(currTree) )
             {
                 bestTree[key] = currTree;
-                if(cost(bestOrder) > cost(currTree))
-                    bestOrder = currTree;
             }
         }
     }
 
-    return bestOrder;
+    std::string key = "";
+    std::size_t i = 0;
+    
+    for( const auto& element : startSet )
+    {
+        if(i == startSet.size() - 1)
+            key += element;
+        else
+            key += element + '.';
+        i++;
+    }
+
+    return bestTree[key];
 }
 
 bool RHJ::JoinEnumerator::connected(std::size_t relA, const std::deque<std::size_t>& permutation)
