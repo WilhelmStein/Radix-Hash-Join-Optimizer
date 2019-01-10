@@ -21,11 +21,11 @@ static struct Scheduler
 
         static pthread_cond_t all_finished_cnd;
 
-        void * (*task)(void *);
+        void (*task)(void *);
         
         void * args;
 
-        Job(void * (*task)(void *), void * args) : task(task), args(args) {}
+        Job(void (*task)(void *), void * args) : task(task), args(args) {}
     };
 
     struct Queue : public utility::list<Job>
@@ -188,7 +188,7 @@ void thread_pool::block()
         panic(exception::lock_release, code);
 }
 
-void thread_pool::schedule(void * (*task)(void *), void * args)
+void thread_pool::schedule(void (*task)(void *), void * args)
 {
     int code;
     if ((code = pthread_mutex_lock(&scheduler.mtx)))
