@@ -262,7 +262,7 @@ void RHJ::Statistics::load()
 void RHJ::Statistics::dump()
 {
     for (std::size_t i = 0UL; i < RHJ::Meta::total; i++)
-        delete[] statistics;
+        delete[] statistics[i];
 
     delete[] statistics;
 }

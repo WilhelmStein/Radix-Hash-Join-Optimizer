@@ -123,7 +123,7 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
         return a.type < b.type;
     });
 
-    RHJ::JoinEnumerator enumerator(query, meta->statistics, meta->columns);
+    RHJ::JoinEnumerator enumerator(query);
     std::deque<std::size_t> list = enumerator.generateBestCombination();
 
     for (auto &item : list)
