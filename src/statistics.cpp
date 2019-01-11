@@ -4,12 +4,12 @@
 #include <meta.hpp>
 
 #include <cmath>
+#include <cassert>
+
 #include <fstream>
 #include <utility>
 #include <unordered_map>
 #include <vector>
-
-RHJ::Statistics ** RHJ::statistics = nullptr;
 
 std::ostream& RHJ::operator<<(std::ostream& os, const Statistics& s)
 {
@@ -211,7 +211,7 @@ do                                                                              
 
 #define MAX_BOOLS (10000000L)
 
-#define calculate_statistics(rel, col)                                              \
+#define calculate(statistics, rel, col)                                             \
 do                                                                                  \
 {                                                                                   \
     tuple_payload_t l = TUPLE_PAYLOAD_MAX;                                          \
@@ -246,53 +246,58 @@ do                                                                              
     statistics[rel][col] = Statistics(l, u, f, d);                                  \
 } while (false)                                                                     \
 
+RHJ::Statistics ** RHJ::statistics = nullptr;
+
 void RHJ::Statistics::load()
 {
-    statistics = new Statistics*[RHJ::Meta::total];
+    statistics = new Statistics*[Meta::total];
 
-    for (std::size_t rel = 0UL; rel < RHJ::Meta::total; rel++)
+    for (std::size_t rel = 0UL; rel < Meta::total; rel++)
     {
         statistics[rel] = new Statistics[meta[rel].columnSize];
         
         for(std::size_t col = 0; col < meta[rel].columnSize; col++)
-            calculate_statistics(rel, col);
+            calculate(statistics, rel, col);
     }
 }
 
 void RHJ::Statistics::dump()
 {
-    for (std::size_t i = 0UL; i < RHJ::Meta::total; i++)
+    for (std::size_t i = 0UL; i < Meta::total; i++)
         delete[] statistics;
 
     delete[] statistics;
 }
 
-float RHJ::Statistics::parse
-(
-    const std::size_t * relations, std::size_t relCount,
-    const Query::Predicate * predicates, std::size_t preCount
-)
+static struct
 {
-    std::unordered_map<std::size_t, std::vector<Statistics>> statistics;
+    std::unordered_map<std::size_t, std::vector<RHJ::Statistics>> statistics;
 
-    for (std::size_t i = 0UL; i < relCount; i++)
+    const RHJ::Query * query;
+} cache;
+
+void RHJ::Statistics::preprocess(const Query& query)
+{
+    cache.statistics.clear();
+
+    for (std::size_t i = 0UL; i < query.relCount; i++)
     {
-        const std::size_t rel = relations[i];
+        const std::size_t rel = query.relations[i];
 
-        statistics[rel] = std::vector<Statistics>(meta[rel].columnSize, Statistics());
+        cache.statistics[rel] = std::vector<Statistics>(meta[rel].columnSize, Statistics());
 
         for (std::size_t col = 0UL; col < meta[rel].columnSize; col++)
-            statistics[rel][col] = RHJ::statistics[rel][col];
+            cache.statistics[rel][col] = statistics[rel][col];
     }
 
-    for (std::size_t i = 0UL; i < preCount; i++)
+    for (std::size_t i = 0UL; i < query.preCount; i++)
     {
-        const Query::Predicate& predicate = predicates[i];
+        const Query::Predicate& predicate = query.predicates[i];
 
-        const tuple_key_t lrel = relations[predicate.left.rel],
-                          lcol = relations[predicate.left.col];
+        const tuple_key_t lrel = query.relations[predicate.left.rel],
+                          lcol = query.relations[predicate.left.col];
         
-        const Statistics lold(statistics[lrel][lcol]);
+        const Statistics lold(cache.statistics[lrel][lcol]);
 
         switch (predicate.type)
         {
@@ -300,7 +305,7 @@ float RHJ::Statistics::parse
 
                 FILTER_EQUALS_ALL
                 (
-                    statistics, lrel, lcol,
+                    cache.statistics, lrel, lcol,
                     predicate.right.constraint, lold
                 );
 
@@ -310,7 +315,7 @@ float RHJ::Statistics::parse
 
                 FILTER_LESS_ALL
                 (
-                    statistics, lrel, lcol,
+                    cache.statistics, lrel, lcol,
                     predicate.right.constraint, lold
                 );
 
@@ -320,7 +325,7 @@ float RHJ::Statistics::parse
 
                 FILTER_GREATER_ALL
                 (
-                    statistics, lrel, lcol,
+                    cache.statistics, lrel, lcol,
                     predicate.right.constraint, lold
                 );
 
@@ -328,30 +333,52 @@ float RHJ::Statistics::parse
 
             case Query::Predicate::Type::join_t:
 
-                const tuple_key_t rrel = relations[predicate.right.operand.rel],
-                                  rcol = relations[predicate.right.operand.col];
+                const tuple_key_t rrel = query.relations[predicate.right.operand.rel],
+                                  rcol = query.relations[predicate.right.operand.col];
 
-                const Statistics rold(statistics[rrel][rcol]);
+                assert(lrel == rrel && lcol != rcol);
 
-                if (lrel != rrel)
-                {
-                    JOIN_DIFF_RLTN_ALL(statistics, lrel, lcol, lold, rrel, rcol, rold);
-                }
-                else
-                {
-                    if (lcol != rcol)
-                    {
-                        JOIN_SAME_RLTN_ALL(statistics, lrel, lcol, rcol, lold);
-                    }
-                    else
-                    {
-                        AUTOCORRELATION_ALL(statistics, lrel, lcol);
-                    }
-                }
-                
+                const Statistics rold(cache.statistics[rrel][rcol]);
+
+                JOIN_SAME_RLTN_ALL(cache.statistics, lrel, lcol, rcol, lold);
+
             break;
         }
     }
 
-    return 0.0f;
+    cache.query = &query;
+}
+
+float RHJ::Statistics::expected_cost
+(
+    const Query::Predicate * predicates, std::size_t preCount
+)
+{
+    std::unordered_map<std::size_t, std::vector<RHJ::Statistics>> clone(cache.statistics);
+
+    float cost = 0.0f;
+    for (std::size_t i = 0UL; i < preCount; i++)
+    {
+        const Query::Predicate& predicate = predicates[i];
+
+        assert(predicate.type == Query::Predicate::Type::join_t);
+
+        const tuple_key_t lrel = cache.query->relations[predicate.left.rel],
+                          lcol = cache.query->relations[predicate.left.col],
+                          rrel = cache.query->relations[predicate.right.operand.rel],
+                          rcol = cache.query->relations[predicate.right.operand.col];
+
+        assert(lrel != rrel || lcol == rcol);
+
+        const Statistics lold(clone[lrel][lcol]), rold(clone[rrel][rcol]);
+
+        if (lrel != rrel)
+            JOIN_DIFF_RLTN_ALL(clone, lrel, lcol, lold, rrel, rcol, rold);
+        else
+            AUTOCORRELATION_ALL(clone, lrel, lcol);
+
+        cost += clone[rrel][rcol].f;
+    }
+
+    return cost;
 }

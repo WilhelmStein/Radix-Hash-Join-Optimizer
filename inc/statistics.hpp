@@ -53,11 +53,9 @@ namespace RHJ
         static void load();
         static void dump();
 
-        static float parse
-        (
-            const std::size_t *, std::size_t,
-            const Query::Predicate *, std::size_t
-        );
+        static void preprocess(const Query&);
+
+        static float expected_cost(const Query::Predicate *, std::size_t);
 
     } ** statistics;
 
