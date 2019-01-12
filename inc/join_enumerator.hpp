@@ -17,8 +17,6 @@ namespace RHJ {
         std::unordered_map<std::string, std::deque<std::size_t> > bestTree;
         std::unordered_map< std::string, std::deque<RHJ::Query::Predicate> > connections;
 
-        std::unordered_map<std::size_t, std::size_t> predToRelIndex;
-
         std::set<std::size_t> startSet;
 
         public:
