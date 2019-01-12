@@ -79,13 +79,14 @@ float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
         predArr[i] = predList[i];
     //
     
-    float cost = 0.0f;//RHJ::Statistics::expected_cost(predArr, predArrSize);
+    float cost = RHJ::Statistics::expected_cost(predArr, predArrSize);
     delete[] predArr;
     return cost;
 } 
 
 RHJ::JoinEnumerator::JoinEnumerator(const RHJ::Query& query)
 {
+    RHJ::Statistics::preprocess(query);
 
     for(std::size_t i = 0; i < query.preCount; i++)
     {
