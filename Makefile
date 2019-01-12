@@ -43,6 +43,7 @@ RELATION_DEP = $(addprefix $(PATH_INC)/, types.hpp histhash.hpp result.hpp relat
 
 RESULT_DEP = $(addprefix $(PATH_INC)/, types.hpp result.hpp relation.hpp list.hpp list.ipp) $(PATH_SRC)/result.cpp
 
+
 STATISTICS_DEP = $(addprefix $(PATH_INC)/, statistics.hpp types.hpp meta.hpp query.hpp) $(PATH_SRC)/statistics.cpp
 
 THREAD_POOL_DEP = $(addprefix $(PATH_INC)/, list.hpp thread_pool.hpp list.ipp) $(PATH_SRC)/thread_pool.cpp
@@ -77,9 +78,6 @@ $(PATH_BIN)/statistics.o: $(STATISTICS_DEP)
 
 $(PATH_BIN)/thread_pool.o: $(THREAD_POOL_DEP)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $(PATH_SRC)/thread_pool.cpp -c -o $(PATH_BIN)/thread_pool.o
-
-
-OBJS = $(addprefix $(PATH_BIN)/,  executioner.o histhash.o index.o join_enumerator.o meta.o query.o relation.o result.o statistics.o thread_pool.o)
-
+ 
 $(PATH_BIN)/%.exe: $(PATH_TEST)/%.cpp $(OBJS)
 	$(CC) -I $(PATH_INC) $(DEFINED) $(CCFLAGS) $< $(OBJS) $(LIBS) -o $@
