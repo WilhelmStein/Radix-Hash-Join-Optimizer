@@ -11,5 +11,5 @@ namespace thread_pool
 
     void block();
 
-    void schedule(void * (*task)(void *), void * args);
+    void schedule(void (*task)(void *), void * args);
 }

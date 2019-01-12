@@ -1,17 +1,15 @@
 
-#include <scheduler.hpp>
+#include <thread_pool.hpp>
 #include <iostream>
 #include <unistd.h>
 
-void * foo(void * args)
+void foo(void * args)
 {
     int sum = *(int *)args;
     for (volatile std::size_t i = 0UL; i < 10000UL; i++)
         sum++;
 
     std::cout << "sum = " << sum << std::endl;
-
-    return nullptr;
 }
 
 static struct Boo
@@ -22,7 +20,7 @@ static struct Boo
     
 } boo = { "Bill", "Sioros", "21" };
 
-void * bar(void * args)
+void bar(void * args)
 {
     Boo * boo = (Boo *)args;
 
@@ -30,7 +28,7 @@ void * bar(void * args)
     
     usleep(1000000);
 
-    return nullptr;
+    std::cout << "Exiting bar" << std::endl;
 }
 
 int main()
