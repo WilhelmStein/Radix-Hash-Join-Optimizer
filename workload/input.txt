@@ -2,5 +2,5 @@
 /home/phii/Downloads/myr_folder/myr2.bin
 /home/phii/Downloads/myr_folder/myr3.bin
 Done
-0 1 2|0.0=1.0&1.2>400&2.0=0.0|0.0 1.0
+0 1 2|0.0=1.0&1.2>400&2.0=0.0&2.0=2.1|0.0 1.0
 F

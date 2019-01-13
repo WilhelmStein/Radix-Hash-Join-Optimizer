@@ -79,7 +79,8 @@ RHJ::JoinEnumerator::JoinEnumerator(const RHJ::Query& query)
 
     for(std::size_t i = 0; i < query.preCount; i++)
     {
-        if(query.predicates[i].type != RHJ::Query::Predicate::Type::join_t)
+        if( query.predicates[i].type != RHJ::Query::Predicate::Type::join_t || 
+            query.predicates[i].right.operand.rel == query.predicates[i].left.rel )
             continue;
 
         std::size_t pair[2];
