@@ -129,34 +129,35 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
     inteResults.clear();
 
-    std::sort(query.predicates, query.predicates + query.preCount, [](Query::Predicate a, Query::Predicate b) {
-        if ( a.type == Query::Predicate::Type::join_t && b.type == Query::Predicate::Type::join_t ) {
-            // check for self joins
-            if ( a.left.rel == a.right.operand.rel ) return true;
-            if ( b.left.rel == b.right.operand.rel ) return false;
-        }
+    // std::sort(query.predicates, query.predicates + query.preCount, [](Query::Predicate a, Query::Predicate b) {
+    //     if ( a.type == Query::Predicate::Type::join_t && b.type == Query::Predicate::Type::join_t ) {
+    //         // check for self joins
+    //         if ( a.left.rel == a.right.operand.rel ) return true;
+    //         if ( b.left.rel == b.right.operand.rel ) return false;
+    //     }
 
-        return a.type < b.type;
-    });
+    //     return a.type < b.type;
+    // });
 
     RHJ::JoinEnumerator enumerator(query);
-    std::deque<std::size_t> list = enumerator.generateBestCombination();
-
-    for (auto &item : list)
-        std::cout << item << " ";
-
-    std::cout << " END" << std::endl;
     
-    bool nonzero = true;
-    for (std::size_t i = 0; i < query.preCount && nonzero; i++) {
+    std::deque<RHJ::Query::Predicate> bestFormat = enumerator.generateBestCombination();
 
-        switch(query.predicates[i].type) {
+    for(std::size_t i = 0; i < query.preCount; i++)
+        if(query.predicates[i].type != RHJ::Query::Predicate::Type::join_t)
+            bestFormat.push_front(query.predicates[i]);
+
+
+    bool nonzero = true;
+    for (std::size_t i = 0; i < bestFormat.size() && nonzero; i++) {
+
+        switch(bestFormat[i].type) {
             case Query::Predicate::Type::join_t:
-                if (!executeJoin(query, query.predicates[i]))
+                if (!executeJoin(query, bestFormat[i]))
                     nonzero = false;
                 break;
             default:
-                if (!executeFilter(query, query.predicates[i]))
+                if (!executeFilter(query, bestFormat[i]))
                     nonzero = false;
                 break;
         }

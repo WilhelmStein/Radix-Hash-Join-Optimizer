@@ -336,7 +336,7 @@ void RHJ::Statistics::preprocess(const Query& query)
                 const tuple_key_t rrel = query.relations[predicate.right.operand.rel],
                                   rcol = query.relations[predicate.right.operand.col];
 
-                assert(lrel == rrel && lcol != rcol);
+                assert( lrel == rrel && lcol != rcol );
 
                 const Statistics rold(cache.statistics[rrel][rcol]);
 

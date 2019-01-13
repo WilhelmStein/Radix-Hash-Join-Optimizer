@@ -24,10 +24,11 @@ namespace RHJ {
         JoinEnumerator(const RHJ::Query& query);
         ~JoinEnumerator();
 
-        std::deque<std::size_t> generateBestCombination();
+        std::deque<RHJ::Query::Predicate> generateBestCombination();
 
         float cost(std::deque<std::size_t> rel);
-        bool connected(std::size_t relA, const std::deque<std::size_t>& permutation);
+        std::vector<RHJ::Query::Predicate> connected(std::size_t relA, const std::deque<std::size_t>& permutation);
+        std::unordered_map< std::string, std::deque<RHJ::Query::Predicate> >::iterator connected(std::size_t relA, std::size_t relB);
 
         static std::vector< std::deque<std::size_t>> generateSubCombinations(const std::vector<std::size_t>& set);
         

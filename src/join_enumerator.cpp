@@ -45,28 +45,17 @@ float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
     std::size_t relArrSize = rels.size(), predArrSize;
 
     std::vector<RHJ::Query::Predicate> predList;
+    std::deque<std::size_t> prevRels;
 
     for( size_t i = 0; i < relArrSize - 1; i++ )
     {
-        std::string key;
+        prevRels.emplace_back(rels[i]);
 
-        if(rels[i] < rels[i + 1])
-            key = (std::to_string(rels[i]) + "." + std::to_string(rels[i + 1]));
-        else
-            key = (std::to_string(rels[i + 1]) + "." + std::to_string(rels[i]));
+        std::vector<RHJ::Query::Predicate> subPreds = connected(rels[i + 1], prevRels);
 
-        std::unordered_map< std::string, std::deque<RHJ::Query::Predicate> >::iterator it = connections.find(key);
-
-        const std::deque<RHJ::Query::Predicate>* subPredList = nullptr;
-
-        if( it != connections.end())
-        {
-            subPredList = &(it->second);
-
-            for(const auto& pred : *subPredList)
-                predList.emplace_back(pred);
-        }
         
+        for(const auto& pred : subPreds)
+            predList.emplace_back(pred);
         
     }
 
@@ -128,7 +117,7 @@ RHJ::JoinEnumerator::~JoinEnumerator()
     //     delete[] pair;
 }
 
-std::deque<std::size_t> RHJ::JoinEnumerator::generateBestCombination()
+std::deque<RHJ::Query::Predicate> RHJ::JoinEnumerator::generateBestCombination()
 {
     std::vector<std::size_t> input;
     for(const auto& item : startSet)
@@ -140,7 +129,7 @@ std::deque<std::size_t> RHJ::JoinEnumerator::generateBestCombination()
     {
         for(const auto& nextRelation : startSet)
         {
-            if( findInDeque(permutation, nextRelation) || !connected(nextRelation, permutation) )
+            if( findInDeque(permutation, nextRelation) || !connected(nextRelation, permutation).size() )
                 continue;
             
             std::deque<std::size_t> currTree = permutation;
@@ -179,23 +168,52 @@ std::deque<std::size_t> RHJ::JoinEnumerator::generateBestCombination()
         i++;
     }
 
-    return bestTree[key];
-}
+    std::deque<std::size_t> bestChoiceRels = bestTree[key];
+    std::deque<std::size_t> prevRels;
 
-bool RHJ::JoinEnumerator::connected(std::size_t relA, const std::deque<std::size_t>& permutation)
-{
-    for( const auto& item : permutation )
-    {
-        std::size_t pair[] = { relA, item };
-        std::sort(std::begin(pair), std::end(pair), [](std::size_t a, std::size_t b) { return (a < b); });
+    std::deque<RHJ::Query::Predicate> bestChoicePreds;
 
-        std::string pairStr =  std::to_string(pair[0]) + "." + std::to_string(pair[1]);
-
-        if( connections.find(pairStr) != connections.end() )
-            return true;
+    
+    for(std::size_t i = 0; i < bestChoiceRels.size() - 1; i++) {
+        prevRels.emplace_back(bestChoiceRels[i]);
+        std::vector<RHJ::Query::Predicate> subPreds = connected(bestChoiceRels[i+ 1], prevRels);
+        
+        for(const auto& subPred : subPreds)
+            bestChoicePreds.emplace_back(subPred);
     }
 
-    return false;
+    return bestChoicePreds;
+}
+
+std::vector<RHJ::Query::Predicate>
+RHJ::JoinEnumerator::connected(std::size_t relA, const std::deque<std::size_t>& permutation)
+{
+    std::vector<RHJ::Query::Predicate> predList;
+
+    for( const auto& item : permutation )
+    {
+        auto it = connected(relA, item);
+        if( it != connections.end() )
+        {
+            for( const auto& pred : it->second)
+                predList.emplace_back(pred);
+        }
+    }
+
+    return predList;
+}
+
+std::unordered_map< std::string, std::deque<RHJ::Query::Predicate> >::iterator
+RHJ::JoinEnumerator::connected(std::size_t relA, std::size_t relB)
+{
+    std::size_t pair[] = { relA, relB };
+    std::sort(std::begin(pair), std::end(pair), [](std::size_t a, std::size_t b) { return (a < b); });
+
+    std::string pairStr =  std::to_string(pair[0]) + "." + std::to_string(pair[1]);
+
+    auto it = connections.find(pairStr);
+    
+    return ( (it != connections.end()) ? (it) : (connections.end()) );
 }
 
 std::vector<std::deque<std::size_t>> RHJ::JoinEnumerator::generateSubCombinations(const std::vector<std::size_t>& input)
