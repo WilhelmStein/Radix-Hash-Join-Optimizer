@@ -369,7 +369,7 @@ float RHJ::Statistics::expected_cost
                           rrel = cache.query->relations[predicate.right.operand.rel],
                           rcol = predicate.right.operand.col;
 
-        //assert(lrel != rrel || lcol == rcol);
+        assert(predicate.left.rel != predicate.right.operand.rel || lcol == rcol);
 
         const Statistics lold(clone[lrel][lcol]), rold(clone[rrel][rcol]);
 
