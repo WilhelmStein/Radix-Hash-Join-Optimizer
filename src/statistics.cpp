@@ -295,7 +295,7 @@ void RHJ::Statistics::preprocess(const Query& query)
         const Query::Predicate& predicate = query.predicates[i];
 
         const tuple_key_t lrel = query.relations[predicate.left.rel],
-                          lcol = query.relations[predicate.left.col];
+                          lcol = predicate.left.col;
         
         const Statistics lold(cache.statistics[lrel][lcol]);
 
@@ -334,7 +334,7 @@ void RHJ::Statistics::preprocess(const Query& query)
             case Query::Predicate::Type::join_t:
 
                 const tuple_key_t rrel = query.relations[predicate.right.operand.rel],
-                                  rcol = query.relations[predicate.right.operand.col];
+                                  rcol = predicate.right.operand.col;
 
                 if( lrel == rrel && lcol != rcol )
                     continue;
@@ -365,11 +365,11 @@ float RHJ::Statistics::expected_cost
         assert(predicate.type == Query::Predicate::Type::join_t);
 
         const tuple_key_t lrel = cache.query->relations[predicate.left.rel],
-                          lcol = cache.query->relations[predicate.left.col],
+                          lcol = predicate.left.col,
                           rrel = cache.query->relations[predicate.right.operand.rel],
-                          rcol = cache.query->relations[predicate.right.operand.col];
+                          rcol = predicate.right.operand.col;
 
-        assert(lrel != rrel || lcol == rcol);
+        //assert(lrel != rrel || lcol == rcol);
 
         const Statistics lold(clone[lrel][lcol]), rold(clone[rrel][rcol]);
 
