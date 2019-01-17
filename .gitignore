@@ -2,3 +2,4 @@
 bin/
 data/
 /Makefile
+workload/input.txt

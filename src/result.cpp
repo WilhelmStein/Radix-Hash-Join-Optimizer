@@ -59,6 +59,11 @@ void RHJ::Results::push_back(tuple_key_t key1, tuple_key_t key2)
     back()._data[back()._size++] = { key1, key2 };
 }
 
+// void RHJ::Results::merge(Results&&)
+// {
+    
+// }
+
 std::ostream& RHJ::operator<<(std::ostream& os, const RHJ::Results& results)
 {
     #if defined (__VERBOSE__)

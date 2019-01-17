@@ -1,7 +1,10 @@
 
 #include <histhash.hpp>
+#include <thread_pool.hpp>
 #include <cmath>            // std::pow
 #include <utility>          // std::move
+#include <vector>
+#include <iostream>
 
 #if defined (__PSUM_DEBUG__)    
     #include <fstream>
@@ -46,6 +49,60 @@ RHJ::PsumTable::Bucket& RHJ::PsumTable::Bucket::operator=(Bucket&& other) noexce
     return *this;
 }
 
+struct HistogramJobContainer {
+    RHJ::Relation::Tuple * tuples;
+    std::size_t size;
+
+    radix_t radix;
+    std::size_t * histogram;
+    std::size_t *hashes;
+};
+
+void HistogramJob(void * data) {
+
+    HistogramJobContainer *container = (HistogramJobContainer *)data;
+
+    for (std::size_t i = 0; i < container->size; i++) {
+        // std::size_t hash = HASH(container->tuples[i].payload, container->radix);
+        container->histogram[ container->hashes[i] = HASH(container->tuples[i].payload, container->radix) ]++;
+        // container->histogram[ hash ]++;
+    }
+}
+
+struct PartitionJobContainer {
+    RHJ::Relation::Tuple * tuples;
+    std::size_t relation_size;
+
+    RHJ::Relation::Tuple * reordered_tuples;
+    std::size_t size;
+
+    std::size_t psum_size;
+    std::size_t * histogram;
+    std::size_t * psum;
+    std::size_t *hashes;
+};
+
+void PartitionJob(void * data) {
+    PartitionJobContainer *container = (PartitionJobContainer *)data;
+
+    // for (int i = 0; i < container->size; i++) {
+    //     std::cout << "hashes - " << container->hashes[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    for (std::size_t i = 0UL; i < container->size; i++) {
+
+        std::size_t hash = container->hashes[i];
+
+        std::size_t index = container->psum[hash];
+        container->psum[hash]++;
+
+        container->reordered_tuples[index] = container->tuples[i];
+
+        container->histogram[hash]--;
+    }
+}
+
 RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum_size) 
 :
 #if defined (__VERBOSE__)
@@ -56,37 +113,133 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
 {
     std::size_t *histogram = new std::size_t[psum_size]{0UL};
 
+    // <SINGLE THREAD IMPLEMENTATION> //
     // Creating a table which contains hashes of each tuple
-    std::size_t *hashes = new std::size_t[rel.size];
+    // std::size_t *hashes = new std::size_t[rel.size];
+    // </SINGLE THREAD IMPLEMENTATION> //
+
+    std::size_t num_threads = 16;
+    thread_pool::create(num_threads);
+
+    std::size_t curOffset = 0;
+    std::size_t offSet = rel.size / num_threads;
+
+    std::vector<HistogramJobContainer *> histogram_containers;
+
+    std::size_t actual_threads = 0;
+
+    for (std::size_t i = 0; i < num_threads; i++) {
+
+        HistogramJobContainer *data = new HistogramJobContainer;
+
+        if (offSet == 0)
+            data->size = rel.size;
+        else if (i == num_threads - 1) {      
+            data->size = rel.size - curOffset;
+        }
+        else
+            data->size = offSet;
 
 
-    for (std::size_t i = 0UL; i < rel.size; i++)
-        histogram[ hashes[i] = HASH(rel.tuples[i].payload, radix) ]++;
+        data->radix = this->radix;
+        data->histogram = new std::size_t[this->psum_size]{0UL};
+        data->tuples = &(rel.tuples[curOffset]);
+        data->hashes = new std::size_t[data->size];
 
+        histogram_containers.push_back(data);
 
+        curOffset += (offSet == 0 ? rel.size : offSet);
+
+        thread_pool::schedule(HistogramJob, (void *)(data) );
+
+        actual_threads++;
+
+        if (curOffset >= rel.size) break;
+    }
+
+    thread_pool::block();
+    
     this->psum = new std::size_t[psum_size];
 
     std::size_t sum = 0UL;
 
-    for (std::size_t i = 0UL; i < psum_size; i++) {
+    for (std::size_t i = 0UL; i < this->psum_size; i++) {
+        for (std::size_t j = 0UL; j < histogram_containers.size(); j++) {
+            histogram[i] += histogram_containers[j]->histogram[i];
+        }
         this->psum[i] = sum;
         sum += histogram[i];
     }
+    
 
-    for (std::size_t i = 0UL; i < rel.size; i++) {
+    // <SINGLE THREAD IMPLEMENTATION> //
+    // for (std::size_t i = 0UL; i < rel.size; i++) {
+    //     histogram[ hashes[i] = HASH(rel.tuples[i].payload, radix) ]++;
+    // }
+    // </SINGLE THREAD IMPLEMENTATION> //
 
-        std::size_t hash = hashes[i];
+    std::vector<PartitionJobContainer *> partition_containers;
 
-        std::size_t index = (hash < this->psum_size - 1UL ? this->psum[hash + 1UL] : rel.size) - histogram[hash];
+    std::size_t * next_sum = new std::size_t[this->psum_size];
+    for (std::size_t j = 0; j < psum_size; j++) {
+        next_sum[j] = psum[j];
+    }
+    
+    for (std::size_t i = 0; i < actual_threads; i++) {
+        PartitionJobContainer *data = new PartitionJobContainer;
 
-        this->table.tuples[index] = rel.tuples[i];
+        data->hashes = histogram_containers[i]->hashes;
+        data->histogram = histogram_containers[i]->histogram;
+        data->psum = next_sum;
 
-        histogram[hash]--;
+        std::size_t *temp_sum = new std::size_t[this->psum_size];
+        for (std::size_t j = 0; j < psum_size; j++) {
+            temp_sum[j] = next_sum[j] + histogram_containers[i]->histogram[j];
+        }
 
+        next_sum = temp_sum;
+
+        data->psum_size = psum_size;
+        data->tuples = histogram_containers[i]->tuples;
+        data->reordered_tuples = this->table.tuples;
+        data->size = histogram_containers[i]->size;
+        data->relation_size = rel.size;
+
+        thread_pool::schedule(PartitionJob, (void *)(data) );
+        partition_containers.push_back(data);
     }
 
+    thread_pool::block();
+
+    // <SINGLE THREAD IMPLEMENTATION> //
+    // for (std::size_t i = 0UL; i < rel.size; i++) {
+
+    //     std::size_t hash = HASH(rel.tuples[i].payload, this->radix);
+
+    //     std::size_t index = (hash < this->psum_size - 1UL ? this->psum[hash + 1UL] : rel.size) - histogram[hash];
+
+    //     this->table.tuples[index] = rel.tuples[i];
+
+    //     histogram[hash]--;
+
+    // }
+
+    // delete[] hashes
+    // </SINGLE THREAD IMPLEMENTATION> //
+
+    
     delete[] histogram;
-    delete[] hashes;
+    delete[] next_sum;
+
+    for (std::size_t i = 0; i < actual_threads; i++) {
+        delete[] partition_containers[i]->hashes;
+        delete[] partition_containers[i]->histogram;
+        delete[] partition_containers[i]->psum;
+        delete partition_containers[i];
+        delete histogram_containers[i];
+    }
+
+    thread_pool::destroy();
 }
 
 RHJ::PsumTable::~PsumTable() {

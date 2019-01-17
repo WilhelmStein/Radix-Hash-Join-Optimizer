@@ -189,6 +189,28 @@ inline void utility::list<T>::pop_front()
 }
 
 template <typename T>
+inline void utility::list<T>::merge(list&& new_list)
+{
+    if (!head)
+    {
+        if (new_list.head) {
+            head = new_list.head;
+            tail = new_list.tail;
+        }
+    }
+    else
+    {
+        if (new_list.head) {
+            tail->next = new_list.head;
+            new_list.head->prev = tail;
+            tail = new_list.tail;
+        }
+    }
+
+    s += new_list.size();
+}
+
+template <typename T>
 template <typename ...Args>
 inline void utility::list<T>::emplace_back(Args&&... args)
 {

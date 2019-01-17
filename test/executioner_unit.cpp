@@ -6,6 +6,7 @@
 
 int main()
 {
+
     RHJ::Meta::load();
 
     std::size_t query_max = 256UL; char * query_str = new char[query_max];
