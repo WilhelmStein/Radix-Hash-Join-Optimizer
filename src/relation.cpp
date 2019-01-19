@@ -142,6 +142,8 @@ RHJ::Results RHJ::Relation::RadixHashJoin(const RHJ::Relation& relR, const RHJ::
 
     for (std::size_t i = 0; i < join_containers.size(); i++) {
         results.merge(static_cast<utility::list<Buffer>&&>(*(join_containers[i]->results) ));
+        delete join_containers[i]->results;
+        delete join_containers[i];
     }
 
     thread_pool::destroy();

@@ -5,6 +5,7 @@
 #include <utility>          // std::move
 #include <vector>
 #include <iostream>
+#include <cstring>
 
 #if defined (__PSUM_DEBUG__)    
     #include <fstream>
@@ -111,30 +112,35 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
     table(rel.size), radix(_radix), psum_size(_psum_size), psum(nullptr)
 #endif
 {
-    std::size_t *histogram = new std::size_t[psum_size]{0UL};
+    // std::size_t *histogram = new std::size_t[psum_size]{0UL};
 
     // <SINGLE THREAD IMPLEMENTATION> //
     // Creating a table which contains hashes of each tuple
     // std::size_t *hashes = new std::size_t[rel.size];
     // </SINGLE THREAD IMPLEMENTATION> //
 
-    std::size_t num_threads = 16;
+    std::size_t num_threads = 2;
     thread_pool::create(num_threads);
 
     std::size_t curOffset = 0;
     std::size_t offSet = rel.size / num_threads;
 
-    std::vector<HistogramJobContainer *> histogram_containers;
+    std::vector<HistogramJobContainer *> histogram_containers;  // Vector with all job containers so they can be deleted later
 
-    std::size_t actual_threads = 0;
+    // In case rel.size < num_threads we will have less actual_threads than num_threads
+    // We need it because PartitionJobs need to be the SAME number as HistogramJobs
+    std::size_t actual_threads = 0; 
 
+    // For each thread give offSet tuples from rel
     for (std::size_t i = 0; i < num_threads; i++) {
 
         HistogramJobContainer *data = new HistogramJobContainer;
 
         if (offSet == 0)
+            // offSet = 0 means that rel.size < num_threads
             data->size = rel.size;
-        else if (i == num_threads - 1) {      
+        else if (i == num_threads - 1) {    
+            // If last thread give all remaining tuples  
             data->size = rel.size - curOffset;
         }
         else
@@ -157,18 +163,19 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
         if (curOffset >= rel.size) break;
     }
 
+    // Barrier
     thread_pool::block();
     
     this->psum = new std::size_t[psum_size];
 
     std::size_t sum = 0UL;
 
+    // Creating psum from all histograms. No need to create full histogram
     for (std::size_t i = 0UL; i < this->psum_size; i++) {
-        for (std::size_t j = 0UL; j < histogram_containers.size(); j++) {
-            histogram[i] += histogram_containers[j]->histogram[i];
-        }
         this->psum[i] = sum;
-        sum += histogram[i];
+        for (std::size_t j = 0UL; j < histogram_containers.size(); j++) {
+            sum += histogram_containers[j]->histogram[i];
+        }
     }
     
 
@@ -180,10 +187,9 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
 
     std::vector<PartitionJobContainer *> partition_containers;
 
+    // new array because threading
     std::size_t * next_sum = new std::size_t[this->psum_size];
-    for (std::size_t j = 0; j < psum_size; j++) {
-        next_sum[j] = psum[j];
-    }
+    memcpy(next_sum, psum, psum_size * sizeof(std::size_t));
     
     for (std::size_t i = 0; i < actual_threads; i++) {
         PartitionJobContainer *data = new PartitionJobContainer;
@@ -192,6 +198,7 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
         data->histogram = histogram_containers[i]->histogram;
         data->psum = next_sum;
 
+        // next_sum = current_sum + current_histogram
         std::size_t *temp_sum = new std::size_t[this->psum_size];
         for (std::size_t j = 0; j < psum_size; j++) {
             temp_sum[j] = next_sum[j] + histogram_containers[i]->histogram[j];
@@ -225,10 +232,10 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
     // }
 
     // delete[] hashes
+    // delete[] histogram;
     // </SINGLE THREAD IMPLEMENTATION> //
 
     
-    delete[] histogram;
     delete[] next_sum;
 
     for (std::size_t i = 0; i < actual_threads; i++) {
