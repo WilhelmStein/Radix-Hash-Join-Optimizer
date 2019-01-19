@@ -5,7 +5,7 @@
 #include <list.hpp>
 #include <iosfwd>           // std::ostream
 
-#define CAPACITY (1024UL * 1024UL / sizeof(RHJ::Result))
+#define CAPACITY (128UL * 1024UL / sizeof(RHJ::Result))
 
 namespace RHJ
 {
@@ -55,6 +55,7 @@ namespace RHJ
         friend std::ostream& operator<<(std::ostream&, const Results&);
 
         void push_back(tuple_key_t, tuple_key_t);
+        // void merge(Results&&);
     };
 
     std::ostream& operator<<(std::ostream&, const Results&);

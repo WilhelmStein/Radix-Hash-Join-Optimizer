@@ -89,6 +89,7 @@ bool isPrime(std::size_t candidate)
     return true;
 }
 
+
 void RHJ::Index::join(const RHJ::PsumTable::Bucket& bucket, RHJ::Results& results, const RHJ::PsumTable& lpsum) const
 {
     std::uintptr_t min = reinterpret_cast<std::uintptr_t>(lpsum.table.tuples);

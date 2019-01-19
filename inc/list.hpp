@@ -81,6 +81,8 @@ namespace utility
         void push_front(T&&);
         void pop_front();
 
+        void merge(list&&);
+
         template <typename ...Args>
         void emplace_back(Args&&...);
 
