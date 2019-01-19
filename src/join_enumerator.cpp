@@ -66,8 +66,8 @@ float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
 
     for( size_t i = 0; i < predArrSize; i++ )
         predArr[i] = predList[i];
-    //
-    
+
+    // Calculate the cost of the current predicate permutation
     float cost = RHJ::Statistics::expected_cost(predArr, predArrSize);
     delete[] predArr;
     return cost;
@@ -75,47 +75,51 @@ float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
 
 RHJ::JoinEnumerator::JoinEnumerator(const RHJ::Query& query)
 {
+    // Start by applying all filters and self joins first on a copy of the starting statistics
     RHJ::Statistics::preprocess(query);
 
     for(std::size_t i = 0; i < query.preCount; i++)
     {
+        // Disregard anything that is not a join or anything that is a self join
         if( query.predicates[i].type != RHJ::Query::Predicate::Type::join_t || 
             query.predicates[i].right.operand.rel == query.predicates[i].left.rel )
             continue;
 
-        std::size_t pair[2];
+        utility::pair<std::size_t, std::size_t> pair;
 
+        // Sort predicate relation values in order to create a key representing a set
         if( query.predicates[i].left.rel < query.predicates[i].right.operand.rel )
         {
-            pair[0] = query.predicates[i].left.rel;
-            pair[1] = query.predicates[i].right.operand.rel;
+            pair.first = query.predicates[i].left.rel;
+            pair.second = query.predicates[i].right.operand.rel;
         }
         else
         {
-            pair[0] = query.predicates[i].right.operand.rel;
-            pair[1] = query.predicates[i].left.rel;
+            pair.first = query.predicates[i].right.operand.rel;
+            pair.second = query.predicates[i].left.rel;
         }
 
-        std::string relA = std::to_string(pair[0]), relB = std::to_string(pair[1]);
+        // Initialize all predicate connections
+        std::string relA = std::to_string(pair.first), relB = std::to_string(pair.second);
         connections[relA + "." + relB].emplace_back(query.predicates[i]);
 
-        bestTree[relA] = std::deque<std::size_t>(pair[0]);
-        bestTree[relB] = std::deque<std::size_t>(pair[1]);
+        // Initialize all bestTrees for each relation
+        bestTree[relA] = std::deque<std::size_t>{pair.first};
+        bestTree[relB] = std::deque<std::size_t>{pair.second};
 
-        if(startSet.find(pair[0]) == startSet.end())
-            startSet.insert(pair[0]);
+        // Initialize an ordered set containing all relations
+        if(startSet.find(pair.first) == startSet.end())
+            startSet.insert(pair.first);
         
-        if(startSet.find(pair[1]) == startSet.end())
-            startSet.insert(pair[1]);
+        if(startSet.find(pair.second) == startSet.end())
+            startSet.insert(pair.second);
     }
 }
 
 RHJ::JoinEnumerator::~JoinEnumerator()
 {
     bestTree.clear();
-
-    // for( auto& pair : connections )
-    //     delete[] pair;
+    connections.clear();
 }
 
 std::deque<RHJ::Query::Predicate> RHJ::JoinEnumerator::generateBestCombination()
@@ -124,13 +128,19 @@ std::deque<RHJ::Query::Predicate> RHJ::JoinEnumerator::generateBestCombination()
     for(const auto& item : startSet)
         input.push_back(item);
 
+    // Generate all possible permutations
     std::vector<std::deque<std::size_t>> possiblePermutations = RHJ::JoinEnumerator::generateSubCombinations(input);
 
     for (const auto& permutation : possiblePermutations)
     {
+        // No need to check permutations the largest size, since we cannot append more elements to them
+        if(permutation.size() == possiblePermutations[possiblePermutations.size() - 1].size())
+            break;
+        
         for(const auto& nextRelation : startSet)
         {
-            if( findInDeque(permutation, nextRelation) || !connected(nextRelation, permutation).size() )
+            // If nextRealation exists in the current permutation or 
+            if( findInDeque(permutation, nextRelation) || !connectionExists(nextRelation, permutation) )
                 continue;
             
             std::deque<std::size_t> currTree = permutation;
@@ -160,6 +170,8 @@ std::deque<RHJ::Query::Predicate> RHJ::JoinEnumerator::generateBestCombination()
     std::string key = "";
     std::size_t i = 0;
     
+
+    // Generate the key of the largest possible set
     for( const auto& element : startSet )
     {
         if(i == startSet.size() - 1)
@@ -186,9 +198,25 @@ std::deque<RHJ::Query::Predicate> RHJ::JoinEnumerator::generateBestCombination()
     return bestChoicePreds;
 }
 
+bool RHJ::JoinEnumerator::connectionExists(std::size_t relA, const std::deque<std::size_t>& permutation)
+{
+    // Check if at least 1 connection exists between relA and permutation
+    for( const auto& item : permutation )
+    {
+        auto it = connected(relA, item);
+        if( it != connections.end() )
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 std::vector<RHJ::Query::Predicate>
 RHJ::JoinEnumerator::connected(std::size_t relA, const std::deque<std::size_t>& permutation)
 {
+    // Return all the connections between relA and permutation
     std::vector<RHJ::Query::Predicate> predList;
 
     for( const auto& item : permutation )
@@ -207,6 +235,7 @@ RHJ::JoinEnumerator::connected(std::size_t relA, const std::deque<std::size_t>& 
 std::unordered_map< std::string, std::deque<RHJ::Query::Predicate> >::iterator
 RHJ::JoinEnumerator::connected(std::size_t relA, std::size_t relB)
 {
+    // Return all connections between relA and relB
     std::size_t pair[] = { relA, relB };
     std::sort(std::begin(pair), std::end(pair), [](std::size_t a, std::size_t b) { return (a < b); });
 
@@ -228,7 +257,7 @@ std::vector<std::deque<std::size_t>> RHJ::JoinEnumerator::generateSubCombination
         std::deque<std::size_t> set;
         for (std::size_t j = 0; j < n; j++)
         {
-
+            // i works as a bit mask
             if ((i & (1 << j)) != 0)
             {
                 set.push_back(input[j]);
