@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+// #include <pthread.h>
 
 #if defined (__PSUM_DEBUG__)    
     #include <fstream>
@@ -81,17 +82,28 @@ struct PartitionJobContainer {
     std::size_t * histogram;
     std::size_t * psum;
     std::size_t *hashes;
+
+    // pthread_cond_t *conds;
+    // pthread_mutex_t *mutexes;
 };
 
 void PartitionJob(void * data) {
     PartitionJobContainer *container = (PartitionJobContainer *)data;
 
-    // for (int i = 0; i < container->size; i++) {
-    //     std::cout << "hashes - " << container->hashes[i] << " ";
-    // }
-    // std::cout << std::endl;
-
     for (std::size_t i = 0UL; i < container->size; i++) {
+
+        // std::size_t hash = container->hashes[i];
+
+        // pthread_mutex_lock(&(container->mutexes[hash]));
+        // std::size_t index = (hash < container->psum_size - 1UL ? container->psum[hash + 1UL] : container->relation_size) - container->histogram[hash];
+
+        // container->histogram[hash]--;
+
+        // pthread_mutex_unlock(&(container->mutexes[hash]));
+
+
+        // container->reordered_tuples[index] = container->tuples[i];
+
 
         std::size_t hash = container->hashes[i];
 
@@ -112,14 +124,16 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
     table(rel.size), radix(_radix), psum_size(_psum_size), psum(nullptr)
 #endif
 {
-    // std::size_t *histogram = new std::size_t[psum_size]{0UL};
+    std::size_t *histogram = new std::size_t[psum_size]{0UL};
+
+    // pthread_mutex_t *mutexes = new pthread_mutex_t[psum_size]{PTHREAD_MUTEX_INITIALIZER};
 
     // <SINGLE THREAD IMPLEMENTATION> //
     // Creating a table which contains hashes of each tuple
     // std::size_t *hashes = new std::size_t[rel.size];
     // </SINGLE THREAD IMPLEMENTATION> //
 
-    std::size_t num_threads = 2;
+    std::size_t num_threads = 4;
     thread_pool::create(num_threads);
 
     std::size_t curOffset = 0;
@@ -175,9 +189,9 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
         this->psum[i] = sum;
         for (std::size_t j = 0UL; j < histogram_containers.size(); j++) {
             sum += histogram_containers[j]->histogram[i];
+            // histogram[i] += histogram_containers[j]->histogram[i];
         }
     }
-    
 
     // <SINGLE THREAD IMPLEMENTATION> //
     // for (std::size_t i = 0UL; i < rel.size; i++) {
@@ -197,6 +211,10 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
         data->hashes = histogram_containers[i]->hashes;
         data->histogram = histogram_containers[i]->histogram;
         data->psum = next_sum;
+
+        // data->mutexes = mutexes;
+        // data->histogram = histogram;
+        // data->psum = psum;
 
         // next_sum = current_sum + current_histogram
         std::size_t *temp_sum = new std::size_t[this->psum_size];
@@ -236,8 +254,11 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
     // </SINGLE THREAD IMPLEMENTATION> //
 
     
-    delete[] next_sum;
+    
+    // delete[] mutexes;
+    // delete[] histogram;
 
+    delete[] next_sum;
     for (std::size_t i = 0; i < actual_threads; i++) {
         delete[] partition_containers[i]->hashes;
         delete[] partition_containers[i]->histogram;
