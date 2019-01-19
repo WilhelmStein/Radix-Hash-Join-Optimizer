@@ -208,6 +208,9 @@ inline void utility::list<T>::merge(list&& new_list)
     }
 
     s += new_list.size();
+
+    new_list.head = nullptr;
+    new_list.tail = nullptr;
 }
 
 template <typename T>
