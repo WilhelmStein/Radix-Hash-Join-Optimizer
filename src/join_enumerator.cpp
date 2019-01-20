@@ -37,6 +37,80 @@ bool findInDeque(const std::deque<std::size_t>& queue, const std::size_t& item)
     return found;
 }
 
+#ifdef __REC_COST__
+
+void RHJ::JoinEnumerator::recCost(
+std::deque<std::size_t>& rels,
+std::vector<float>& costs,
+std::deque<std::size_t>& prevRels,
+std::vector<RHJ::Query::Predicate>& predList,
+std::size_t maxDepth,
+std::size_t currDepth)
+{
+    if(currDepth == maxDepth)
+    {
+
+        std::size_t predArrSize = predList.size();
+
+        RHJ::Query::Predicate* predArr = new RHJ::Query::Predicate[predArrSize];
+
+
+        for( size_t i = 0; i < predArrSize; i++ )
+            predArr[i] = predList[i];
+
+        // Calculate the cost of the current predicate permutation
+        costs.emplace_back( RHJ::Statistics::expected_cost(predArr, predArrSize) );
+
+        delete[] predArr;
+        return;
+    }
+
+    prevRels.emplace_back(rels[currDepth]);
+
+    std::vector<RHJ::Query::Predicate> subPreds = connected(rels[currDepth + 1], prevRels);
+    std::sort(subPreds.begin(), subPreds.end(),
+            [](const RHJ::Query::Predicate &a, const RHJ::Query::Predicate &b) { return (a.left.rel < b.right.operand.rel); });
+
+    do {
+
+        for(std::size_t i = 0; i < subPreds.size(); i++)
+        {
+            //std::cout<<subPreds[i]<<std::endl;
+            predList.emplace_back(subPreds[i]);
+        }
+        //std::cout<<std::endl;
+
+        recCost(rels, costs, prevRels, predList, maxDepth, currDepth + 1);
+
+        for(std::size_t i = 0; i < subPreds.size(); i++)
+            predList.pop_back();
+        
+    } while (std::next_permutation(subPreds.begin(), subPreds.end(),
+            [](const RHJ::Query::Predicate &a, const RHJ::Query::Predicate &b) { return (a.left.rel < b.left.rel); }));
+    
+    prevRels.pop_back();
+
+}
+
+float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
+{
+
+    // Converting the current permutation to specified format
+
+    std::size_t relArrSize = rels.size();
+
+    std::vector<RHJ::Query::Predicate> predList;
+    std::deque<std::size_t> prevRels;
+    std::vector<float> costs; 
+
+    recCost(rels, costs, prevRels, predList, relArrSize - 1, 0);
+    std::sort(costs.begin(), costs.end());
+
+    return costs[0];
+}
+
+#else
+
 float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
 {
 
@@ -71,7 +145,8 @@ float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
     float cost = RHJ::Statistics::expected_cost(predArr, predArrSize);
     delete[] predArr;
     return cost;
-} 
+}
+#endif
 
 RHJ::JoinEnumerator::JoinEnumerator(const RHJ::Query& query)
 {

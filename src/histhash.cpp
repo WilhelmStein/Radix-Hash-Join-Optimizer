@@ -124,7 +124,7 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
     table(rel.size), radix(_radix), psum_size(_psum_size), psum(nullptr)
 #endif
 {
-    std::size_t *histogram = new std::size_t[psum_size]{0UL};
+    //std::size_t *histogram = new std::size_t[psum_size]{0UL};
 
     // pthread_mutex_t *mutexes = new pthread_mutex_t[psum_size]{PTHREAD_MUTEX_INITIALIZER};
 

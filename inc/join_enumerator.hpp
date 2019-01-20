@@ -19,6 +19,12 @@ namespace RHJ {
 
         std::set<std::size_t> startSet;
 
+        #ifdef __REC_COST__
+
+        void recCost(std::deque<std::size_t>& rels, std::vector<float>& costs, std::deque<std::size_t>& prevRels, std::vector<RHJ::Query::Predicate>& predList, std::size_t maxDepth, std::size_t currDepth);
+
+        #endif
+
         public:
         
         JoinEnumerator(const RHJ::Query& query);
