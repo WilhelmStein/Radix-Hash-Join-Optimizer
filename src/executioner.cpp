@@ -177,12 +177,10 @@ std::vector<std::string> RHJ::Executioner::execute(const Query& query) {
 
 bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) {
 
-
     std::size_t relation = pred.left.rel;
     std::size_t column = pred.left.col;
     tuple_payload_t immediate = pred.right.constraint;
     Query::Predicate::Type op = pred.type;
-
 
     IntermediateResults::iterator node = inteResults.find(pred.left.rel);
 
@@ -265,6 +263,14 @@ bool RHJ::Executioner::executeFilter(const Query& query, Query::Predicate pred) 
 }
 
 bool RHJ::Executioner::executeJoin(const Query& query, Query::Predicate pred) {
+
+    // External Join:       2 relations that do not exist in intermediate results
+    // Internal Join:       2 relations that BOTH exist in intermediate results
+    // Semi-Internal Join:  1 relation in intermediate results. 1 relation not in intermediate results.
+    // Internal Self Join:  1 relation self join that exists in intermediate results
+    // External Self Join:  1 relation self join that does not exist in intermediate results
+    // 
+    // Practically, the only difference here is the source of the data used for joins.
 
     #if !defined (__QUIET__)
         std::cerr << "\tExecuting Join..  " << pred << std::endl;

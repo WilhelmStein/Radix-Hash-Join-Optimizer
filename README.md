@@ -1,7 +1,23 @@
 # Application-Development-for-Information-Systems
 
-## TODO:
-1. Read the damn pdf already
+## Contributors:
 
-## NOTICE:
-1. TLB misses on build and probe phase
+* Vasileios Sioros - 1115201500144
+* Ioannis Maliaras - 1115201500084
+* Ioannis Cheilaris - 1115201500176
+
+---
+
+## Usage:
+
+    ./harness.sh
+or
+
+    ./harness.sh {number_of_threads}
+
+---
+
+## More information
+
+For more information look into ./harness.sh and ./inc and ./src folders.  
+The test program is ./test/executioner_unit.cpp  

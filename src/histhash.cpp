@@ -12,6 +12,10 @@
     #include <fstream>
 #endif
 
+#if !defined(__THREADS__)
+    #define __THREADS__ (4UL)
+#endif
+
 #define HASH(value, radix) (value & ((1UL << radix) - 1UL))
 
 #if defined (__PSUM_DEBUG__)
@@ -133,7 +137,7 @@ RHJ::PsumTable::PsumTable(const Relation& rel, radix_t _radix, std::size_t _psum
     // std::size_t *hashes = new std::size_t[rel.size];
     // </SINGLE THREAD IMPLEMENTATION> //
 
-    std::size_t num_threads = 4;
+    std::size_t num_threads = __THREADS__;
     thread_pool::create(num_threads);
 
     std::size_t curOffset = 0;

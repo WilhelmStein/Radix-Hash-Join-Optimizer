@@ -28,6 +28,9 @@ namespace RHJ
 
         };
 
+        // Intermediate Results is a list of map of vectors
+        // each vector represents a relation and contains rowIDs.
+        // so we need a map of vectors to address our relation by name.
         struct IntermediateResults : public utility::list<Entity> {
 
             IntermediateResults();
