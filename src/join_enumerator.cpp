@@ -39,6 +39,11 @@ bool findInDeque(const std::deque<std::size_t>& queue, const std::size_t& item)
 
 #ifdef __REC_COST__
 
+/*
+This is a recursive function that calculates all costs of all permutations of predicates between each pair of ordered relations,
+by doing a depth first search. It has a little overhead and that's why it's disabled by default.
+*/
+
 void RHJ::JoinEnumerator::recCost(
 std::deque<std::size_t>& rels,
 std::vector<float>& costs,
@@ -105,11 +110,17 @@ float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
 
     recCost(rels, costs, prevRels, predList, relArrSize - 1, 0);
     std::sort(costs.begin(), costs.end());
-
+    
+    // From all sorted costs, take the smallest one
     return costs[0];
 }
 
 #else
+
+/*
+This is the default version of the cost function,
+that does not take into account the permutations of predicates between a pair of relations.
+*/
 
 float RHJ::JoinEnumerator::cost(std::deque<std::size_t> rels)
 {
@@ -342,7 +353,8 @@ std::vector<std::deque<std::size_t>> RHJ::JoinEnumerator::generateSubCombination
     }
 
     std::vector<std::deque<std::size_t>> permutations;
-
+    
+    // Generate each permutations of the elements of each set
     for (auto &set : sets)
     {
 
